@@ -1,4 +1,5 @@
 import "./Sidebar.css";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -12,6 +13,14 @@ import {
 } from "lucide-react";
 
 function Sidebar({ sidebarOpen, setSidebarOpen }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const logout = () => {
+    localStorage.removeItem("loggedIn");
+    navigate("/");
+  };
+
   return (
     <>
       {/* Overlay */}
@@ -19,12 +28,11 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
         <div
           className="sidebar-overlay"
           onClick={() => setSidebarOpen(false)}
-        ></div>
+        />
       )}
 
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
-
-        {/* Mobile Close Button */}
+        {/* Close Button */}
         <button
           className="close-btn"
           onClick={() => setSidebarOpen(false)}
@@ -44,64 +52,62 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
 
         {/* Navigation */}
         <nav>
-
-          <a
-            href="/dashboard"
-            className="active"
+          <Link
+            to="/dashboard"
+            className={location.pathname === "/dashboard" ? "active" : ""}
             onClick={() => setSidebarOpen(false)}
           >
             <LayoutDashboard size={20} />
             Dashboard
-          </a>
+          </Link>
 
-          <a
-            href="/customers"
+          <Link
+            to="/dashboard"
             onClick={() => setSidebarOpen(false)}
           >
             <Users size={20} />
             Customers
-          </a>
+          </Link>
 
-          <a
-            href="/plots"
+          <Link
+            to="/dashboard"
             onClick={() => setSidebarOpen(false)}
           >
             <MapPinned size={20} />
             Plots
-          </a>
+          </Link>
 
-          <a
-            href="/bookings"
+          <Link
+            to="/dashboard"
             onClick={() => setSidebarOpen(false)}
           >
             <CalendarDays size={20} />
             Bookings
-          </a>
+          </Link>
 
-          <a
-            href="/payments"
+          <Link
+            to="/dashboard"
             onClick={() => setSidebarOpen(false)}
           >
             <CreditCard size={20} />
             Payments
-          </a>
+          </Link>
 
-          <a
-            href="/reports"
+          <Link
+            to="/dashboard"
             onClick={() => setSidebarOpen(false)}
           >
             <BarChart3 size={20} />
             Reports
-          </a>
+          </Link>
 
-          <a
-            href="/settings"
+          <Link
+            to="/dashboard"
             onClick={() => setSidebarOpen(false)}
           >
             <Settings size={20} />
             Settings
-          </a>
-
+          </Link>
         </nav>
 
         {/* Profile */}
@@ -118,11 +124,10 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
         </div>
 
         {/* Logout */}
-        <button className="logout">
+        <button className="logout" onClick={logout}>
           <LogOut size={18} />
           Logout
         </button>
-
       </aside>
     </>
   );
