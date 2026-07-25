@@ -72,10 +72,7 @@ function Topbar({ setSidebarOpen }) {
 
         <div className="profile">
 
-          <img
-            src="https://i.pravatar.cc/80?img=15"
-            alt="profile"
-          />
+          
 
           <div>
             <h4>Hari</h4>

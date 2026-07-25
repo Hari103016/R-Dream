@@ -112,11 +112,6 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
 
         {/* Profile */}
         <div className="profile">
-          <img
-            src="https://i.pravatar.cc/80"
-            alt="Admin"
-          />
-
           <div>
             <h4>Hari</h4>
             <p>Administrator</p>

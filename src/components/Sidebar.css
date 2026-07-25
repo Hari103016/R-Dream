@@ -97,23 +97,12 @@ nav a:hover{
 
 .profile{
     margin-top:auto;
-
-    display:flex;
-    align-items:center;
-    gap:15px;
-
     padding:18px;
-
     background:#111827;
-
     border-radius:18px;
 }
 
-.profile img{
-    width:55px;
-    height:55px;
-    border-radius:50%;
-}
+
 
 .profile h4{
     margin:0;
