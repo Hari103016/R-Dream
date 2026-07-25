@@ -1,0 +1,239 @@
+.topbar{
+    height:85px;
+    background:rgba(17,24,39,.75);
+    backdrop-filter:blur(18px);
+    border-bottom:1px solid rgba(255,255,255,.08);
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:0 35px;
+
+    position:sticky;
+    top:0;
+    z-index:100;
+}
+
+/* Left */
+
+.topbar-left h2{
+    color:white;
+    font-size:34px;
+    font-weight:700;
+}
+
+/* Right */
+
+.topbar-right{
+    display:flex;
+    align-items:center;
+    gap:18px;
+}
+
+/* Search */
+
+.search-bar{
+
+    width:520px;
+
+    height:52px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    background:#1f2937;
+
+    padding:0 12px 0 18px;
+
+    border-radius:14px;
+
+    transition:.3s;
+}
+
+.search-bar:focus-within{
+
+    border:1px solid #2563EB;
+
+    box-shadow:0 0 18px rgba(37,99,235,.25);
+
+}
+
+.search-bar svg{
+    color:#94a3b8;
+}
+
+.search-bar input{
+
+    flex:1;
+
+    background:transparent;
+
+    border:none;
+
+    color:white;
+
+    outline:none;
+
+    font-size:15px;
+
+}
+
+/* Search Button */
+
+.search-btn{
+
+    height:40px;
+
+    padding:0 20px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#2563EB;
+
+    color:white;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.search-btn:hover{
+
+    background:#1D4ED8;
+
+    transform:translateY(-2px);
+
+}
+
+/* Icons */
+
+.icon-btn{
+
+    width:48px;
+
+    height:48px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:#1f2937;
+
+    color:white;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.icon-btn:hover{
+
+    background:#2563EB;
+
+    transform:translateY(-3px);
+
+}
+
+/* Profile */
+
+.profile{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+    background:#1f2937;
+
+    padding:8px 16px;
+
+    border-radius:16px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.profile:hover{
+
+    background:#2563EB;
+
+}
+
+.profile img{
+
+    width:45px;
+
+    height:45px;
+
+    border-radius:50%;
+
+}
+
+.profile h4{
+
+    color:white;
+
+    font-size:15px;
+
+}
+
+.profile span{
+
+    color:#CBD5E1;
+
+    font-size:12px;
+
+}
+
+/* Responsive */
+
+@media(max-width:1100px){
+
+    .search-bar{
+
+        width:320px;
+
+    }
+
+}
+
+@media(max-width:768px){
+
+    .topbar{
+
+        padding:0 15px;
+
+    }
+
+    .topbar-left h2{
+
+        font-size:24px;
+
+    }
+
+    .search-bar{
+
+        width:220px;
+
+    }
+
+    .profile div{
+
+        display:none;
+
+    }
+
+}

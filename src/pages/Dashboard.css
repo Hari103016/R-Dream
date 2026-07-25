@@ -1,0 +1,69 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Poppins",sans-serif;
+}
+
+body{
+    background:#08111f;
+    overflow-x:hidden;
+}
+
+/* Main Layout */
+
+.dashboard{
+    display:flex;
+    min-height:100vh;
+    background:#08111f;
+}
+
+/* Main Content */
+
+.main-content{
+    flex:1;
+    margin-left:280px;
+    background:#08111f;
+    min-height:100vh;
+}
+
+/* Topbar Space */
+
+.dashboard-body{
+    padding:110px 30px 30px;
+}
+
+/* Search + Quick Actions */
+
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:25px;
+    margin:30px 0;
+}
+
+/* Revenue + Customers */
+
+.section-space{
+    margin-top:30px;
+}
+
+@media(max-width:1200px){
+
+    .dashboard-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+@media(max-width:768px){
+
+    .main-content{
+        margin-left:0;
+    }
+
+    .dashboard-body{
+        padding:95px 15px 20px;
+    }
+
+}

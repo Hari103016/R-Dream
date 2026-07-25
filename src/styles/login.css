@@ -1,0 +1,289 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Poppins",sans-serif;
+}
+
+body{
+    overflow:hidden;
+}
+
+/* Background */
+
+.login-page{
+    width:100%;
+    height:100vh;
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+}
+
+/* Dark Overlay */
+
+.overlay{
+    width:100%;
+    height:100%;
+    background:linear-gradient(
+        rgba(5,10,25,.75),
+        rgba(0,0,0,.75)
+    );
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+/* Card */
+
+.login-card{
+    width:430px;
+    padding:45px;
+    border-radius:25px;
+
+    background:rgba(255,255,255,.08);
+
+    backdrop-filter:blur(22px);
+
+    border:1px solid rgba(255,255,255,.18);
+
+    box-shadow:
+        0 20px 50px rgba(0,0,0,.55),
+        0 0 40px rgba(212,175,55,.15);
+
+    animation:fade .8s ease;
+}
+
+/* Animation */
+
+@keyframes fade{
+
+    from{
+        opacity:0;
+        transform:translateY(50px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+/* Logo */
+
+.logo-section{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.logo{
+    width:110px;
+    height:110px;
+    object-fit:contain;
+    margin-bottom:15px;
+    filter:drop-shadow(0 0 15px rgba(255,165,0,.5));
+}
+
+.logo-section h1{
+
+    color:#fff;
+
+    font-size:36px;
+
+    letter-spacing:3px;
+
+    font-weight:700;
+
+}
+
+.logo-section p{
+
+    color:#d4af37;
+
+    letter-spacing:5px;
+
+    margin-top:8px;
+
+    font-size:13px;
+
+}
+
+/* Inputs */
+
+.login-input{
+
+    width:100%;
+
+    padding:16px;
+
+    margin-bottom:18px;
+
+    background:rgba(255,255,255,.08);
+
+    border:1px solid rgba(255,255,255,.18);
+
+    border-radius:12px;
+
+    color:#fff;
+
+    font-size:16px;
+
+    outline:none;
+
+    transition:.3s;
+
+}
+
+.login-input::placeholder{
+
+    color:#ddd;
+
+}
+
+.login-input:focus{
+
+    border-color:#d4af37;
+
+    box-shadow:0 0 12px rgba(212,175,55,.45);
+
+}
+
+/* Password */
+
+.password-box{
+
+    position:relative;
+
+}
+
+.eye-icon{
+
+    position:absolute;
+
+    right:18px;
+
+    top:18px;
+
+    color:#fff;
+
+    cursor:pointer;
+
+    font-size:18px;
+
+}
+
+/* Remember */
+
+.remember{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin:18px 0 28px;
+
+    color:#fff;
+
+    font-size:14px;
+
+}
+
+.remember label{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+}
+
+.remember input{
+
+    accent-color:#d4af37;
+
+}
+
+.remember a{
+
+    color:#d4af37;
+
+    text-decoration:none;
+
+    transition:.3s;
+
+}
+
+.remember a:hover{
+
+    color:#FFD700;
+
+}
+
+/* Button */
+
+.login-btn{
+
+    width:100%;
+
+    padding:16px;
+
+    border:none;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    color:#111;
+
+    background:linear-gradient(135deg,#FFD700,#D4AF37,#ffb300);
+
+    transition:.35s;
+
+}
+
+.login-btn:hover{
+
+    transform:translateY(-5px);
+
+    box-shadow:
+
+        0 15px 35px rgba(212,175,55,.55);
+
+}
+
+/* Mobile */
+
+@media(max-width:600px){
+
+.login-card{
+
+    width:92%;
+
+    padding:35px;
+
+}
+
+.logo{
+
+    width:85px;
+
+}
+
+.logo-section h1{
+
+    font-size:30px;
+
+}
+
+}
