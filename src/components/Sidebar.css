@@ -15,7 +15,12 @@
     padding:25px;
 
     color:white;
+
+    transition:0.3s;
+    z-index:1000;
 }
+
+/* Logo */
 
 .logo{
     display:flex;
@@ -50,6 +55,8 @@
     color:#94a3b8;
     font-size:13px;
 }
+
+/* Navigation */
 
 nav{
     display:flex;
@@ -86,6 +93,8 @@ nav a:hover{
     box-shadow:0 10px 25px rgba(37,99,235,.4);
 }
 
+/* Profile */
+
 .profile{
     margin-top:auto;
 
@@ -103,7 +112,6 @@ nav a:hover{
 .profile img{
     width:55px;
     height:55px;
-
     border-radius:50%;
 }
 
@@ -116,6 +124,8 @@ nav a:hover{
     color:#94a3b8;
     font-size:13px;
 }
+
+/* Logout */
 
 .logout{
     margin-top:20px;
@@ -145,4 +155,97 @@ nav a:hover{
 .logout:hover{
     transform:translateY(-3px);
     box-shadow:0 12px 25px rgba(251,191,36,.4);
+}
+
+/* Close Button */
+
+.close-btn{
+    display:none;
+
+    position:absolute;
+    top:15px;
+    right:15px;
+
+    background:none;
+    border:none;
+    color:white;
+
+    cursor:pointer;
+}
+
+/* Overlay */
+
+.sidebar-overlay{
+    display:none;
+}
+
+/* ========================= */
+/* Mobile Responsive */
+/* ========================= */
+
+@media (max-width:768px){
+
+.sidebar{
+
+    left:-100%;
+    width:270px;
+
+}
+
+.sidebar.open{
+
+    left:0;
+
+}
+
+.close-btn{
+
+    display:block;
+
+}
+
+.sidebar-overlay{
+
+    display:block;
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.5);
+
+    z-index:999;
+
+}
+
+.logo h2{
+
+    font-size:24px;
+
+}
+
+.logo span{
+
+    font-size:12px;
+
+}
+
+nav a{
+
+    padding:14px;
+
+}
+
+.profile{
+
+    padding:15px;
+
+}
+
+.logout{
+
+    padding:14px;
+
+}
+
 }

@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 import DashboardCards from "../components/DashboardCards";
@@ -8,19 +10,28 @@ import RecentCustomers from "../components/RecentCustomers";
 import "./Dashboard.css";
 
 function Dashboard() {
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <div className="dashboard">
-      <Sidebar />
+
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      />
 
       <div className="main-content">
-        <Topbar />
+
+        <Topbar
+          setSidebarOpen={setSidebarOpen}
+        />
 
         <div className="dashboard-body">
 
           <DashboardCards />
 
           <div className="dashboard-grid">
-          
             <QuickActions />
           </div>
 
@@ -29,7 +40,9 @@ function Dashboard() {
           <RecentCustomers />
 
         </div>
+
       </div>
+
     </div>
   );
 }

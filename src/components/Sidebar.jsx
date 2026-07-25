@@ -8,78 +8,123 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  X,
 } from "lucide-react";
 
-function Sidebar() {
+function Sidebar({ sidebarOpen, setSidebarOpen }) {
   return (
-    <aside className="sidebar">
+    <>
+      {/* Overlay */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
 
-      <div className="logo">
-        <div className="logo-icon">🏡</div>
+      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
 
-        <div>
-          <h2>R DREAM</h2>
-          <span>Luxury Real Estate CRM</span>
+        {/* Mobile Close Button */}
+        <button
+          className="close-btn"
+          onClick={() => setSidebarOpen(false)}
+        >
+          <X size={24} />
+        </button>
+
+        {/* Logo */}
+        <div className="logo">
+          <div className="logo-icon">🏡</div>
+
+          <div>
+            <h2>R DREAM</h2>
+            <span>Luxury Real Estate CRM</span>
+          </div>
         </div>
-      </div>
 
-      <nav>
+        {/* Navigation */}
+        <nav>
 
-        <a href="/dashboard" className="active">
-          <LayoutDashboard size={20} />
-          Dashboard
-        </a>
+          <a
+            href="/dashboard"
+            className="active"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <LayoutDashboard size={20} />
+            Dashboard
+          </a>
 
-        <a href="/customers">
-          <Users size={20} />
-          Customers
-        </a>
+          <a
+            href="/customers"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <Users size={20} />
+            Customers
+          </a>
 
-        <a href="/plots">
-          <MapPinned size={20} />
-          Plots
-        </a>
+          <a
+            href="/plots"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <MapPinned size={20} />
+            Plots
+          </a>
 
-        <a href="/bookings">
-          <CalendarDays size={20} />
-          Bookings
-        </a>
+          <a
+            href="/bookings"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <CalendarDays size={20} />
+            Bookings
+          </a>
 
-        <a href="/payments">
-          <CreditCard size={20} />
-          Payments
-        </a>
+          <a
+            href="/payments"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <CreditCard size={20} />
+            Payments
+          </a>
 
-        <a href="/reports">
-          <BarChart3 size={20} />
-          Reports
-        </a>
+          <a
+            href="/reports"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <BarChart3 size={20} />
+            Reports
+          </a>
 
-        <a href="/settings">
-          <Settings size={20} />
-          Settings
-        </a>
+          <a
+            href="/settings"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <Settings size={20} />
+            Settings
+          </a>
 
-      </nav>
+        </nav>
 
-      <div className="profile">
-        <img
-          src="https://i.pravatar.cc/80"
-          alt="admin"
-        />
+        {/* Profile */}
+        <div className="profile">
+          <img
+            src="https://i.pravatar.cc/80"
+            alt="Admin"
+          />
 
-        <div>
-          <h4>Hari</h4>
-          <p>Administrator</p>
+          <div>
+            <h4>Hari</h4>
+            <p>Administrator</p>
+          </div>
         </div>
-      </div>
 
-      <button className="logout">
-        <LogOut size={18} />
-        Logout
-      </button>
+        {/* Logout */}
+        <button className="logout">
+          <LogOut size={18} />
+          Logout
+        </button>
 
-    </aside>
+      </aside>
+    </>
   );
 }
 

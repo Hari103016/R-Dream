@@ -6,27 +6,39 @@ import {
   Bell,
   MessageCircle,
   ChevronDown,
+  Menu,
 } from "lucide-react";
 
-function Topbar() {
+function Topbar({ setSidebarOpen }) {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
   const handleSearch = () => {
-  if (!search.trim()) return;
+    if (!search.trim()) return;
 
-  navigate(`/customer/${search}`);
-};
+    navigate(`/customer/${search}`);
+  };
 
   return (
     <header className="topbar">
+
       <div className="topbar-left">
+
+        <button
+          className="menu-btn"
+          onClick={() => setSidebarOpen(true)}
+        >
+          <Menu size={24} />
+        </button>
+
         <h2>🏡 Real Estate Dashboard</h2>
+
       </div>
 
       <div className="topbar-right">
 
         <div className="search-bar">
+
           <Search size={18} />
 
           <input
@@ -59,6 +71,7 @@ function Topbar() {
         </button>
 
         <div className="profile">
+
           <img
             src="https://i.pravatar.cc/80?img=15"
             alt="profile"
@@ -70,9 +83,11 @@ function Topbar() {
           </div>
 
           <ChevronDown size={18} />
+
         </div>
 
       </div>
+
     </header>
   );
 }
