@@ -1,5 +1,6 @@
 import "./Sidebar.css";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { supabase } from "../services/supabase";
 import {
   LayoutDashboard,
   Users,
@@ -16,9 +17,15 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const logout = () => {
-    localStorage.removeItem("loggedIn");
-    navigate("/");
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    navigate("/", { replace: true });
   };
 
   return (
@@ -32,7 +39,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
       )}
 
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
-        {/* Close Button */}
+        {/* Mobile Close Button */}
         <button
           className="close-btn"
           onClick={() => setSidebarOpen(false)}

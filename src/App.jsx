@@ -1,32 +1,57 @@
+import { useEffect, useState } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+
+import { supabase } from "./services/supabase";
 
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import CustomerDetails from "./pages/CustomerDetails";
 
 function App() {
-  const isLoggedIn = localStorage.getItem("loggedIn");
+  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    // Get current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <h2 style={{ color: "white", textAlign: "center" }}>Loading...</h2>;
+  }
 
   return (
     <Routes>
       <Route
         path="/"
         element={
-          isLoggedIn ? <Navigate to="/dashboard" replace /> : <Login />
+          session ? <Navigate to="/dashboard" replace /> : <Login />
         }
       />
 
       <Route
         path="/dashboard"
         element={
-          isLoggedIn ? <Dashboard /> : <Navigate to="/" replace />
+          session ? <Dashboard /> : <Navigate to="/" replace />
         }
       />
 
       <Route
         path="/customer/:id"
         element={
-          isLoggedIn ? (
+          session ? (
             <CustomerDetails />
           ) : (
             <Navigate to="/" replace />
@@ -38,7 +63,7 @@ function App() {
         path="*"
         element={
           <Navigate
-            to={isLoggedIn ? "/dashboard" : "/"}
+            to={session ? "/dashboard" : "/"}
             replace
           />
         }
