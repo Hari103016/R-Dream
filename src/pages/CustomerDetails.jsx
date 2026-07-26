@@ -226,7 +226,7 @@ function CustomerDetails() {
                   }
                 >
                   🖨 Print Receipt
-              </button>
+                </button>
 
           </div>
 
