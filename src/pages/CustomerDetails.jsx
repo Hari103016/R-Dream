@@ -56,7 +56,7 @@ function CustomerDetails() {
       return;
     }
 
-    const selectedCustomer = data[0];
+    const selectedCustomer = data[0]; 
 
     setCustomer(selectedCustomer);
 
@@ -450,15 +450,24 @@ function CustomerDetails() {
           />
         )}
         <button
-          onClick={() =>
-            printReceipt(
-            customer,
-            payments.length > 0 ? payments[0] : null
-            )
-          }
-        >
-          🖨 Print Receipt
-        </button>
+          onClick={async () => {
+            try {
+              console.log("Print button clicked");
+              console.log(customer);
+              console.log(payments);
+
+              await printReceipt(
+                customer,
+                payments.length > 0 ? payments[0] : null
+              );
+            } catch (err) {
+                console.error(err);
+                alert(err.message);
+              }
+            }}
+          >
+            🖨 Print Receipt
+          </button>
 
       </div>
     </div>
