@@ -1,21 +1,36 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import logo from "../assets/logo.png";
 
-export const printReceipt = (customer, payment) => {
-    console.log("Customer:", customer);
-    console.log("Payment:", payment);
-    if (!customer) {
-        alert("Customer not found");
-        return;
-}
+export const printReceipt = async (customer, payment) => {
+  console.log("Customer:", customer);
+  console.log("Payment:", payment);
+
+  if (!customer) {
+    alert("Customer not found");
+    return;
+  }
 
   const pdf = new jsPDF("p", "mm", "a4");
+
+  // ================= Logo =================
+
+  const img = new Image();
+  img.src = logo;
+
+  await new Promise((resolve) => {
+    img.onload = resolve;
+  });
+
+  pdf.addImage(img, "PNG", 15, 10, 22, 22);
+
+  // ================= Receipt Data =================
 
   const latestPayment = payment || {
     amount: customer.amount_paid,
     payment_mode: "Cash",
     payment_date: customer.booking_date,
-    remarks: "-"
+    remarks: "-",
   };
 
   const receiptNo =
@@ -24,27 +39,18 @@ export const printReceipt = (customer, payment) => {
     "-" +
     String(customer.id).padStart(4, "0");
 
-  /* Company Name */
+  // ================= Header =================
 
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(20);
   pdf.setTextColor(239, 90, 41);
 
-  pdf.text("R DREAM INFRA DEVELOPERS", 105, 18, {
+  pdf.text("R DREAM INFRA DEVELOPERS", 105, 22, {
     align: "center",
   });
 
-  pdf.setFontSize(10);
-  pdf.setTextColor(100);
-
-  pdf.text(
-    "DTCP Approved Layouts | Open Plots",
-    105,
-    25,
-    { align: "center" }
-  );
-
   pdf.setDrawColor(239, 90, 41);
+  pdf.setLineWidth(0.5);
   pdf.line(15, 30, 195, 30);
 
   pdf.setFontSize(16);
@@ -64,11 +70,11 @@ export const printReceipt = (customer, payment) => {
 
   pdf.text(
     `Date : ${new Date().toLocaleDateString("en-IN")}`,
-    150,
+    145,
     48
   );
 
-  /* Customer Table */
+  // ================= Customer Details =================
 
   autoTable(pdf, {
     startY: 55,
@@ -76,135 +82,141 @@ export const printReceipt = (customer, payment) => {
     head: [["Customer Details", ""]],
 
     body: [
+      ["Name", customer.name || "-"],
 
-      ["Name", customer.name],
+      ["Mobile", customer.mobile || "-"],
 
-      ["Mobile", customer.mobile],
-
-      ["Plot Number", customer.plot_no],
+      ["Plot Number", customer.plot_no || "-"],
 
       [
         "Plot Size",
-        `${customer.plot_size} Sq.Yds`,
+        `${customer.plot_size || "-"} Sq.Yds`,
       ],
 
-      ["Facing", customer.facing],
+      ["Facing", customer.facing || "-"],
 
-      ["Status", customer.status],
+      ["Status", customer.status || "-"],
 
       [
         "Booking Date",
-        customer.booking_date,
+        customer.booking_date || "-",
       ],
-
     ],
 
     theme: "grid",
 
     headStyles: {
       fillColor: [239, 90, 41],
+      textColor: 255,
       halign: "left",
+      fontStyle: "bold",
     },
 
     styles: {
       fontSize: 10,
+      cellPadding: 2,
     },
-
   });
-    /* Payment Summary */
+
+  // ================= Payment Summary =================
 
   autoTable(pdf, {
-
     startY: pdf.lastAutoTable.finalY + 10,
 
     head: [["Payment Summary", ""]],
 
     body: [
-
       [
         "Total Amount",
-        `₹${Number(customer.total_amount).toLocaleString()}`
+        `Rs. ${Number(
+          customer.total_amount || 0
+        ).toLocaleString("en-IN")}`,
       ],
 
       [
         "Amount Paid",
-        `₹${Number(customer.amount_paid).toLocaleString()}`
+        `Rs. ${Number(
+          customer.amount_paid || 0
+        ).toLocaleString("en-IN")}`,
       ],
 
       [
         "Balance Amount",
-        `₹${Number(customer.balance).toLocaleString()}`
+        `Rs. ${Number(
+          customer.balance || 0
+        ).toLocaleString("en-IN")}`,
       ],
-
     ],
 
     theme: "grid",
 
     headStyles: {
       fillColor: [239, 90, 41],
+      textColor: 255,
       halign: "left",
+      fontStyle: "bold",
     },
 
     styles: {
       fontSize: 10,
+      cellPadding: 2,
     },
-
   });
-
-  /* Latest Payment */
+    // ================= Latest Payment =================
 
   autoTable(pdf, {
-
     startY: pdf.lastAutoTable.finalY + 10,
 
     head: [["Latest Payment", ""]],
 
     body: [
-
       [
         "Paid Amount",
-        `₹${Number(latestPayment.amount).toLocaleString()}`
+        `Rs. ${Number(
+          latestPayment.amount || 0
+        ).toLocaleString("en-IN")}`,
       ],
 
       [
         "Payment Mode",
-        latestPayment.payment_mode,
+        latestPayment.payment_mode || "-",
       ],
 
       [
         "Payment Date",
-        latestPayment.payment_date,
+        latestPayment.payment_date || "-",
       ],
 
       [
         "Remarks",
         latestPayment.remarks || "-",
       ],
-
     ],
 
     theme: "grid",
 
     headStyles: {
       fillColor: [239, 90, 41],
+      textColor: 255,
       halign: "left",
+      fontStyle: "bold",
     },
 
     styles: {
       fontSize: 10,
+      cellPadding: 2,
     },
-
   });
 
-  /* Note */
+  // ================= Note =================
 
   let y = pdf.lastAutoTable.finalY + 15;
 
-  pdf.setFontSize(11);
   pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(11);
   pdf.setTextColor(239, 90, 41);
 
-  pdf.text("Note", 15, y);
+  pdf.text("Note:", 15, y);
 
   pdf.setFont("helvetica", "normal");
   pdf.setTextColor(60);
@@ -215,17 +227,20 @@ export const printReceipt = (customer, payment) => {
     y + 6
   );
 
-  /* Footer */
+  // ================= Footer Line =================
 
   y += 30;
 
   pdf.setDrawColor(239, 90, 41);
+  pdf.setLineWidth(0.5);
   pdf.line(15, y, 195, y);
+
+  // ================= Company Details =================
 
   y += 8;
 
-  pdf.setFontSize(15);
   pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(15);
   pdf.setTextColor(239, 90, 41);
 
   pdf.text(
@@ -234,12 +249,12 @@ export const printReceipt = (customer, payment) => {
     y
   );
 
-  pdf.setFontSize(10);
   pdf.setFont("helvetica", "normal");
-  pdf.setTextColor(70);
+  pdf.setFontSize(10);
+  pdf.setTextColor(80);
 
   pdf.text(
-    "Konyapalem Venture",
+    "Mahanadu Road, Vijayawada",
     15,
     y + 7
   );
@@ -251,22 +266,23 @@ export const printReceipt = (customer, payment) => {
   );
 
   pdf.text(
-    "Phone: +91 9347110914",
+    "Phone : +91 9347110914",
     15,
     y + 19
   );
 
   pdf.text(
-    "Email: rdreamdevelopers@gmail.com",
+    "Email : rdreamdevelopers@gmail.com",
     15,
     y + 25
   );
 
-  /* Signature */
-
-  pdf.line(140, y + 18, 190, y + 18);
+  // ================= Signature =================
 
   pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(11);
+
+  pdf.line(140, y + 18, 190, y + 18);
 
   pdf.text(
     "Authorized Signature",
@@ -274,10 +290,9 @@ export const printReceipt = (customer, payment) => {
     y + 25
   );
 
-  /* Save */
+  // ================= Save =================
 
   pdf.save(
     `Receipt-${customer.plot_no}.pdf`
   );
-
 };
