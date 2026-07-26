@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
 import AddPaymentModal from "../components/AddPaymentModal";
 import { printReceipt } from "../utils/printReceipt";
-
+import { useNavigate } from "react-router-dom";
 import "./CustomerDetails.css";
 
 function CustomerDetails() {
@@ -219,10 +219,15 @@ function CustomerDetails() {
 
                 <button
                   onClick={() =>
-                    printReceipt(
-                      customer,
-                      payments.length > 0 ? payments[0] : null
-                    )
+                    navigate("/receipt", {
+                      state: {
+                        customer,
+                        payment:
+                          payments.length > 0
+                            ? payments[0]
+                            : null,
+                      },
+                    })
                   }
                 >
                   🖨 Print Receipt

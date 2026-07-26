@@ -9,6 +9,7 @@ import CustomerDetails from "./pages/CustomerDetails";
 import EditCustomer from "./pages/EditCustomer";
 import AddPayment from "./pages/AddPayment";
 import Customers from "./pages/Customers";
+import ReceiptPage from "./pages/ReceiptPage";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -61,7 +62,16 @@ function App() {
           )
         }
       />
-
+      <Route
+        path="/receipt"
+        element={
+          session ? (
+            <ReceiptPage />
+          ) : (
+            <Navigate to="/" replace />
+          )
+        }
+      />
       <Route
         path="*"
         element={
@@ -89,16 +99,7 @@ function App() {
           )
         }
       />
-      <Route
-        path="/customers"
-        element={
-          session ? (
-            <Customers />
-          ) : (
-            <Navigate to="/" replace />
-          )
-        }
-      />
+      
     </Routes>
   );
 }
