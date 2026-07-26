@@ -1,0 +1,130 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.customer-modal {
+  width: 700px;
+  max-width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #111827;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+
+.customer-modal h2 {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.customer-modal input,
+.customer-modal select {
+  width: 100%;
+  padding: 14px 16px;
+  margin-bottom: 15px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  background: #1f2937;
+  color: #fff;
+  font-size: 15px;
+  transition: .3s;
+}
+
+.customer-modal input::placeholder {
+  color: #94a3b8;
+}
+
+.customer-modal input:focus,
+.customer-modal select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.2);
+}
+
+.customer-modal input[readonly] {
+  background: #0f172a;
+  color: #22c55e;
+  font-weight: 700;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.cancel-btn,
+.save-btn {
+  border: none;
+  padding: 12px 28px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: .3s;
+}
+
+.cancel-btn {
+  background: #374151;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #4b5563;
+}
+
+.save-btn {
+  background: linear-gradient(135deg,#2563eb,#3b82f6);
+  color: white;
+}
+
+.save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(37,99,235,.35);
+}
+
+.customer-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.customer-modal::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 20px;
+}
+
+.customer-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (max-width:768px) {
+  .customer-modal {
+    padding: 20px;
+  }
+
+  .customer-modal h2 {
+    font-size: 24px;
+  }
+
+  .modal-buttons {
+    flex-direction: column;
+  }
+
+  .cancel-btn,
+  .save-btn {
+    width: 100%;
+  }
+}

@@ -6,6 +6,9 @@ import { supabase } from "./services/supabase";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import CustomerDetails from "./pages/CustomerDetails";
+import EditCustomer from "./pages/EditCustomer";
+import AddPayment from "./pages/AddPayment";
+import Customers from "./pages/Customers";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -66,6 +69,34 @@ function App() {
             to={session ? "/dashboard" : "/"}
             replace
           />
+        }
+      />
+      <Route
+        path="/edit-customer/:id"
+        element={<EditCustomer />}
+      />
+      <Route
+        path="/add-payment/:id"
+        element={<AddPayment />}
+      />
+      <Route
+        path="/customers"
+        element={
+          session ? (
+            <Customers />
+          ) : (
+            <Navigate to="/" replace />
+          )
+        }
+      />
+      <Route
+        path="/customers"
+        element={
+          session ? (
+            <Customers />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
     </Routes>

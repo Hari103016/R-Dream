@@ -17,6 +17,8 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const closeSidebar = () => setSidebarOpen(false);
+
   const logout = async () => {
     const { error } = await supabase.auth.signOut();
 
@@ -28,21 +30,59 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
     navigate("/", { replace: true });
   };
 
+  const menuItems = [
+    {
+      name: "Dashboard",
+      icon: LayoutDashboard,
+      path: "/dashboard",
+    },
+    {
+      name: "Customers",
+      icon: Users,
+      path: "/customers",
+    },
+    {
+      name: "Plots",
+      icon: MapPinned,
+      path: "/plots",
+    },
+    {
+      name: "Bookings",
+      icon: CalendarDays,
+      path: "/bookings",
+    },
+    {
+      name: "Payments",
+      icon: CreditCard,
+      path: "/payments",
+    },
+    {
+      name: "Reports",
+      icon: BarChart3,
+      path: "/reports",
+    },
+    {
+      name: "Settings",
+      icon: Settings,
+      path: "/settings",
+    },
+  ];
+
   return (
     <>
       {/* Overlay */}
       {sidebarOpen && (
         <div
           className="sidebar-overlay"
-          onClick={() => setSidebarOpen(false)}
+          onClick={closeSidebar}
         />
       )}
 
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
-        {/* Mobile Close Button */}
+        {/* Close Button */}
         <button
           className="close-btn"
-          onClick={() => setSidebarOpen(false)}
+          onClick={closeSidebar}
         >
           <X size={24} />
         </button>
@@ -59,62 +99,23 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
 
         {/* Navigation */}
         <nav>
-          <Link
-            to="/dashboard"
-            className={location.pathname === "/dashboard" ? "active" : ""}
-            onClick={() => setSidebarOpen(false)}
-          >
-            <LayoutDashboard size={20} />
-            Dashboard
-          </Link>
+          {menuItems.map((item) => {
+            const Icon = item.icon;
 
-          <Link
-            to="/dashboard"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <Users size={20} />
-            Customers
-          </Link>
-
-          <Link
-            to="/dashboard"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <MapPinned size={20} />
-            Plots
-          </Link>
-
-          <Link
-            to="/dashboard"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <CalendarDays size={20} />
-            Bookings
-          </Link>
-
-          <Link
-            to="/dashboard"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <CreditCard size={20} />
-            Payments
-          </Link>
-
-          <Link
-            to="/dashboard"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <BarChart3 size={20} />
-            Reports
-          </Link>
-
-          <Link
-            to="/dashboard"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <Settings size={20} />
-            Settings
-          </Link>
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={
+                  location.pathname === item.path ? "active" : ""
+                }
+                onClick={closeSidebar}
+              >
+                <Icon size={20} />
+                {item.name}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Profile */}
@@ -126,7 +127,10 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
         </div>
 
         {/* Logout */}
-        <button className="logout" onClick={logout}>
+        <button
+          className="logout"
+          onClick={logout}
+        >
           <LogOut size={18} />
           Logout
         </button>
