@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
 import AddPaymentModal from "../components/AddPaymentModal";
-import { printReceipt } from "../utils/printReceipt";
-import { useNavigate } from "react-router-dom";
+
+
 import "./CustomerDetails.css";
 
 function CustomerDetails() {
@@ -454,25 +454,7 @@ function CustomerDetails() {
             onSuccess={fetchCustomer}
           />
         )}
-        <button
-          onClick={async () => {
-            try {
-              console.log("Print button clicked");
-              console.log(customer);
-              console.log(payments);
-
-              await printReceipt(
-                customer,
-                payments.length > 0 ? payments[0] : null
-              );
-            } catch (err) {
-                console.error(err);
-                alert(err.message);
-              }
-            }}
-          >
-            🖨 Print Receipt
-          </button>
+        
 
       </div>
     </div>
