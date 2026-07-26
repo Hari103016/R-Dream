@@ -7,31 +7,30 @@ import stamp from "../assets/stamp.png";
 import signature from "../assets/signature.png";
 
 const COLORS = {
-  navy: [16, 38, 70],
-  gold: [203, 168, 84],
+  navy: [15, 36, 67],
+  gold: [205, 170, 80],
   white: [255, 255, 255],
-  black: [40, 40, 40],
-  gray: [120, 120, 120],
-  light: [248, 248, 248],
+  black: [35, 35, 35],
+  light: [248, 249, 251],
   border: [220, 220, 220],
-  green: [16, 140, 70],
-  red: [220, 53, 69],
+  green: [34, 197, 94],
+  red: [220, 38, 38],
+  amber: [245, 158, 11],
 };
 
 const COMPANY = {
   name: "R DREAM INFRA DEVELOPERS",
-  project: "DTCP Approved Open Plots | Konyapalem Venture",
-  address: "Konyapalem, Chandarlapadu Mandal, NTR District",
+  project: "DTCP Approved Open Plots",
+  address: "Konyapalem Venture, NTR District",
   phone: "+91 XXXXXXXXXX",
   email: "info@rdreaminfra.com",
   website: "www.rdreaminfra.com",
 };
 
-function money(value) {
-  return `₹ ${Number(value || 0).toLocaleString("en-IN")}`;
-}
+const formatCurrency = (amount) =>
+  `₹ ${Number(amount || 0).toLocaleString("en-IN")}`;
 
-function date(value) {
+const formatDate = (value) => {
   if (!value) return "-";
 
   return new Date(value).toLocaleDateString("en-IN", {
@@ -39,671 +38,712 @@ function date(value) {
     month: "short",
     year: "numeric",
   });
-}
+};
 
-function receiptNo() {
-  return (
-    "RD-" +
-    Date.now().toString().slice(-8)
-  );
-}
-function drawHeader(doc) {
+const generateReceiptNumber = (payment) => {
+  if (payment?.receipt_number) return payment.receipt_number;
 
+  const d = new Date();
+
+  return `RD-${d.getFullYear()}${String(
+    d.getMonth() + 1
+  ).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}-${Math.floor(
+    Math.random() * 9000 + 1000
+  )}`;
+};
+
+function drawHeader(doc, payment) {
   doc.setDrawColor(...COLORS.gold);
   doc.setLineWidth(0.8);
-  doc.rect(6,6,198,285);
+  doc.rect(6, 6, 198, 285);
 
   doc.setFillColor(...COLORS.navy);
-  doc.roundedRect(6,6,198,40,0,0,"F");
+  doc.rect(6, 6, 198, 42, "F");
 
-  // Logo
-  try{
-      doc.addImage(logo,"PNG",12,10,22,22);
-  }catch{}
+  try {
+    doc.addImage(logo, "PNG", 12, 10, 24, 24);
+  } catch {}
 
-  // Company
+  doc.setTextColor(255, 255, 255);
 
-  doc.setTextColor(255,255,255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(19);
+  doc.text(COMPANY.name, 42, 18);
 
-  doc.setFont("helvetica","bold");
-  doc.setFontSize(18);
-
-  doc.text(COMPANY.name,40,18);
-
+  doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
-  doc.setFont("helvetica","normal");
-
-  doc.text(COMPANY.project,40,24);
+  doc.text(COMPANY.project, 42, 25);
 
   doc.setFontSize(8);
-
-  doc.text(COMPANY.address,40,30);
+  doc.text(COMPANY.address, 42, 31);
 
   doc.setDrawColor(...COLORS.gold);
-
-  doc.line(40,34,150,34);
+  doc.line(42, 34, 150, 34);
 
   doc.setFontSize(7);
-
-  doc.text(
-      `Phone : ${COMPANY.phone}`,
-      40,
-      39
-  );
-
-  doc.text(
-      `Email : ${COMPANY.email}`,
-      90,
-      39
-  );
-
-  // Badge
+  doc.text(`Phone : ${COMPANY.phone}`, 42, 39);
+  doc.text(`Email : ${COMPANY.email}`, 95, 39);
 
   doc.setFillColor(...COLORS.gold);
-
-  doc.roundedRect(
-      170,
-      10,
-      25,
-      20,
-      2,
-      2,
-      "F"
-  );
+  doc.roundedRect(158, 10, 38, 26, 2, 2, "F");
 
   doc.setTextColor(...COLORS.navy);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("PAYMENT", 177, 18, { align: "center" });
+  doc.text("RECEIPT", 177, 25, { align: "center" });
 
-  doc.setFont("helvetica","bold");
-  doc.setFontSize(10);
+  doc.setFillColor(45, 45, 45);
+  doc.roundedRect(150, 50, 48, 16, 2, 2, "F");
 
-  doc.text(
-      "PAYMENT",
-      182.5,
-      17,
-      {align:"center"}
-  );
-
-  doc.text(
-      "RECEIPT",
-      182.5,
-      23,
-      {align:"center"}
-  );
-
-  // Receipt Number
-
-  doc.setFillColor(45,45,45);
-
-  doc.roundedRect(
-      150,
-      52,
-      50,
-      15,
-      2,
-      2,
-      "F"
-  );
-
-  doc.setTextColor(255,255,255);
-
+  doc.setTextColor(255, 255, 255);
   doc.setFontSize(7);
-
-  doc.text(
-      "Receipt No.",
-      154,
-      57
-  );
+  doc.text("Receipt No.", 154, 56);
 
   doc.setFontSize(8);
+  doc.text(generateReceiptNumber(payment), 154, 62);
 
-  doc.text(
-      receiptNo(),
-      154,
-      63
-  );
+  doc.setFillColor(242, 247, 255);
+  doc.setDrawColor(...COLORS.border);
+  doc.roundedRect(10, 50, 42, 16, 2, 2, "FD");
 
-  // Date
+  doc.setTextColor(...COLORS.black);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.text("Receipt Date", 14, 56);
 
-  doc.setFillColor(240,245,255);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text(formatDate(new Date()), 14, 62);
+}
+// =======================================
+// CUSTOMER & PLOT SECTION
+// =======================================
 
+function drawInfoRow(doc, label, value, x1, x2, y) {
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(...COLORS.black);
+  doc.text(label, x1, y);
+
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(80, 80, 80);
+  doc.text(value ? String(value) : "-", x2, y);
+}
+
+function drawStatusBadge(doc, status, x, y) {
+  let color = COLORS.green;
+  let text = "BOOKED";
+
+  switch ((status || "").toLowerCase()) {
+    case "sold":
+      color = COLORS.red;
+      text = "SOLD";
+      break;
+
+    case "available":
+      color = COLORS.green;
+      text = "AVAILABLE";
+      break;
+
+    case "reserved":
+      color = COLORS.amber;
+      text = "RESERVED";
+      break;
+
+    default:
+      color = COLORS.green;
+      text = status || "BOOKED";
+  }
+
+  doc.setFillColor(...color);
+  doc.roundedRect(x, y - 5, 26, 8, 2, 2, "F");
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.text(text.toUpperCase(), x + 13, y, {
+    align: "center",
+  });
+}
+
+function drawCustomer(doc, customer) {
+
+  // ==========================
+  // CUSTOMER CARD
+  // ==========================
+
+  doc.setFillColor(...COLORS.light);
   doc.setDrawColor(...COLORS.border);
 
   doc.roundedRect(
-      10,
-      52,
-      42,
-      15,
-      2,
-      2,
-      "FD"
+    10,
+    75,
+    92,
+    62,
+    3,
+    3,
+    "FD"
   );
 
-  doc.setTextColor(...COLORS.black);
-
-  doc.setFont("helvetica","bold");
-  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(...COLORS.navy);
 
   doc.text(
-      "Receipt Date",
-      14,
-      57
+    "CUSTOMER INFORMATION",
+    15,
+    84
   );
 
-  doc.setFont("helvetica","normal");
+  doc.setDrawColor(...COLORS.gold);
+  doc.line(15, 86, 58, 86);
+
+  let y = 95;
+
+  drawInfoRow(
+    doc,
+    "Customer",
+    customer.name,
+    15,
+    48,
+    y
+  );
+
+  y += 9;
+
+  drawInfoRow(
+    doc,
+    "Phone",
+    customer.phone,
+    15,
+    48,
+    y
+  );
+
+  y += 9;
+
+  drawInfoRow(
+    doc,
+    "Email",
+    customer.email || "-",
+    15,
+    48,
+    y
+  );
+
+  y += 9;
+
+  drawInfoRow(
+    doc,
+    "Booking",
+    formatDate(customer.booking_date),
+    15,
+    48,
+    y
+  );
+
+  y += 9;
+
+  drawInfoRow(
+    doc,
+    "Executive",
+    customer.sales_executive || "Admin",
+    15,
+    48,
+    y
+  );
+
+  y += 9;
+
+  doc.setFont("helvetica", "bold");
+  doc.text("Status", 15, y);
+
+  drawStatusBadge(
+    doc,
+    customer.status,
+    48,
+    y
+  );
+
+  // ==========================
+  // PLOT CARD
+  // ==========================
+
+  doc.setFillColor(248, 252, 255);
+
+  doc.roundedRect(
+    108,
+    75,
+    92,
+    62,
+    3,
+    3,
+    "FD"
+  );
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(...COLORS.navy);
+
+  doc.text(
+    "PLOT INFORMATION",
+    113,
+    84
+  );
+
+  doc.setDrawColor(...COLORS.gold);
+  doc.line(113, 86, 150, 86);
+
+  y = 95;
+
+  drawInfoRow(
+    doc,
+    "Plot No",
+    customer.plot_no,
+    113,
+    152,
+    y
+  );
+
+  y += 9;
+
+  drawInfoRow(
+    doc,
+    "Size",
+    `${customer.plot_size || "-"} Sq.Yds`,
+    113,
+    152,
+    y
+  );
+
+  y += 9;
+
+  drawInfoRow(
+    doc,
+    "Facing",
+    customer.facing,
+    113,
+    152,
+    y
+  );
+
+  y += 9;
+
+  drawInfoRow(
+    doc,
+    "Road",
+    customer.road_width,
+    113,
+    152,
+    y
+  );
+
+  y += 9;
+
+  drawInfoRow(
+    doc,
+    "Location",
+    customer.location || "Konyapalem",
+    113,
+    152,
+    y
+  );
+
+  y += 9;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...COLORS.navy);
+
+  doc.text(
+    "Total Amount",
+    113,
+    y
+  );
+
+  doc.setFontSize(12);
+
+  doc.text(
+    formatCurrency(customer.total_amount),
+    198,
+    y,
+    {
+      align: "right",
+    }
+  );
+
+  // Divider
+
+  doc.setDrawColor(...COLORS.gold);
+  doc.line(
+    10,
+    145,
+    200,
+    145
+  );
+}
+// =======================================
+// PAYMENT DETAILS
+// =======================================
+
+function drawPayment(doc, customer, payment) {
+
+  const total = Number(customer.total_amount || 0);
+  const paid = Number(customer.amount_paid || 0);
+  const current = Number(payment.amount || 0);
+
+  const balance = total - paid;
+
+  let status = "PENDING";
+
+  if (balance <= 0) status = "PAID";
+  else if (paid > 0) status = "PARTIALLY PAID";
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.setTextColor(...COLORS.navy);
+
+  doc.text("PAYMENT DETAILS",10,155);
+
+  doc.setDrawColor(...COLORS.gold);
+  doc.line(10,157,60,157);
+
+  autoTable(doc,{
+      startY:162,
+
+      head:[
+        [
+          "Description",
+          "Value"
+        ]
+      ],
+
+      body:[
+        ["Total Plot Amount",formatCurrency(total)],
+        ["Amount Paid Till Date",formatCurrency(paid)],
+        ["Current Payment",formatCurrency(current)],
+        ["Balance Amount",formatCurrency(balance)],
+        ["Payment Mode",payment.payment_mode || "-"],
+        ["Transaction ID",payment.transaction_id || "-"],
+        ["Payment Date",formatDate(payment.payment_date)],
+        ["Remarks",payment.remarks || "-"]
+      ],
+
+      theme:"grid",
+
+      headStyles:{
+          fillColor:COLORS.navy,
+          textColor:[255,255,255],
+          fontStyle:"bold",
+          fontSize:10,
+          halign:"center"
+      },
+
+      styles:{
+          fontSize:9,
+          cellPadding:3,
+          lineWidth:0.25,
+          lineColor:COLORS.border
+      },
+
+      alternateRowStyles:{
+          fillColor:[250,250,250]
+      },
+
+      columnStyles:{
+          0:{
+              cellWidth:72,
+              fontStyle:"bold"
+          },
+
+          1:{
+              cellWidth:108,
+              halign:"right"
+          }
+      }
+  });
+
+  let y = doc.lastAutoTable.finalY + 8;
+
+  //------------------------------------------------
+  // Payment Progress
+  //------------------------------------------------
+
+  const progress = total === 0 ? 0 : Math.min((paid/total)*100,100);
+
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...COLORS.navy);
+
+  doc.text("Payment Progress",10,y);
+
+  y+=6;
+
+  doc.setFillColor(230,230,230);
+  doc.roundedRect(10,y,90,7,3,3,"F");
+
+  doc.setFillColor(...COLORS.green);
+  doc.roundedRect(
+      10,
+      y,
+      (90*progress)/100,
+      7,
+      3,
+      3,
+      "F"
+  );
+
+  doc.setFontSize(8);
+  doc.setTextColor(...COLORS.black);
+
+  doc.text(
+      `${progress.toFixed(1)} %`,
+      105,
+      y+5
+  );
+
+  //------------------------------------------------
+  // Status Card
+  //------------------------------------------------
+
+  const cardX = 118;
+  const cardY = doc.lastAutoTable.finalY + 4;
+
+  let statusColor = COLORS.red;
+
+  if(status==="PAID")
+      statusColor = COLORS.green;
+
+  if(status==="PARTIALLY PAID")
+      statusColor = COLORS.amber;
+
+  doc.setFillColor(...COLORS.navy);
+
+  doc.roundedRect(
+      cardX,
+      cardY,
+      82,
+      40,
+      3,
+      3,
+      "F"
+  );
+
+  doc.setFont("helvetica","bold");
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(11);
+
+  doc.text(
+      "BALANCE",
+      159,
+      cardY+8,
+      {align:"center"}
+  );
+
+  doc.setFontSize(17);
+
+  doc.text(
+      formatCurrency(balance),
+      159,
+      cardY+21,
+      {align:"center"}
+  );
+
+  doc.setFillColor(...statusColor);
+
+  doc.roundedRect(
+      136,
+      cardY+27,
+      46,
+      8,
+      3,
+      3,
+      "F"
+  );
+
   doc.setFontSize(8);
 
   doc.text(
-      date(new Date()),
-      14,
-      63
+      status,
+      159,
+      cardY+33,
+      {
+          align:"center"
+      }
   );
 
-}function drawCustomer(doc, customer){
+  //------------------------------------------------
+  // Return Safe Footer Position
+  //------------------------------------------------
 
-    // Left Card
+  const footerStart = Math.max(
+      y+18,
+      cardY+46
+  );
 
-    doc.setFillColor(...COLORS.light);
-
-    doc.setDrawColor(...COLORS.border);
-
-    doc.roundedRect(
-        10,
-        75,
-        92,
-        58,
-        3,
-        3,
-        "FD"
-    );
-
-    doc.setFont("helvetica","bold");
-    doc.setTextColor(...COLORS.navy);
-    doc.setFontSize(11);
-
-    doc.text(
-        "CUSTOMER INFORMATION",
-        15,
-        84
-    );
-
-    doc.setDrawColor(...COLORS.gold);
-
-    doc.line(
-        15,
-        86,
-        55,
-        86
-    );
-
-    doc.setTextColor(...COLORS.black);
-
-    doc.setFont("helvetica","normal");
-    doc.setFontSize(9);
-
-    let y=94;
-
-    const left=[
-        ["Customer",customer.name],
-        ["Mobile",customer.phone],
-        ["Email",customer.email||"-"],
-        ["Booking",date(customer.booking_date)],
-        ["Status",customer.status||"Booked"],
-    ];
-
-    left.forEach(([k,v])=>{
-        doc.setFont("helvetica","bold");
-        doc.text(k,15,y);
-
-        doc.setFont("helvetica","normal");
-        doc.text(String(v||"-"),45,y);
-
-        y+=8;
-    });
-
-    // Right Card
-
-    doc.setFillColor(248,251,255);
-
-    doc.roundedRect(
-        108,
-        75,
-        92,
-        58,
-        3,
-        3,
-        "FD"
-    );
-
-    doc.setFont("helvetica","bold");
-
-    doc.setTextColor(...COLORS.navy);
-
-    doc.setFontSize(11);
-
-    doc.text(
-        "PLOT INFORMATION",
-        113,
-        84
-    );
-
-    doc.setDrawColor(...COLORS.gold);
-
-    doc.line(
-        113,
-        86,
-        145,
-        86
-    );
-        doc.setTextColor(...COLORS.black);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-
-    y = 94;
-
-    const right = [
-        ["Plot No", customer.plot_no],
-        ["Plot Size", `${customer.plot_size || "-"} Sq.Yds`],
-        ["Facing", customer.facing || "-"],
-        ["Road Width", customer.road_width || "-"],
-        ["Total Amount", money(customer.total_amount)],
-    ];
-
-    right.forEach(([k, v]) => {
-        doc.setFont("helvetica", "bold");
-        doc.text(k, 113, y);
-
-        doc.setFont("helvetica", "normal");
-        doc.text(String(v || "-"), 152, y);
-
-        y += 8;
-    });
-
+  return footerStart;
 }
-function drawPayment(doc, customer, payment){
-
-    const total = Number(customer.total_amount || 0);
-    const paid = Number(customer.amount_paid || 0);
-    const balance = total - paid;
-
-    doc.setFont("helvetica","bold");
-    doc.setTextColor(...COLORS.navy);
-    doc.setFontSize(12);
-
-    doc.text(
-        "PAYMENT DETAILS",
-        10,
-        150
-    );
-
-    doc.setDrawColor(...COLORS.gold);
-
-    doc.line(
-        10,
-        152,
-        55,
-        152
-    );
-
-    autoTable(doc,{
-
-        startY:156,
-
-        theme:"grid",
-
-        head:[
-            [
-                "Description",
-                "Value"
-            ]
-        ],
-
-        body:[
-
-            [
-                "Total Plot Amount",
-                money(total)
-            ],
-
-            [
-                "Amount Paid",
-                money(paid)
-            ],
-
-            [
-                "Current Payment",
-                money(payment.amount)
-            ],
-
-            [
-                "Balance Amount",
-                money(balance)
-            ],
-
-            [
-                "Payment Mode",
-                payment.payment_mode || "-"
-            ],
-
-            [
-                "Payment Date",
-                date(payment.payment_date)
-            ],
-
-            [
-                "Transaction ID",
-                payment.transaction_id || "-"
-            ],
-
-            [
-                "Remarks",
-                payment.remarks || "-"
-            ]
-
-        ],
-
-        headStyles:{
-            fillColor:COLORS.navy,
-            textColor:[255,255,255],
-            halign:"center",
-            fontStyle:"bold",
-            fontSize:10
-        },
-
-        styles:{
-            fontSize:9,
-            cellPadding:3.5,
-            lineColor:COLORS.border,
-            lineWidth:0.25,
-            textColor:COLORS.black
-        },
-
-        alternateRowStyles:{
-            fillColor:[250,250,250]
-        },
-
-        columnStyles:{
-            0:{
-                fontStyle:"bold",
-                cellWidth:70
-            },
-
-            1:{
-                cellWidth:110,
-                halign:"right"
-            }
-        },
-
-        didParseCell(data){
-
-            if(
-                data.section==="body" &&
-                data.row.index===3
-            ){
-
-                data.cell.styles.fillColor=[255,248,230];
-                data.cell.styles.fontStyle="bold";
-                data.cell.styles.textColor=[200,30,30];
-
-            }
-
-        }
-
-    });
-
-    const y=doc.lastAutoTable.finalY+8;
-        doc.setFillColor(...COLORS.navy);
-
-    doc.roundedRect(
-        118,
-        y,
-        82,
-        30,
-        3,
-        3,
-        "F"
-    );
-
-    doc.setTextColor(255,255,255);
-
-    doc.setFont("helvetica","bold");
-
-    doc.setFontSize(11);
-
-    doc.text(
-        "BALANCE",
-        159,
-        y+9,
-        {
-            align:"center"
-        }
-    );
-
-    doc.setFontSize(16);
-
-    doc.text(
-        money(balance),
-        159,
-        y+21,
-        {
-            align:"center"
-        }
-    );
-
-    doc.setFontSize(8);
-
-    doc.text(
-        "Outstanding Amount",
-        159,
-        y+27,
-        {
-            align:"center"
-        }
-    );
-
-    return y+38;
-
-}
-// =============================
+// =======================================
 // FOOTER
-// =============================
+// =======================================
 
 function drawFooter(doc, startY) {
 
-    let y = startY;
+  // Ensure footer never starts too low
+  let y = Math.min(startY, 205);
 
-    // -------------------------
-    // Declaration
-    // -------------------------
+  // If content is already too low, continue on a new page
+  if (y > 220) {
+    doc.addPage();
+    drawHeader(doc, {});
+    y = 40;
+  }
 
-    doc.setFillColor(255,252,245);
-    doc.setDrawColor(...COLORS.gold);
+  // ---------------------------
+  // Declaration
+  // ---------------------------
 
-    doc.roundedRect(
-        10,
-        y,
-        190,
-        24,
-        3,
-        3,
-        "FD"
-    );
+  doc.setFillColor(255, 252, 245);
+  doc.setDrawColor(...COLORS.gold);
 
-    doc.setFont("helvetica","bold");
-    doc.setFontSize(10);
-    doc.setTextColor(...COLORS.navy);
+  doc.roundedRect(10, y, 190, 30, 3, 3, "FD");
 
-    doc.text(
-        "Declaration",
-        15,
-        y+7
-    );
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
+  doc.setTextColor(...COLORS.navy);
+  doc.text("Declaration", 15, y + 7);
 
-    doc.setFont("helvetica","normal");
-    doc.setFontSize(8);
-    doc.setTextColor(...COLORS.black);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(...COLORS.black);
 
-    const declaration =
-        "This is a computer generated receipt issued by R DREAM INFRA DEVELOPERS. Please preserve this receipt for future reference.";
+  const text =
+    "This is a computer generated receipt issued by R DREAM INFRA DEVELOPERS. Please preserve this receipt for future reference. Payments are subject to the terms and conditions of the booking agreement.";
 
-    doc.text(
-        doc.splitTextToSize(declaration,175),
-        15,
-        y+13
-    );
+  doc.text(
+    doc.splitTextToSize(text, 175),
+    15,
+    y + 13
+  );
 
-    y += 35;
+  y += 40;
 
-    // -------------------------
-    // QR
-    // -------------------------
+  // ---------------------------
+  // QR
+  // ---------------------------
 
-    try{
-        doc.addImage(qr,"PNG",15,y,28,28);
-    }catch(e){}
+  try {
+    doc.addImage(qr, "PNG", 15, y, 24, 24);
+  } catch {}
 
-    doc.setFontSize(8);
+  doc.setFontSize(8);
+  doc.text("Scan QR", 19, y + 29);
 
-    doc.text(
-        "Scan QR",
-        19,
-        y+33
-    );
+  // ---------------------------
+  // Company Stamp
+  // ---------------------------
 
-    // -------------------------
-    // Stamp
-    // -------------------------
+  try {
+    doc.addImage(stamp, "PNG", 87, y, 26, 26);
+  } catch {}
 
-    try{
-        doc.addImage(
-            stamp,
-            "PNG",
-            84,
-            y-2,
-            32,
-            32
-        );
-    }catch(e){}
+  doc.text("Company Stamp", 82, y + 29);
 
-    doc.text(
-        "Company Stamp",
-        81,
-        y+33
-    );
+  // ---------------------------
+  // Signature
+  // ---------------------------
 
-    // -------------------------
-    // Signature
-    // -------------------------
+  try {
+    doc.addImage(signature, "PNG", 150, y + 2, 30, 14);
+  } catch {}
 
-    try{
-        doc.addImage(
-            signature,
-            "PNG",
-            148,
-            y+2,
-            34,
-            18
-        );
-    }catch(e){}
+  doc.line(145, y + 20, 190, y + 20);
 
-    doc.line(
-        145,
-        y+24,
-        190,
-        y+24
-    );
+  doc.setFont("helvetica", "bold");
+  doc.text("Authorized Signature", 149, y + 26);
 
-    doc.setFont("helvetica","bold");
+  // ---------------------------
+  // Watermark
+  // ---------------------------
 
-    doc.text(
-        "Authorized Signature",
-        149,
-        y+30
-    );
+  doc.saveGraphicsState();
 
-    // -------------------------
-    // Bottom Footer
-    // -------------------------
+  doc.setGState(new doc.GState({ opacity: 0.05 }));
 
-    doc.setFillColor(...COLORS.navy);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(45);
+  doc.setTextColor(120);
 
-    doc.rect(
-        6,
-        276,
-        198,
-        15,
-        "F"
-    );
+  doc.text(
+    "R DREAM INFRA",
+    105,
+    170,
+    {
+      angle: 45,
+      align: "center",
+    }
+  );
 
-    doc.setTextColor(255,255,255);
+  doc.restoreGraphicsState();
 
-    doc.setFont("helvetica","bold");
-    doc.setFontSize(9);
+  // ---------------------------
+  // Bottom Bar
+  // ---------------------------
 
-    doc.text(
-        COMPANY.name,
-        10,
-        282
-    );
+  doc.setFillColor(...COLORS.navy);
+  doc.rect(6, 276, 198, 15, "F");
 
-    doc.setFont("helvetica","normal");
-    doc.setFontSize(7);
+  doc.setTextColor(255, 255, 255);
 
-    doc.text(
-        `Phone : ${COMPANY.phone}`,
-        10,
-        287
-    );
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text(COMPANY.name, 10, 282);
 
-    doc.text(
-        COMPANY.email,
-        70,
-        287
-    );
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
 
-    doc.text(
-        COMPANY.website,
-        125,
-        287
-    );
+  doc.text(`Phone : ${COMPANY.phone}`, 10, 287);
+  doc.text(COMPANY.email, 70, 287);
+  doc.text(COMPANY.website, 125, 287);
 
-    doc.text(
-        "Computer Generated Receipt",
-        196,
-        287,
-        {
-            align:"right"
-        }
-    );
-
+  doc.text(
+    "Computer Generated Receipt",
+    196,
+    287,
+    {
+      align: "right",
+    }
+  );
 }
-// =========================================
-// MAIN FUNCTION
-// =========================================
+
+// =======================================
+// MAIN
+// =======================================
 
 export function printReceipt(customer, payment) {
 
-    const doc = new jsPDF({
-        orientation:"portrait",
-        unit:"mm",
-        format:"a4"
-    });
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
 
-    drawHeader(doc);
+  drawHeader(doc, payment);
 
-    drawCustomer(doc, customer);
+  drawCustomer(doc, customer);
 
-    const footerY = drawPayment(
-        doc,
-        customer,
-        payment
-    );
+  const footerY = drawPayment(
+    doc,
+    customer,
+    payment
+  );
 
-    drawFooter(doc, footerY);
+  drawFooter(doc, footerY);
 
-    const filename =
-        `Receipt_${customer.plot_no || "Plot"}_${(customer.name || "Customer")
-            .replace(/\s+/g,"_")}.pdf`;
+  const fileName =
+    `Receipt_${customer.plot_no || "Plot"}_${(customer.name || "Customer")
+      .replace(/\s+/g, "_")}.pdf`;
 
-    doc.save(filename);
-
+  doc.save(fileName);
 }
