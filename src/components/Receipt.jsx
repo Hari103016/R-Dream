@@ -1,650 +1,280 @@
+import { Download, Building2, User, MapPin, Calendar } from "lucide-react";
+import { useRef } from "react";
+import { useLocation } from "react-router-dom";
+import downloadReceipt from "../utils/downloadReceipt";
 import "./Receipt.css";
-import {
-  User,
-  Phone,
-  MapPin,
-  Calendar,
-  Hash,
-  BadgeIndianRupee,
-  Building2,
-  CheckCircle,
-  Download,
-  Landmark,
-  ReceiptText,
-} from "lucide-react";
 
-import logo from "../assets/logo.png";
-import qr from "../assets/qr.png";
-import stamp from "../assets/stamp.png";
-import signature from "../assets/signature.png";
+export default function Receipt() {
+  const { state } = useLocation();
 
-import { downloadReceipt } from "../utils/downloadReceipt";
+  const customer = state?.customer;
+  const payment = state?.payment;
 
-export default function Receipt({ customer, payment }) {
+  const receiptRef = useRef();
 
-  const totalAmount = Number(customer?.total_amount || 0);
-  const paidAmount = Number(customer?.paid_amount || 0);
-  const balance = totalAmount - paidAmount;
-
-  const progress =
-    totalAmount === 0
-      ? 0
-      : Math.round((paidAmount / totalAmount) * 100);
+  if (!customer) return <h2>No Receipt Data</h2>;
 
   return (
+    <div className="receipt-page">
 
-<div className="receipt-wrapper">
+      <button
+        className="download-btn"
+        onClick={() => downloadReceipt(receiptRef)}
+      >
+        <Download size={18}/>
+        Download PDF
+      </button>
 
-<button
-className="download-btn"
-onClick={downloadReceipt}
->
-<Download size={18}/>
-Download PDF
-</button>
+      <div className="receipt" ref={receiptRef}>
 
-<div
-id="receipt"
-className="receipt"
->
+        {/* HEADER */}
 
-<div className="watermark">
-R DREAM INFRA DEVELOPERS
-</div>
+        <div className="receipt-header">
 
-{/* ================= HEADER ================= */}
+          <div className="approved">
+            DTCP APPROVED OPEN PLOTS
+          </div>
 
-<div className="receipt-header">
+          <h1>R DREAM INFRA DEVELOPERS</h1>
 
-<div className="header-overlay"></div>
+          <p>
+            Premium Residential Ventures • Clear Title • Ready for Registration
+          </p>
 
-<div className="left-ribbon">
+          <h2>PAYMENT RECEIPT</h2>
 
-<img
-src={logo}
-alt="logo"
-/>
+        </div>
 
-</div>
+        {/* TOP DETAILS */}
 
-<div className="company-section">
+        <div className="top-grid">
 
-<span className="company-tag">
-DTCP APPROVED OPEN PLOTS
-</span>
+          <div className="card">
 
-<h1>
-R DREAM INFRA DEVELOPERS
-</h1>
+            <label>Receipt Number</label>
 
-<p>
-Premium Residential Ventures •
-Clear Title • Ready For Registration
-</p>
+            <h3>
+              RD-
+              {String(customer.id).padStart(5,"0")}
+            </h3>
 
-<div className="gold-divider"></div>
+          </div>
 
-<h2>
-PAYMENT RECEIPT
-</h2>
+          <div className="card">
 
-<div className="gold-divider"></div>
+            <label>Payment Date</label>
 
-<div className="receipt-badges">
+            <h3>
+              {payment?.payment_date || customer.booking_date}
+            </h3>
 
-<span>✔ Secure</span>
+          </div>
 
-<span>✔ Verified</span>
+        </div>
 
-<span>✔ Computer Generated</span>
+        {/* INFO */}
 
-</div>
+        <div className="info-grid">
 
-</div>
+          <div className="info-card">
 
-<div className="right-ribbon">
+            <h3>
+              <User size={18}/>
+              Customer Information
+            </h3>
 
-<Building2
-size={55}
-strokeWidth={1.8}
-/>
+            <div className="row">
+              <span>Name</span>
+              <strong>{customer.name}</strong>
+            </div>
 
-</div>
+            <div className="row">
+              <span>Phone</span>
+              <strong>{customer.mobile}</strong>
+            </div>
 
-</div>
+            <div className="row">
+              <span>Booking</span>
+              <strong>{customer.booking_date}</strong>
+            </div>
 
-{/* ================= RECEIPT INFO ================= */}
+            <div className="row">
+              <span>Status</span>
+              <strong>{customer.status}</strong>
+            </div>
 
-<div className="receipt-top">
+          </div>
 
-<div className="detail-box">
+          <div className="info-card">
 
-<Hash size={22}/>
+            <h3>
+              <MapPin size={18}/>
+              Plot Information
+            </h3>
 
-<div>
+            <div className="row">
+              <span>Plot No</span>
+              <strong>{customer.plot_no}</strong>
+            </div>
 
-<small>Receipt Number</small>
+            <div className="row">
+              <span>Size</span>
+              <strong>{customer.plot_size} Sq.Yds</strong>
+            </div>
 
-<h3>
+            <div className="row">
+              <span>Facing</span>
+              <strong>{customer.facing}</strong>
+            </div>
 
-RD-
-{String(payment?.id || 1).padStart(6,"0")}
+            <div className="row">
+              <span>Project</span>
+              <strong>Konyapalem Venture</strong>
+            </div>
 
-</h3>
+          </div>
 
-</div>
+        </div>
 
-</div>
+        {/* PAYMENT */}
 
-<div className="detail-box">
+        <div className="table-card">
 
-<Calendar size={22}/>
+          <h3>Payment Summary</h3>
 
-<div>
+          <table>
 
-<small>Payment Date</small>
+            <tbody>
 
-<h3>
+              <tr>
+                <td>Total Plot Amount</td>
+                <td>
+                  ₹{Number(customer.total_amount).toLocaleString()}
+                </td>
+              </tr>
 
-{
-payment?.payment_date ??
-new Date().toLocaleDateString()
-}
+              <tr>
+                <td>Total Amount Paid</td>
+                <td>
+                  ₹{Number(customer.amount_paid).toLocaleString()}
+                </td>
+              </tr>
 
-</h3>
+              <tr>
+                <td>Current Payment</td>
+                <td>
+                  ₹{Number(payment?.amount || 0).toLocaleString()}
+                </td>
+              </tr>
 
-</div>
+              <tr>
+                <td>Balance</td>
+                <td>
+                  ₹{Number(customer.balance).toLocaleString()}
+                </td>
+              </tr>
 
-</div>
+              <tr>
+                <td>Payment Mode</td>
+                <td>{payment?.payment_mode}</td>
+              </tr>
 
-</div>
+              <tr>
+                <td>Remarks</td>
+                <td>{payment?.remarks || "-"}</td>
+              </tr>
 
-{/* ================= CUSTOMER + PLOT ================= */}
+            </tbody>
 
-<div className="info-grid">
+          </table>
 
-<div className="info-card">
+        </div>
 
-<h3>
+        {/* SUMMARY */}
 
-<User size={20}/>
+        <div className="summary">
 
-Customer Information
+          <div className="summary-card blue">
 
-</h3>
+            <label>Total Amount</label>
 
-<div className="info-row">
+            <h2>
+              ₹{Number(customer.total_amount).toLocaleString()}
+            </h2>
 
-<span>Name</span>
+          </div>
 
-<strong>
+          <div className="summary-card green">
 
-{customer?.name}
+            <label>Paid</label>
 
-</strong>
+            <h2>
+              ₹{Number(customer.amount_paid).toLocaleString()}
+            </h2>
 
-</div>
+          </div>
 
-<div className="info-row">
+          <div className="summary-card red">
 
-<span>
+            <label>Balance</label>
 
-<Phone size={15}/>
+            <h2>
+              ₹{Number(customer.balance).toLocaleString()}
+            </h2>
 
-Phone
+          </div>
 
-</span>
+        </div>
 
-<strong>
+        {/* PAYMENT PROGRESS REMOVED */}
 
-{customer?.phone}
+        {/* DECLARATION */}
 
-</strong>
+        <div className="declaration">
 
-</div>
+          <h3>Declaration</h3>
 
-<div className="info-row">
+          <p>
 
-<span>
+            This receipt confirms that the above payment has been received by
+            <b> R DREAM INFRA DEVELOPERS </b>
+            towards the purchase of the mentioned plot.
 
-Address
+          </p>
 
-</span>
+        </div>
 
-<strong>
+        {/* FOOTER */}
 
-{customer?.address}
+        <div className="receipt-footer">
 
-</strong>
+          <div>
 
-</div>
+            <h3>Thank You</h3>
 
-<div className="info-row">
+            <p>
+              We sincerely appreciate your trust.
+            </p>
 
-<span>
+          </div>
 
-Booking Date
+          <div>
 
-</span>
+            <h4>Company Seal</h4>
 
-<strong>
+          </div>
 
-{customer?.booking_date || "-"}
+          <div>
 
-</strong>
+            <h4>Authorized Signature</h4>
 
-</div>
+          </div>
 
-<div className="status-badge">
+        </div>
 
-<CheckCircle size={16}/>
+      </div>
 
-{customer?.status || "ACTIVE"}
+    </div>
+  );
 
-</div>
-
-</div>
-
-<div className="info-card">
-
-<h3>
-
-<MapPin size={20}/>
-
-Plot Information
-
-</h3>
-
-<div className="info-row">
-
-<span>Plot No</span>
-
-<strong>
-
-{customer?.plot_number}
-
-</strong>
-
-</div>
-
-<div className="info-row">
-
-<span>Plot Size</span>
-
-<strong>
-
-{customer?.plot_size} Sq.Yds
-
-</strong>
-
-</div>
-
-<div className="info-row">
-
-<span>Facing</span>
-
-<strong>
-
-{customer?.facing}
-
-</strong>
-
-</div>
-
-<div className="info-row">
-
-<span>Road Width</span>
-
-<strong>
-
-{customer?.road_width}
-
-</strong>
-
-</div>
-
-<div className="info-row">
-
-<span>Project</span>
-
-<strong>
-
-Konyapalem Venture
-
-</strong>
-
-</div>
-
-</div>
-
-</div>
-{/* ================= PAYMENT SUMMARY ================= */}
-
-<div className="payment-section">
-
-  <h3>
-    <ReceiptText size={20} />
-    Payment Summary
-  </h3>
-
-  <table className="payment-table">
-
-    <thead>
-      <tr>
-        <th>Description</th>
-        <th>Details</th>
-      </tr>
-    </thead>
-
-    <tbody>
-
-      <tr>
-        <td>Total Plot Amount</td>
-        <td>₹ {totalAmount.toLocaleString()}</td>
-      </tr>
-
-      <tr>
-        <td>Total Amount Paid</td>
-        <td className="paid">
-          ₹ {paidAmount.toLocaleString()}
-        </td>
-      </tr>
-
-      <tr>
-        <td>Current Payment</td>
-        <td>
-          ₹ {Number(payment?.amount || 0).toLocaleString()}
-        </td>
-      </tr>
-
-      <tr>
-        <td>Balance Amount</td>
-        <td className="balance">
-          ₹ {balance.toLocaleString()}
-        </td>
-      </tr>
-
-      <tr>
-        <td>Payment Method</td>
-        <td>{payment?.payment_method || "Cash"}</td>
-      </tr>
-
-      <tr>
-        <td>Transaction ID</td>
-        <td>{payment?.transaction_id || "-"}</td>
-      </tr>
-
-      <tr>
-        <td>Payment Date</td>
-        <td>{payment?.payment_date || "-"}</td>
-      </tr>
-
-      <tr>
-        <td>Remarks</td>
-        <td>{payment?.remarks || "-"}</td>
-      </tr>
-
-    </tbody>
-
-  </table>
-
-</div>
-
-{/* ================= PAYMENT PROGRESS ================= */}
-
-<div className="progress-card">
-
-  <div className="progress-top">
-
-    <span>Payment Progress</span>
-
-    <strong>{progress}%</strong>
-
-  </div>
-
-  <div className="progress-bar">
-
-    <div
-      className="progress-fill"
-      style={{
-        width: `${progress}%`,
-      }}
-    ></div>
-
-  </div>
-
-</div>
-
-{/* ================= AMOUNT CARDS ================= */}
-
-<div className="amount-grid">
-
-  <div className="amount-card total">
-
-    <Landmark size={28} />
-
-    <h4>Total Amount</h4>
-
-    <h2>
-
-      ₹ {totalAmount.toLocaleString()}
-
-    </h2>
-
-  </div>
-
-  <div className="amount-card paid">
-
-    <BadgeIndianRupee size={28} />
-
-    <h4>Amount Paid</h4>
-
-    <h2>
-
-      ₹ {paidAmount.toLocaleString()}
-
-    </h2>
-
-  </div>
-
-  <div className="amount-card balance">
-
-    <Hash size={28} />
-
-    <h4>Balance</h4>
-
-    <h2>
-
-      ₹ {balance.toLocaleString()}
-
-    </h2>
-
-  </div>
-
-</div>
-
-{/* ================= DECLARATION ================= */}
-
-<div className="declaration">
-
-  <h3>Declaration</h3>
-
-  <p>
-
-    This is to certify that the above payment has been
-    received by <strong>R DREAM INFRA DEVELOPERS</strong>
-    towards the purchase of the above-mentioned plot.
-
-  </p>
-
-  <p>
-
-    This receipt is generated electronically and is valid
-    without a physical signature unless otherwise required
-    by the company.
-
-  </p>
-
-</div>
-
-{/* ================= THANK YOU ================= */}
-
-<div className="thank-message">
-
-  <h2>Thank You For Your Trust</h2>
-
-  <p>
-
-    We sincerely appreciate your investment in
-    <strong> R DREAM INFRA DEVELOPERS</strong>.
-
-  </p>
-
-</div>
-{/* ================= BOTTOM SECTION ================= */}
-
-<div className="bottom-section">
-
-  {/* QR */}
-
-  <div className="qr-box">
-
-    <img
-      src={qr}
-      alt="QR Code"
-    />
-
-    <h4>Scan QR</h4>
-
-    <p>
-      View Project Information
-    </p>
-
-  </div>
-
-  {/* THANK YOU */}
-
-  <div className="thank-box">
-
-    <h2>THANK YOU!</h2>
-
-    <p>
-
-      Thank you for choosing
-
-      <br />
-
-      <strong>
-        R DREAM INFRA DEVELOPERS
-      </strong>
-
-    </p>
-
-    <span>
-      We appreciate your trust.
-    </span>
-
-  </div>
-
-  {/* COMPANY STAMP */}
-
-  <div className="stamp-box">
-
-    <img
-      src={stamp}
-      alt="Company Stamp"
-    />
-
-    <h4>Company Seal</h4>
-
-  </div>
-
-  {/* SIGNATURE */}
-
-  <div className="signature-box">
-
-    <img
-      src={signature}
-      alt="Signature"
-    />
-
-    <h4>Authorized Signatory</h4>
-
-  </div>
-
-</div>
-
-{/* ================= FOOTER ================= */}
-
-<div className="receipt-footer">
-
-  <div className="footer-left">
-
-    <h3>
-      R DREAM INFRA DEVELOPERS
-    </h3>
-
-    <p>
-
-      Premium DTCP Approved Residential Layout
-
-    </p>
-
-    <p>
-
-      Konyapalem Venture
-
-    </p>
-
-    <p>
-
-      Chandarlapadu Mandal
-
-    </p>
-
-    <p>
-
-      NTR District
-
-    </p>
-
-  </div>
-
-  <div className="footer-right">
-
-    <p>
-
-      📞 +91 XXXXX XXXXX
-
-    </p>
-
-    <p>
-
-      ✉ info@rdreaminfra.com
-
-    </p>
-
-    <p>
-
-      🌐 www.rdreaminfra.com
-
-    </p>
-
-    <p>
-
-      © {new Date().getFullYear()} R DREAM INFRA DEVELOPERS
-
-    </p>
-
-  </div>
-
-</div>
-
-{/* ================= END ================= */}
-
-</div>
-
-</div>
-
-);
 }

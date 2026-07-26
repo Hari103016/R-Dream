@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
 import AddPaymentModal from "../components/AddPaymentModal";
 
-
 import "./CustomerDetails.css";
 
 function CustomerDetails() {
@@ -32,49 +31,44 @@ function CustomerDetails() {
 
   useEffect(() => {
     fetchCustomer();
-  }, [id]); 
+  }, [id]);
 
   async function fetchCustomer() {
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const { data, error } = await supabase
-      .from("customers")
-      .select("*")
-      .or(`id.eq.${id},plot_no.eq.${id}`);
+    try {
+      const { data, error } = await supabase
+        .from("customers")
+        .select("*")
+        .or(`id.eq.${id},plot_no.eq.${id}`);
 
-    console.log("URL:", id);
-    console.log("Customer Data:", data);
-    console.log("Error:", error);
+      if (error) throw error;
 
-    if (error) throw error;
+      if (!data || data.length === 0) {
+        setCustomer(null);
+        setPayments([]);
+        setLoading(false);
+        return;
+      }
 
-    if (!data || data.length === 0) {
+      const selectedCustomer = data[0];
+      setCustomer(selectedCustomer);
+
+      const { data: paymentData } = await supabase
+        .from("payments")
+        .select("*")
+        .eq("customer_id", selectedCustomer.id)
+        .order("payment_date", { ascending: false });
+
+      setPayments(paymentData || []);
+    } catch (err) {
+      console.error(err);
       setCustomer(null);
       setPayments([]);
-      setLoading(false);
-      return;
     }
 
-    const selectedCustomer = data[0]; 
-
-    setCustomer(selectedCustomer);
-
-    const { data: paymentData } = await supabase
-      .from("payments")
-      .select("*")
-      .eq("customer_id", selectedCustomer.id)
-      .order("payment_date", { ascending: false });
-
-    setPayments(paymentData || []);
-  } catch (err) {
-    console.error(err);
-    setCustomer(null);
-    setPayments([]);
+    setLoading(false);
   }
-
-  setLoading(false);
-}
 
   const openEdit = () => {
     setFormData({
@@ -154,90 +148,109 @@ function CustomerDetails() {
       <div className="profile-card">
 
         <div className="profile-top">
+
           <div>
+
             <h2>{customer.name}</h2>
-            <span className="status">{customer.status}</span>
+
+            <span className="status">
+              {customer.status}
+            </span>
+
           </div>
+
         </div>
 
-        <div className="info-grid">
+        {/* Customer Information */}
 
-          <div className="info-card">
+        <div className="customer-info-grid">
+
+          <div className="customer-info-card">
             <label>Plot Number</label>
             <p>{customer.plot_no}</p>
           </div>
 
-          <div className="info-card">
+          <div className="customer-info-card">
             <label>Facing</label>
             <p>{customer.facing}</p>
           </div>
 
-          <div className="info-card">
+          <div className="customer-info-card">
             <label>Mobile</label>
             <p>{customer.mobile}</p>
           </div>
 
-          <div className="info-card">
+          <div className="customer-info-card">
             <label>Plot Size</label>
             <p>{customer.plot_size} Sq.Yds</p>
           </div>
+
         </div>
 
         <hr />
 
         <h3>Payment Information</h3>
 
-        <div className="payment-grid">
+        <div className="customer-payment-grid">
 
-          <div className="info-card">
+          <div className="customer-info-card">
             <label>Total Amount</label>
-            <p>₹{Number(customer.total_amount).toLocaleString()}</p>
+            <p>
+              ₹{Number(customer.total_amount).toLocaleString()}
+            </p>
           </div>
 
-          <div className="info-card">
+          <div className="customer-info-card">
             <label>Amount Paid</label>
-            <p>₹{Number(customer.amount_paid).toLocaleString()}</p>
+            <p>
+              ₹{Number(customer.amount_paid).toLocaleString()}
+            </p>
           </div>
 
-          <div className="info-card">
+          <div className="customer-info-card">
             <label>Balance</label>
-            <p>₹{Number(customer.balance).toLocaleString()}</p>
+            <p>
+              ₹{Number(customer.balance).toLocaleString()}
+            </p>
           </div>
 
-          <div className="info-card">
+          <div className="customer-info-card">
             <label>Booking Date</label>
             <p>{customer.booking_date}</p>
           </div>
+
         </div>
-              <div className="action-buttons">
-                <button onClick={openEdit}>
-                  ✏ Edit Customer
-                </button>
-                <button onClick={() => setShowPayment(true)}>
-                  💰 Add Payment
-                </button>
 
-                <button
-                  onClick={() =>
-                    navigate("/receipt", {
-                      state: {
-                        customer,
-                        payment:
-                          payments.length > 0
-                            ? payments[0]
-                            : null,
-                      },
-                    })
-                  }
-                >
-                  🖨 Print Receipt
-                </button>
+        <div className="action-buttons">
 
-          </div>
+          <button onClick={openEdit}>
+            ✏ Edit Customer
+          </button>
+
+          <button onClick={() => setShowPayment(true)}>
+            💰 Add Payment
+          </button>
+
+          <button
+            onClick={() =>
+              navigate("/receipt", {
+                state: {
+                  customer,
+                  payment:
+                    payments.length > 0
+                      ? payments[0]
+                      : null,
+                },
+              })
+            }
+          >
+            🖨 Print Receipt
+          </button>
+
+        </div>
 
         <hr />
-
-        <h2>Payment History</h2>
+                <h2>Payment History</h2>
 
         <table className="payment-table">
 
@@ -447,17 +460,21 @@ function CustomerDetails() {
           </div>
 
         )}
-                {showPayment && (
+
+        {showPayment && (
+
           <AddPaymentModal
             customer={customer}
             onClose={() => setShowPayment(false)}
             onSuccess={fetchCustomer}
           />
+
         )}
-        
 
       </div>
+
     </div>
+
   );
 }
 

@@ -69,16 +69,12 @@
     margin-bottom:10px;
 }
 
-/* ===========================
-   Status
-=========================== */
-
 .status{
     display:inline-block;
     padding:7px 18px;
     border-radius:50px;
     background:#10b981;
-    font-size:14px;
+    color:white;
     font-weight:600;
 }
 
@@ -86,70 +82,70 @@
    Section Heading
 =========================== */
 
-h3{
+.profile-card h3{
     margin:30px 0 20px;
     font-size:24px;
 }
 
-hr{
+.profile-card hr{
     margin:30px 0;
     border:none;
     border-top:1px solid rgba(255,255,255,.08);
 }
 
 /* ===========================
-   Grid
+   NEW UNIQUE GRID CLASSES
 =========================== */
 
-.info-grid,
-.payment-grid{
+.customer-info-grid,
+.customer-payment-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
     gap:20px;
 }
 
-/* ===========================
-   Cards
-=========================== */
-
-.info-card{
+.customer-info-card{
     background:#1f2937;
     border-radius:15px;
     padding:20px;
+    border:1px solid rgba(255,255,255,.08);
     transition:.3s;
 }
 
-.info-card:hover{
+.customer-info-card:hover{
     transform:translateY(-4px);
     background:#273548;
 }
 
-.info-card label{
+.customer-info-card label{
     display:block;
     color:#94a3b8;
     font-size:14px;
     margin-bottom:10px;
 }
 
-.info-card p{
+.customer-info-card p{
+    margin:0;
+    color:#ffffff;
     font-size:22px;
     font-weight:700;
+    word-break:break-word;
 }
 
 /* ===========================
-   Action Buttons
+   Buttons
 =========================== */
 
 .action-buttons{
     display:flex;
     gap:15px;
-    margin-top:35px;
     flex-wrap:wrap;
+    margin-top:35px;
 }
 
 .action-buttons button{
     background:#2563eb;
-    color:#fff;
+    color:white;
     border:none;
     padding:14px 22px;
     border-radius:10px;
@@ -165,16 +161,15 @@ hr{
 }
 
 /* ===========================
-   Payment History
+   Payment Table
 =========================== */
 
 .payment-table{
     width:100%;
     border-collapse:collapse;
     margin-top:25px;
-    background:#1f2937;
-    border-radius:15px;
     overflow:hidden;
+    border-radius:15px;
 }
 
 .payment-table thead{
@@ -182,38 +177,20 @@ hr{
 }
 
 .payment-table th{
+    color:white;
     padding:16px;
     text-align:left;
-    color:#fff;
-    font-size:15px;
-    font-weight:600;
 }
 
 .payment-table td{
+    background:#1f2937;
+    color:white;
     padding:16px;
     border-bottom:1px solid rgba(255,255,255,.08);
-    color:#e5e7eb;
 }
 
-.payment-table tbody tr{
-    transition:.3s;
-}
-
-.payment-table tbody tr:hover{
+.payment-table tbody tr:hover td{
     background:#273548;
-}
-
-.payment-table tbody tr:last-child td{
-    border-bottom:none;
-}
-
-/* Empty Table */
-
-.payment-table td[colspan]{
-    text-align:center;
-    padding:30px;
-    color:#94a3b8;
-    font-size:16px;
 }
 
 /* ===========================
@@ -230,55 +207,36 @@ hr{
     z-index:999;
 }
 
-/* ===========================
-   Popup
-=========================== */
-
 .edit-modal{
     width:520px;
     max-width:95%;
     background:#111827;
     padding:30px;
     border-radius:18px;
-    border:1px solid rgba(255,255,255,.08);
-    box-shadow:0 20px 50px rgba(0,0,0,.4);
 }
-
-.edit-modal h2{
-    margin-bottom:25px;
-}
-
-/* ===========================
-   Inputs
-=========================== */
 
 .edit-modal input,
 .edit-modal select{
     width:100%;
-    padding:13px;
     margin-bottom:15px;
+    padding:13px;
     border:none;
     border-radius:10px;
     background:#1f2937;
-    color:#fff;
+    color:white;
     font-size:15px;
-    outline:none;
 }
 
 .edit-modal input:focus,
 .edit-modal select:focus{
+    outline:none;
     border:1px solid #2563eb;
 }
-
-/* ===========================
-   Modal Buttons
-=========================== */
 
 .modal-buttons{
     display:flex;
     justify-content:flex-end;
     gap:15px;
-    margin-top:20px;
 }
 
 .modal-buttons button{
@@ -286,21 +244,16 @@ hr{
     border:none;
     border-radius:10px;
     cursor:pointer;
-    font-weight:600;
 }
 
 .modal-buttons button:first-child{
     background:#6b7280;
-    color:#fff;
+    color:white;
 }
 
 .modal-buttons button:last-child{
     background:#2563eb;
-    color:#fff;
-}
-
-.modal-buttons button:hover{
-    opacity:.9;
+    color:white;
 }
 
 /* ===========================

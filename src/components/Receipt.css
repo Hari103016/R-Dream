@@ -1,713 +1,287 @@
-@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Poppins:wght@300;400;500;600;700&display=swap");
+/* ===============================
+   PAGE
+================================== */
 
-/* =====================================================
-   R DREAM INFRA DEVELOPERS - PREMIUM RECEIPT
-===================================================== */
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-body{
+.receipt-page{
     background:#eef2f7;
-    font-family:"Poppins",sans-serif;
-}
-
-.receipt-wrapper{
-    width:100%;
     min-height:100vh;
-    padding:40px;
+    padding:20px;
     display:flex;
     flex-direction:column;
     align-items:center;
-    background:#eef2f7;
 }
-
-/* ===========================
-        DOWNLOAD BUTTON
-=========================== */
 
 .download-btn{
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:8px;
+    margin-bottom:20px;
+    padding:12px 20px;
     border:none;
+    border-radius:8px;
+    background:#17325d;
+    color:#fff;
     cursor:pointer;
-    margin-bottom:30px;
-    padding:14px 32px;
-    border-radius:12px;
-    background:#102646;
-    color:white;
-    font-size:16px;
     font-weight:600;
     transition:.3s;
-    box-shadow:0 12px 30px rgba(16,38,70,.25);
 }
 
 .download-btn:hover{
-    transform:translateY(-3px);
-    background:#173760;
+    background:#0f2342;
 }
 
-/* ===========================
-        RECEIPT
-=========================== */
+/* ===============================
+   RECEIPT
+================================== */
 
 .receipt{
-    width:210mm;
-    min-height:297mm;
-    background:white;
-    position:relative;
+    width:794px;              /* A4 width @96dpi */
+    background:#fff;
+    border-radius:16px;
     overflow:hidden;
-    border-radius:18px;
-    box-shadow:0 25px 60px rgba(0,0,0,.15);
+    box-shadow:0 10px 35px rgba(0,0,0,.15);
 }
 
-.receipt::before{
-    content:"";
-    position:absolute;
-    inset:12px;
-    border:2px solid #d6b45d;
-    border-radius:12px;
-    pointer-events:none;
-}
-
-.receipt>*{
-    position:relative;
-    z-index:2;
-}
-
-/* ===========================
-        WATERMARK
-=========================== */
-
-.watermark{
-    position:absolute;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%) rotate(-30deg);
-    font-size:58px;
-    font-weight:700;
-    color:rgba(214,180,93,.05);
-    white-space:nowrap;
-    font-family:"Cinzel",serif;
-    pointer-events:none;
-    z-index:1;
-}
-
-/* ===========================
-          HEADER
-=========================== */
+/* ===============================
+   HEADER
+================================== */
 
 .receipt-header{
-    position:relative;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:38px;
-    color:white;
-    overflow:hidden;
-    background:linear-gradient(135deg,#102646,#173760,#204b7d);
-}
-
-.header-overlay{
-    position:absolute;
-    inset:0;
-    background:
-    radial-gradient(circle at top right,
-    rgba(255,255,255,.15),
-    transparent 45%);
-}
-
-.left-ribbon,
-.right-ribbon{
-    width:95px;
-    height:95px;
-    border-radius:50%;
-    background:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    box-shadow:0 12px 25px rgba(0,0,0,.18);
-}
-
-.left-ribbon img{
-    width:70px;
-    object-fit:contain;
-}
-
-.right-ribbon svg{
-    color:#102646;
-}
-
-.company-section{
-    flex:1;
+    background:linear-gradient(135deg,#17325d,#274c80);
+    color:#fff;
     text-align:center;
-    padding:0 25px;
+    padding:25px;
 }
 
-.company-tag{
+.approved{
     display:inline-block;
-    background:#d6b45d;
-    color:#102646;
-    padding:8px 18px;
+    background:#f5b942;
+    color:#000;
+    padding:6px 18px;
     border-radius:30px;
-    font-size:13px;
     font-weight:700;
-    letter-spacing:.5px;
+    margin-bottom:15px;
 }
 
-.company-section h1{
-    margin-top:18px;
-    font-family:"Cinzel",serif;
+.receipt-header h1{
+    margin:0;
     font-size:34px;
+    font-weight:700;
+}
+
+.receipt-header p{
+    margin:10px 0;
+    opacity:.9;
+}
+
+.receipt-header h2{
+    margin-top:15px;
+    color:#ffd369;
     letter-spacing:2px;
 }
 
-.company-section p{
-    margin-top:10px;
-    opacity:.9;
-    font-size:14px;
+/* ===============================
+   TOP GRID
+================================== */
+
+.top-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    padding:20px;
 }
 
-.company-section h2{
-    margin:20px 0;
-    color:#f5d36c;
-    letter-spacing:4px;
-    font-size:30px;
+.card{
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    padding:16px;
 }
 
-.gold-divider{
-    width:260px;
-    height:3px;
-    margin:18px auto;
-    border-radius:20px;
-    background:linear-gradient(
-        90deg,
-        transparent,
-        #d6b45d,
-        #fff0a6,
-        #d6b45d,
-        transparent
-    );
-}
-
-.receipt-badges{
-    display:flex;
-    justify-content:center;
-    flex-wrap:wrap;
-    gap:12px;
-    margin-top:18px;
-}
-
-.receipt-badges span{
-    padding:8px 16px;
-    border-radius:25px;
-    background:rgba(255,255,255,.12);
-    border:1px solid rgba(255,255,255,.15);
+.card label{
+    color:#6b7280;
     font-size:13px;
 }
 
-/* ===========================
-      RECEIPT DETAILS
-=========================== */
-
-.receipt-top{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:25px;
-    padding:35px;
+.card h3{
+    margin-top:8px;
+    color:#17325d;
 }
 
-.detail-box{
-    display:flex;
-    align-items:center;
-    gap:18px;
-    padding:20px;
-    border-radius:14px;
-    background:#f7f9fc;
-    border-left:6px solid #d6b45d;
-    box-shadow:0 8px 18px rgba(0,0,0,.06);
-}
-
-.detail-box svg{
-    color:#102646;
-}
-
-.detail-box small{
-    color:#777;
-    display:block;
-    margin-bottom:4px;
-}
-
-.detail-box h3{
-    color:#102646;
-    font-size:20px;
-}
-/* =====================================================
-            CUSTOMER & PLOT INFORMATION
-===================================================== */
+/* ===============================
+   INFO GRID
+================================== */
 
 .info-grid{
     display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:28px;
-    padding:0 35px 35px;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    padding:0 20px 20px;
 }
 
 .info-card{
     background:#fff;
-    border-radius:18px;
-    padding:28px;
-    border:1px solid #ececec;
-    border-top:5px solid #d6b45d;
-    box-shadow:0 15px 35px rgba(0,0,0,.08);
-    transition:.3s;
-}
-
-.info-card:hover{
-    transform:translateY(-4px);
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    padding:18px;
 }
 
 .info-card h3{
     display:flex;
     align-items:center;
-    gap:10px;
-    color:#102646;
-    margin-bottom:25px;
-    font-size:22px;
-    font-weight:700;
+    gap:8px;
+    color:#17325d;
+    margin-bottom:15px;
 }
 
-.info-card h3 svg{
-    color:#d6b45d;
-}
-
-.info-row{
+.row{
     display:flex;
     justify-content:space-between;
-    align-items:center;
-    padding:15px 0;
-    border-bottom:1px dashed #dddddd;
+    padding:8px 0;
+    border-bottom:1px dashed #ddd;
 }
 
-.info-row:last-child{
-    border-bottom:none;
+.row:last-child{
+    border:none;
 }
 
-.info-row span{
-    display:flex;
-    align-items:center;
-    gap:8px;
+.row span{
     color:#666;
-    font-weight:500;
 }
 
-.info-row strong{
-    color:#102646;
-    font-weight:600;
-    text-align:right;
+/* ===============================
+   TABLE
+================================== */
+
+.table-card{
+    padding:0 20px 20px;
 }
 
-.status-badge{
-    margin-top:20px;
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:10px 20px;
-    border-radius:40px;
-    background:#e9f8ef;
-    color:#198754;
-    font-weight:600;
-    border:1px solid #cdeed8;
+.table-card h3{
+    margin-bottom:10px;
+    color:#17325d;
 }
 
-/* =====================================================
-               PAYMENT SUMMARY
-===================================================== */
-
-.payment-section{
-    margin:0 35px;
-    padding:30px;
-    border-radius:18px;
-    background:#fff;
-    border:1px solid #ececec;
-    box-shadow:0 15px 35px rgba(0,0,0,.08);
-}
-
-.payment-section h3{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    color:#102646;
-    margin-bottom:25px;
-    font-size:24px;
-}
-
-.payment-section h3 svg{
-    color:#d6b45d;
-}
-
-.payment-table{
+.table-card table{
     width:100%;
     border-collapse:collapse;
 }
 
-.payment-table thead{
-    background:#102646;
-    color:#fff;
+.table-card td{
+    border:1px solid #e5e7eb;
+    padding:10px;
 }
 
-.payment-table th{
-    padding:18px;
-    text-align:left;
-    font-size:15px;
-    letter-spacing:1px;
+.table-card tr:nth-child(odd){
+    background:#f8fafc;
 }
 
-.payment-table td{
-    padding:18px;
-    border-bottom:1px solid #eeeeee;
-    font-size:15px;
-}
+/* ===============================
+   SUMMARY
+================================== */
 
-.payment-table tbody tr:nth-child(even){
-    background:#fafafa;
-}
-
-.payment-table tbody tr:hover{
-    background:#f4f8ff;
-}
-
-.payment-table .paid{
-    color:#198754;
-    font-weight:700;
-}
-
-.payment-table .balance{
-    color:#dc3545;
-    font-weight:700;
-}
-
-/* =====================================================
-              PAYMENT PROGRESS
-===================================================== */
-
-.progress-card{
-    margin:35px;
-    padding:24px;
-    background:#fff;
-    border-radius:18px;
-    box-shadow:0 12px 28px rgba(0,0,0,.08);
-}
-
-.progress-top{
-    display:flex;
-    justify-content:space-between;
-    margin-bottom:15px;
-    font-weight:600;
-    color:#102646;
-}
-
-.progress-bar{
-    width:100%;
-    height:18px;
-    background:#ececec;
-    border-radius:30px;
-    overflow:hidden;
-}
-
-.progress-fill{
-    height:100%;
-    background:linear-gradient(
-        90deg,
-        #d6b45d,
-        #ffd978,
-        #d6b45d
-    );
-    border-radius:30px;
-    transition:.5s;
-}
-
-/* =====================================================
-               AMOUNT CARDS
-===================================================== */
-
-.amount-grid{
+.summary{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:25px;
-    padding:0 35px 35px;
+    gap:16px;
+    padding:0 20px 20px;
 }
 
-.amount-card{
-    padding:30px;
-    border-radius:18px;
+.summary-card{
+    color:#fff;
+    border-radius:12px;
     text-align:center;
-    color:white;
-    box-shadow:0 15px 35px rgba(0,0,0,.15);
+    padding:18px;
 }
 
-.amount-card svg{
-    margin-bottom:12px;
-}
-
-.amount-card h4{
-    font-size:16px;
-    opacity:.9;
-    margin-bottom:12px;
-}
-
-.amount-card h2{
-    font-size:30px;
-    font-weight:700;
-}
-
-.amount-card.total{
-    background:linear-gradient(
-        135deg,
-        #102646,
-        #1c4372
-    );
-}
-
-.amount-card.paid{
-    background:linear-gradient(
-        135deg,
-        #198754,
-        #22b573
-    );
-}
-
-.amount-card.balance{
-    background:linear-gradient(
-        135deg,
-        #dc3545,
-        #ff5a5a
-    );
-}
-/* =====================================================
-                    DECLARATION
-===================================================== */
-
-.declaration{
-    margin:0 35px 35px;
-    padding:30px;
-    background:linear-gradient(135deg,#fffdf8,#fff7e6);
-    border-left:6px solid #d6b45d;
-    border-radius:18px;
-    box-shadow:0 12px 25px rgba(0,0,0,.08);
-}
-
-.declaration h3{
-    color:#102646;
-    margin-bottom:18px;
-    font-size:24px;
-}
-
-.declaration p{
-    color:#555;
-    line-height:1.9;
-    margin-bottom:10px;
-}
-
-/* =====================================================
-                 THANK YOU MESSAGE
-===================================================== */
-
-.thank-message{
-    margin:0 35px 35px;
-    padding:30px;
-    border-radius:18px;
-    background:linear-gradient(135deg,#102646,#1f4f87);
-    text-align:center;
-    color:white;
-    box-shadow:0 15px 35px rgba(16,38,70,.25);
-}
-
-.thank-message h2{
-    color:#d6b45d;
-    font-size:30px;
-    margin-bottom:12px;
-}
-
-.thank-message p{
-    font-size:16px;
-    line-height:1.8;
-}
-
-/* =====================================================
-                 QR / STAMP / SIGNATURE
-===================================================== */
-
-.bottom-section{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:25px;
-    padding:0 35px 35px;
-}
-
-.qr-box,
-.thank-box,
-.stamp-box,
-.signature-box{
-    background:#fff;
-    border-radius:18px;
-    text-align:center;
-    padding:25px;
-    border:1px solid #ececec;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
-}
-
-.qr-box img,
-.stamp-box img,
-.signature-box img{
-    width:110px;
-    height:110px;
-    object-fit:contain;
-    margin-bottom:15px;
-}
-
-.qr-box h4,
-.stamp-box h4,
-.signature-box h4{
-    color:#102646;
+.summary-card label{
+    display:block;
     margin-bottom:8px;
-}
-
-.qr-box p,
-.stamp-box p,
-.signature-box p,
-.qr-box span,
-.stamp-box span,
-.signature-box span{
-    color:#777;
     font-size:14px;
 }
 
-.thank-box{
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    background:linear-gradient(135deg,#102646,#1d4675);
-    color:white;
-}
-
-.thank-box h2{
-    color:#d6b45d;
-    margin-bottom:12px;
+.summary-card h2{
+    margin:0;
     font-size:28px;
 }
 
-.thank-box span{
-    color:#d6b45d;
-    margin-top:12px;
+.blue{
+    background:#17325d;
 }
 
-/* =====================================================
-                     FOOTER
-===================================================== */
+.green{
+    background:#16a34a;
+}
+
+.red{
+    background:#ef4444;
+}
+
+/* ===============================
+   DECLARATION
+================================== */
+
+.declaration{
+    margin:0 20px 20px;
+    background:#fff7e8;
+    border-left:5px solid #f5b942;
+    padding:18px;
+    border-radius:8px;
+}
+
+.declaration h3{
+    margin-bottom:10px;
+    color:#17325d;
+}
+
+.declaration p{
+    color:#444;
+    line-height:1.6;
+}
+
+/* ===============================
+   FOOTER
+================================== */
 
 .receipt-footer{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:40px;
-    background:#102646;
-    color:white;
-    padding:35px;
-    border-top:5px solid #d6b45d;
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr;
+    gap:20px;
+    padding:20px;
+    background:#17325d;
+    color:#fff;
 }
 
-.footer-left{
-    flex:1;
+.receipt-footer h3,
+.receipt-footer h4{
+    margin-bottom:8px;
 }
 
-.footer-left h3{
-    color:#d6b45d;
-    margin-bottom:12px;
+.receipt-footer p{
+    opacity:.9;
 }
 
-.footer-left p{
-    margin:6px 0;
-}
-
-.footer-right{
-    text-align:right;
-}
-
-.footer-right p{
-    margin:8px 0;
-}
-
-/* =====================================================
-                 RESPONSIVE
-===================================================== */
-
-@media (max-width:900px){
-
-.receipt{
-    width:100%;
-}
-
-.receipt-header{
-    flex-direction:column;
-    text-align:center;
-    gap:25px;
-}
-
-.receipt-top{
-    grid-template-columns:1fr;
-}
-
-.info-grid{
-    grid-template-columns:1fr;
-}
-
-.amount-grid{
-    grid-template-columns:1fr;
-}
-
-.bottom-section{
-    grid-template-columns:1fr 1fr;
-}
-
-.receipt-footer{
-    flex-direction:column;
-}
-
-.footer-right{
-    text-align:left;
-}
-
-}
-
-/* =====================================================
-                     PRINT
-===================================================== */
+/* ===============================
+   PRINT
+================================== */
 
 @media print{
 
-body{
-    background:white;
-}
+    body{
+        background:#fff;
+    }
 
-.download-btn{
-    display:none;
-}
+    .download-btn{
+        display:none;
+    }
 
-.receipt-wrapper{
-    padding:0;
-    background:white;
-}
+    .receipt{
+        width:100%;
+        box-shadow:none;
+        border-radius:0;
+    }
 
-.receipt{
-    width:210mm;
-    min-height:297mm;
-    border-radius:0;
-    box-shadow:none;
-}
-
+    .receipt-page{
+        padding:0;
+    }
 }
