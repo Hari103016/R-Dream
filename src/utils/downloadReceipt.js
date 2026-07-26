@@ -1,14 +1,15 @@
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
-export async function downloadReceipt() {
-  const receipt = document.getElementById("receipt");
+export default async function downloadReceipt(receiptRef) {
+  const receipt = receiptRef.current;
+
+  if (!receipt) return;
 
   const canvas = await html2canvas(receipt, {
-    scale: 3,
+    scale: 2,
     useCORS: true,
     backgroundColor: "#ffffff",
-    logging: false,
   });
 
   const imgData = canvas.toDataURL("image/png");
@@ -20,23 +21,9 @@ export async function downloadReceipt() {
   });
 
   const pdfWidth = 210;
-  const pdfHeight = 297;
+  const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-  const imgWidth = pdfWidth;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-  let heightLeft = imgHeight;
-  let position = 0;
-
-  pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-  heightLeft -= pdfHeight;
-
-  while (heightLeft > 0) {
-    position = heightLeft - imgHeight;
-    pdf.addPage();
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-    heightLeft -= pdfHeight;
-  }
+  pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
 
   pdf.save(`Receipt-${Date.now()}.pdf`);
 }

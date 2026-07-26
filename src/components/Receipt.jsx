@@ -1,4 +1,4 @@
-import { Download, Building2, User, MapPin, Calendar } from "lucide-react";
+import { Download, User, MapPin, CreditCard } from "lucide-react";
 import { useRef } from "react";
 import { useLocation } from "react-router-dom";
 import downloadReceipt from "../utils/downloadReceipt";
@@ -12,7 +12,13 @@ export default function Receipt() {
 
   const receiptRef = useRef();
 
-  if (!customer) return <h2>No Receipt Data</h2>;
+  if (!customer) {
+    return (
+      <div className="receipt-page">
+        <h2>No Receipt Data Found</h2>
+      </div>
+    );
+  }
 
   return (
     <div className="receipt-page">
@@ -21,46 +27,80 @@ export default function Receipt() {
         className="download-btn"
         onClick={() => downloadReceipt(receiptRef)}
       >
-        <Download size={18}/>
-        Download PDF
+        <Download size={18} />
+        Download Receipt
       </button>
 
-      <div className="receipt" ref={receiptRef}>
+      <div
+        id="receipt"
+        className="receipt"
+        ref={receiptRef}
+      >
 
-        {/* HEADER */}
+        {/* ================= HEADER ================= */}
 
         <div className="receipt-header">
 
-          <div className="approved">
-            DTCP APPROVED OPEN PLOTS
+          <div className="header-top">
+
+            <div className="company-logo">
+              RD
+            </div>
+
+            <div className="company-details">
+
+              <div className="approval-tag">
+                ★ DTCP APPROVED LAYOUT ★
+              </div>
+
+              <h1>R DREAM INFRA DEVELOPERS</h1>
+
+              <p>
+                Premium Residential Ventures • Clear Title • Ready For Registration
+              </p>
+
+            </div>
+
+            <div className="receipt-badge">
+
+              <span>OFFICIAL</span>
+
+              <strong>RECEIPT</strong>
+
+            </div>
+
           </div>
 
-          <h1>R DREAM INFRA DEVELOPERS</h1>
+          <div className="gold-line"></div>
 
-          <p>
-            Premium Residential Ventures • Clear Title • Ready for Registration
-          </p>
+          <div className="receipt-title">
 
-          <h2>PAYMENT RECEIPT</h2>
+            <h2>PAYMENT RECEIPT</h2>
+
+            <p>
+              Thank you for choosing R Dream Infra Developers
+            </p>
+
+          </div>
 
         </div>
 
-        {/* TOP DETAILS */}
+        {/* ================= RECEIPT INFO ================= */}
 
-        <div className="top-grid">
+        <div className="receipt-info">
 
-          <div className="card">
+          <div className="receipt-box">
 
             <label>Receipt Number</label>
 
             <h3>
               RD-
-              {String(customer.id).padStart(5,"0")}
+              {String(customer.id).padStart(5, "0")}
             </h3>
 
           </div>
 
-          <div className="card">
+          <div className="receipt-box">
 
             <label>Payment Date</label>
 
@@ -70,64 +110,83 @@ export default function Receipt() {
 
           </div>
 
-        </div>
+          <div className="receipt-box">
 
-        {/* INFO */}
+            <label>Status</label>
 
-        <div className="info-grid">
-
-          <div className="info-card">
-
-            <h3>
-              <User size={18}/>
-              Customer Information
+            <h3 className="status-paid">
+              {customer.status}
             </h3>
 
-            <div className="row">
-              <span>Name</span>
+          </div>
+
+        </div>
+
+        {/* ================= CUSTOMER + PLOT ================= */}
+
+        <div className="details-grid">
+
+          <div className="details-card">
+
+            <div className="card-heading">
+
+              <User size={18} />
+
+              <h3>Customer Information</h3>
+
+            </div>
+
+            <div className="detail-row">
+              <span>Customer Name</span>
               <strong>{customer.name}</strong>
             </div>
 
-            <div className="row">
-              <span>Phone</span>
+            <div className="detail-row">
+              <span>Mobile Number</span>
               <strong>{customer.mobile}</strong>
             </div>
 
-            <div className="row">
-              <span>Booking</span>
+            <div className="detail-row">
+              <span>Booking Date</span>
               <strong>{customer.booking_date}</strong>
             </div>
 
-            <div className="row">
-              <span>Status</span>
-              <strong>{customer.status}</strong>
+            <div className="detail-row">
+              <span>Customer ID</span>
+              <strong>
+                CUST-
+                {String(customer.id).padStart(4, "0")}
+              </strong>
             </div>
 
           </div>
 
-          <div className="info-card">
+          <div className="details-card">
 
-            <h3>
-              <MapPin size={18}/>
-              Plot Information
-            </h3>
+            <div className="card-heading">
 
-            <div className="row">
-              <span>Plot No</span>
+              <MapPin size={18} />
+
+              <h3>Plot Information</h3>
+
+            </div>
+
+            <div className="detail-row">
+              <span>Plot Number</span>
               <strong>{customer.plot_no}</strong>
             </div>
 
-            <div className="row">
-              <span>Size</span>
+            <div className="detail-row">
+              <span>Plot Size</span>
               <strong>{customer.plot_size} Sq.Yds</strong>
             </div>
 
-            <div className="row">
+            <div className="detail-row">
               <span>Facing</span>
               <strong>{customer.facing}</strong>
             </div>
 
-            <div className="row">
+            <div className="detail-row">
               <span>Project</span>
               <strong>Konyapalem Venture</strong>
             </div>
@@ -136,52 +195,67 @@ export default function Receipt() {
 
         </div>
 
-        {/* PAYMENT */}
+        {/* Payment Summary starts in Part 2 */}
+                {/* ================= PAYMENT SUMMARY ================= */}
 
-        <div className="table-card">
+        <div className="payment-section">
 
-          <h3>Payment Summary</h3>
+          <div className="section-title">
+            <CreditCard size={18} />
+            <h3>Payment Summary</h3>
+          </div>
 
-          <table>
+          <table className="payment-table">
+
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th align="right">Amount</th>
+              </tr>
+            </thead>
 
             <tbody>
 
               <tr>
                 <td>Total Plot Amount</td>
-                <td>
+                <td align="right">
                   ₹{Number(customer.total_amount).toLocaleString()}
                 </td>
               </tr>
 
               <tr>
                 <td>Total Amount Paid</td>
-                <td>
+                <td align="right">
                   ₹{Number(customer.amount_paid).toLocaleString()}
                 </td>
               </tr>
 
               <tr>
                 <td>Current Payment</td>
-                <td>
+                <td align="right">
                   ₹{Number(payment?.amount || 0).toLocaleString()}
                 </td>
               </tr>
 
               <tr>
-                <td>Balance</td>
-                <td>
+                <td>Balance Amount</td>
+                <td align="right">
                   ₹{Number(customer.balance).toLocaleString()}
                 </td>
               </tr>
 
               <tr>
                 <td>Payment Mode</td>
-                <td>{payment?.payment_mode}</td>
+                <td align="right">
+                  {payment?.payment_mode || "Cash"}
+                </td>
               </tr>
 
               <tr>
                 <td>Remarks</td>
-                <td>{payment?.remarks || "-"}</td>
+                <td align="right">
+                  {payment?.remarks || "-"}
+                </td>
               </tr>
 
             </tbody>
@@ -190,13 +264,13 @@ export default function Receipt() {
 
         </div>
 
-        {/* SUMMARY */}
+        {/* ================= SUMMARY ================= */}
 
-        <div className="summary">
+        <div className="summary-grid">
 
-          <div className="summary-card blue">
+          <div className="summary-card total-card">
 
-            <label>Total Amount</label>
+            <span>Total Amount</span>
 
             <h2>
               ₹{Number(customer.total_amount).toLocaleString()}
@@ -204,9 +278,9 @@ export default function Receipt() {
 
           </div>
 
-          <div className="summary-card green">
+          <div className="summary-card paid-card">
 
-            <label>Paid</label>
+            <span>Total Paid</span>
 
             <h2>
               ₹{Number(customer.amount_paid).toLocaleString()}
@@ -214,9 +288,9 @@ export default function Receipt() {
 
           </div>
 
-          <div className="summary-card red">
+          <div className="summary-card balance-card">
 
-            <label>Balance</label>
+            <span>Balance</span>
 
             <h2>
               ₹{Number(customer.balance).toLocaleString()}
@@ -226,47 +300,55 @@ export default function Receipt() {
 
         </div>
 
-        {/* PAYMENT PROGRESS REMOVED */}
+        {/* ================= DECLARATION ================= */}
 
-        {/* DECLARATION */}
-
-        <div className="declaration">
+        <div className="declaration-box">
 
           <h3>Declaration</h3>
 
           <p>
 
-            This receipt confirms that the above payment has been received by
-            <b> R DREAM INFRA DEVELOPERS </b>
-            towards the purchase of the mentioned plot.
+            This receipt confirms that the above payment has been
+            received by <strong>R DREAM INFRA DEVELOPERS</strong>
+            towards the purchase of the above residential plot.
+
+            This is a computer-generated receipt and does not
+            require a physical signature.
 
           </p>
 
         </div>
 
-        {/* FOOTER */}
+        {/* ================= FOOTER ================= */}
 
         <div className="receipt-footer">
 
-          <div>
+          <div className="footer-left">
 
             <h3>Thank You</h3>
 
             <p>
-              We sincerely appreciate your trust.
+              Thank you for your trust in
+              <strong> R DREAM INFRA DEVELOPERS</strong>.
             </p>
 
           </div>
 
-          <div>
+          <div className="footer-center">
 
-            <h4>Company Seal</h4>
+            <div className="seal-circle">
+              COMPANY
+              <br />
+              SEAL
+            </div>
 
           </div>
 
-          <div>
+          <div className="footer-right">
 
-            <h4>Authorized Signature</h4>
+            <div className="signature-line"></div>
+
+            <strong>Authorized Signature</strong>
 
           </div>
 
@@ -275,6 +357,7 @@ export default function Receipt() {
       </div>
 
     </div>
+
   );
 
 }
