@@ -10,7 +10,7 @@ function CustomerDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  console.log("Customer State:", customer);
+  const [customer, setCustomer] = useState(null);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,45 +32,49 @@ function CustomerDetails() {
 
   useEffect(() => {
     fetchCustomer();
-  }, [id]);
+  }, [id]); 
 
   async function fetchCustomer() {
-    setLoading(true);
+  setLoading(true);
 
+  try {
     const { data, error } = await supabase
       .from("customers")
       .select("*")
-      .or(
-        `id.eq.${id},plot_no.eq.${id},mobile.eq.${id},name.ilike.%${id}%`
-      );
+      .or(`id.eq.${id},plot_no.eq.${id}`);
 
-    if (error) {
-      console.error(error);
-      setLoading(false);
-      return;
-    }
+    console.log("URL:", id);
+    console.log("Customer Data:", data);
+    console.log("Error:", error);
+
+    if (error) throw error;
 
     if (!data || data.length === 0) {
       setCustomer(null);
+      setPayments([]);
       setLoading(false);
       return;
     }
 
     const selectedCustomer = data[0];
+
     setCustomer(selectedCustomer);
 
-    const { data: paymentData, error: paymentError } = await supabase
+    const { data: paymentData } = await supabase
       .from("payments")
       .select("*")
       .eq("customer_id", selectedCustomer.id)
       .order("payment_date", { ascending: false });
 
-    if (!paymentError) {
-      setPayments(paymentData || []);
-    }
-
-    setLoading(false);
+    setPayments(paymentData || []);
+  } catch (err) {
+    console.error(err);
+    setCustomer(null);
+    setPayments([]);
   }
+
+  setLoading(false);
+}
 
   const openEdit = () => {
     setFormData({
