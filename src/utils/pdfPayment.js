@@ -8,7 +8,8 @@ export const drawPayment = (doc, customer, payment) => {
   // ===========================
 
   doc.setFillColor(...COLORS.navy);
-  doc.roundedRect(10, 145, 190, 12, 3, 3, "F");
+  doc.setDrawColor(...COLORS.gold);
+  doc.roundedRect(10, 145, 190, 12, 3, 3, "FD");
 
   doc.setFont("times", "bold");
   doc.setFontSize(14);
@@ -17,10 +18,6 @@ export const drawPayment = (doc, customer, payment) => {
   doc.text("PAYMENT SUMMARY", 105, 153, {
     align: "center",
   });
-
-  // ===========================
-  // TABLE
-  // ===========================
 
   autoTable(doc, {
     startY: 157,
@@ -33,41 +30,24 @@ export const drawPayment = (doc, customer, payment) => {
     head: [["DESCRIPTION", "AMOUNT / DETAILS"]],
 
     body: [
+      ["💰 Total Amount", formatCurrency(customer?.total_amount)],
+      ["💵 Amount Paid", formatCurrency(customer?.amount_paid)],
+      ["⚖ Balance", formatCurrency(customer?.balance)],
       [
-        "💰 Total Amount",
-        formatCurrency(customer?.total_amount),
+        "💳 Latest Payment",
+        payment ? formatCurrency(payment.amount) : "-"
       ],
-
-      [
-        "✅ Amount Paid",
-        formatCurrency(customer?.amount_paid),
-      ],
-
-      [
-        "⚖ Balance",
-        formatCurrency(customer?.balance),
-      ],
-
-      [
-        "💵 Latest Payment",
-        payment
-          ? formatCurrency(payment.amount)
-          : "-",
-      ],
-
       [
         "💳 Payment Mode",
-        payment?.payment_mode || "-",
+        payment?.payment_mode || "-"
       ],
-
       [
         "📅 Payment Date",
-        formatDate(payment?.payment_date),
+        formatDate(payment?.payment_date)
       ],
-
       [
         "📝 Remarks",
-        payment?.remarks || "-",
+        payment?.remarks || "-"
       ],
     ],
 
@@ -75,21 +55,22 @@ export const drawPayment = (doc, customer, payment) => {
 
     headStyles: {
       fillColor: COLORS.navy,
-      textColor: 255,
-      halign: "center",
+      textColor: [255, 255, 255],
       fontStyle: "bold",
+      halign: "center",
       fontSize: 11,
     },
 
     bodyStyles: {
       fontSize: 10,
-      cellPadding: 4,
-      lineColor: [220, 220, 220],
-      lineWidth: 0.2,
+      cellPadding: 5,
+      lineColor: [215, 215, 215],
+      lineWidth: 0.3,
+      textColor: [30, 30, 30],
     },
 
     alternateRowStyles: {
-      fillColor: [252, 252, 252],
+      fillColor: [249, 249, 249],
     },
 
     columnStyles: {
@@ -97,10 +78,19 @@ export const drawPayment = (doc, customer, payment) => {
         cellWidth: 85,
         fontStyle: "bold",
       },
-
       1: {
         cellWidth: 95,
       },
+    },
+
+    didParseCell(data) {
+      if (
+        data.section === "body" &&
+        data.row.index === 2
+      ) {
+        data.cell.styles.fillColor = [255, 248, 225];
+        data.cell.styles.fontStyle = "bold";
+      }
     },
   });
 
