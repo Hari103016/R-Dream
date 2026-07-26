@@ -1,88 +1,100 @@
+// src/utils/pdfCustomer.js
+
 import { COLORS } from "./pdfStyles";
-import { formatDate } from "./pdfHelpers";
+import {
+  drawCard,
+  drawSectionTitle,
+  drawLabel,
+  drawValue,
+  formatDate,
+} from "./pdfHelpers";
 
 export const drawCustomer = (doc, customer) => {
-  // ==========================================
-  // CUSTOMER INFORMATION CARD
-  // ==========================================
+  // ===========================
+  // CUSTOMER CARD
+  // ===========================
+  drawCard(doc, 10, 76, 92, 58, COLORS.light);
 
-  doc.setDrawColor(...COLORS.gold);
-  doc.setFillColor(255, 255, 255);
-  doc.roundedRect(10, 72, 90, 65, 3, 3, "FD");
+  drawSectionTitle(doc, "CUSTOMER INFORMATION", 15, 84);
 
-  // Header
-  doc.setFillColor(...COLORS.navy);
-  doc.roundedRect(10, 72, 90, 12, 3, 3, "F");
+  let y = 94;
 
-  doc.setTextColor(255);
+  drawLabel(doc, "Customer Name", 15, y);
+  drawValue(doc, customer?.name || "-", 55, y);
+
+  y += 8;
+
+  drawLabel(doc, "Mobile Number", 15, y);
+  drawValue(doc, customer?.phone || "-", 55, y);
+
+  y += 8;
+
+  drawLabel(doc, "Email", 15, y);
+  drawValue(doc, customer?.email || "-", 55, y);
+
+  y += 8;
+
+  drawLabel(doc, "Booking Date", 15, y);
+  drawValue(doc, formatDate(customer?.booking_date), 55, y);
+
+  y += 8;
+
+  drawLabel(doc, "Status", 15, y);
+
+  const status = customer?.status || "Booked";
+
+  doc.setTextColor(...COLORS.success);
+  drawValue(doc, status, 55, y);
+
+  doc.setTextColor(...COLORS.black);
+
+  // ===========================
+  // PLOT CARD
+  // ===========================
+  drawCard(doc, 108, 76, 92, 58, COLORS.lightBlue);
+
+  drawSectionTitle(doc, "PLOT INFORMATION", 113, 84);
+
+  y = 94;
+
+  drawLabel(doc, "Plot Number", 113, y);
+  drawValue(doc, customer?.plot_no || "-", 155, y);
+
+  y += 8;
+
+  drawLabel(doc, "Plot Size", 113, y);
+  drawValue(doc, `${customer?.plot_size || "-"} Sq.Yds`, 155, y);
+
+  y += 8;
+
+  drawLabel(doc, "Facing", 113, y);
+  drawValue(doc, customer?.facing || "-", 155, y);
+
+  y += 8;
+
+  drawLabel(doc, "Road Width", 113, y);
+  drawValue(doc, customer?.road_width || "-", 155, y);
+
+  y += 8;
+
+  drawLabel(doc, "Total Amount", 113, y);
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text("CUSTOMER INFORMATION", 15, 80);
+  doc.setTextColor(...COLORS.navy);
 
-  // Body
-  doc.setTextColor(0);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
+  const amount = Number(customer?.total_amount || 0).toLocaleString(
+    "en-IN"
+  );
 
-  let y = 92;
+  doc.text(`₹ ${amount}`, 155, y);
 
-  const customerData = [
-    ["Customer Name", customer?.name || "-"],
-    ["Mobile Number", customer?.mobile || customer?.phone || "-"],
-    ["Booking Date", formatDate(customer?.booking_date)],
-    ["Status", customer?.status || "-"],
-  ];
+  doc.setTextColor(...COLORS.black);
 
-  customerData.forEach(([label, value]) => {
-    doc.setFont("helvetica", "bold");
-    doc.text(label, 15, y);
-
-    doc.setFont("helvetica", "normal");
-    doc.text(`: ${value}`, 56, y);
-
-    y += 10;
-  });
-
-  // ==========================================
-  // PLOT INFORMATION CARD
-  // ==========================================
-
+  // ===========================
+  // DECORATIVE LINE
+  // ===========================
   doc.setDrawColor(...COLORS.gold);
-  doc.setFillColor(255, 255, 255);
-
-  // White card
-  doc.roundedRect(110, 72, 90, 65, 3, 3, "FD");
-
-  // Blue header
-  doc.setFillColor(...COLORS.navy);
-  doc.roundedRect(110, 72, 90, 12, 3, 3, "F");
-
-  doc.setTextColor(255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(11);
-  doc.text("PLOT INFORMATION", 115, 80);
-
-  // Body
-  doc.setTextColor(0);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-
-  y = 92;
-
-  const plotData = [
-    ["Plot Number", customer?.plot_no || "-"],
-    ["Plot Size", customer?.plot_size ? `${customer.plot_size} Sq.Yds` : "-"],
-    ["Facing", customer?.facing || "-"],
-    ["Road Width", customer?.road_width || "24 Feet"],
-  ];
-
-  plotData.forEach(([label, value]) => {
-    doc.setFont("helvetica", "bold");
-    doc.text(label, 115, y);
-
-    doc.setFont("helvetica", "normal");
-    doc.text(`: ${value}`, 156, y);
-
-    y += 10;
-  });
+  doc.setLineWidth(0.5);
+  doc.line(10, 140, 200, 140);
 };

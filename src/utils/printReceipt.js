@@ -1,3 +1,5 @@
+// src/utils/printReceipt.js
+
 import { jsPDF } from "jspdf";
 
 import { drawHeader } from "./pdfHeader";
@@ -7,29 +9,61 @@ import { drawFooter } from "./pdfFooter";
 
 export const printReceipt = async (customer, payment) => {
   try {
-    const doc = new jsPDF("p", "mm", "a4");
+    // =====================================
+    // CREATE PDF
+    // =====================================
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
 
-    // Header
+    // =====================================
+    // HEADER
+    // =====================================
     drawHeader(doc);
 
-    // Customer & Plot Information
+    // =====================================
+    // CUSTOMER & PLOT DETAILS
+    // =====================================
     drawCustomer(doc, customer);
 
-    // Payment Table
-    const finalY = drawPayment(doc, customer, payment);
+    // =====================================
+    // PAYMENT DETAILS
+    // =====================================
+    const footerStartY = drawPayment(doc, customer, payment);
 
-    // Footer
-    drawFooter(doc, finalY);
+    // =====================================
+    // FOOTER
+    // =====================================
+    drawFooter(doc, footerStartY);
 
-    // Save PDF
-    const filename = `Receipt_${customer?.plot_no || "Customer"}_${
-      customer?.name || "Receipt"
-    }.pdf`;
+    // =====================================
+    // PDF PROPERTIES
+    // =====================================
+    doc.setProperties({
+      title: "Payment Receipt",
+      subject: "R DREAM INFRA DEVELOPERS",
+      author: "R DREAM INFRA DEVELOPERS",
+      creator: "R DREAM INFRA DEVELOPERS",
+      keywords: "Receipt, Plot, Payment",
+    });
 
-    doc.save(filename);
+    // =====================================
+    // FILE NAME
+    // =====================================
+    const plotNo = customer?.plot_no || "Plot";
+    const customerName = (customer?.name || "Customer")
+      .replace(/\s+/g, "_")
+      .replace(/[^\w-]/g, "");
 
+    const receiptNo = `Receipt_${plotNo}_${customerName}.pdf`;
+
+    // =====================================
+    // SAVE PDF
+    // =====================================
+    doc.save(receiptNo);
   } catch (error) {
-    console.error("Receipt generation failed:", error);
-    alert("Failed to generate receipt. Check the browser console for details.");
+    console.error("Receipt Generation Error:", error);
   }
 };

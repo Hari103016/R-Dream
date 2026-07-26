@@ -1,133 +1,114 @@
-import { COLORS } from "./pdfStyles";
+// src/utils/pdfFooter.js
+
+import qr from "../assets/qr.png";
+import stamp from "../assets/stamp.png";
+import signature from "../assets/signature.png";
+
+import { COLORS, COMPANY } from "./pdfStyles";
 
 export const drawFooter = (doc, startY) => {
-  const pageWidth = doc.internal.pageSize.getWidth();
+  let y = startY;
 
-  let y = startY + 10;
+  // ===========================================
+  // DECLARATION
+  // ===========================================
 
-  // =====================================
-  // Declaration
-  // =====================================
-
-  doc.setDrawColor(...COLORS.gold);
-  doc.setFillColor(252, 250, 245);
-
-  doc.roundedRect(10, y, 190, 30, 3, 3, "FD");
-
-  doc.setFont("times", "bold");
-  doc.setFontSize(13);
-  doc.setTextColor(...COLORS.navy);
-
-  doc.text("DECLARATION", 15, y + 8);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(60);
-
-  const declaration =
-    "This receipt confirms the payment received towards the purchase of the above plot. This is a computer-generated receipt issued by R DREAM INFRA DEVELOPERS and does not require a physical signature.";
-
-  const lines = doc.splitTextToSize(declaration, 180);
-
-  doc.text(lines, 15, y + 16);
-
-  // =====================================
-  // THANK YOU SECTION
-  // =====================================
-
-  y += 40;
-
-  doc.setFillColor(...COLORS.navy);
-  doc.roundedRect(10, y, 120, 20, 3, 3, "F");
-
-  doc.setFont("times", "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(255);
-
-  doc.text("THANK YOU", 70, y + 8, {
-    align: "center",
-  });
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-
-  doc.text(
-    "Thank you for choosing R DREAM INFRA DEVELOPERS",
-    70,
-    y + 15,
-    {
-      align: "center",
-    }
-  );
-
-  // =====================================
-  // AUTHORIZED SIGNATURE
-  // =====================================
-
+  doc.setFillColor(...COLORS.cream);
   doc.setDrawColor(...COLORS.gold);
 
-  doc.line(145, y + 12, 195, y + 12);
+  doc.roundedRect(10, y, 190, 24, 3, 3, "FD");
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(...COLORS.navy);
 
-  doc.text("Authorized Signature", 170, y + 18, {
-    align: "center",
-  });
-
-  // =====================================
-  // CONTACT INFORMATION
-  // =====================================
-
-  y += 32;
-
-  doc.setFillColor(...COLORS.navy);
-
-  doc.roundedRect(10, y, 190, 28, 2, 2, "F");
-
-  doc.setTextColor(255);
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
-
-  doc.text(
-    "R DREAM INFRA DEVELOPERS",
-    pageWidth / 2,
-    y + 8,
-    {
-      align: "center",
-    }
-  );
+  doc.text("Declaration", 15, y + 7);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
+  doc.setTextColor(...COLORS.black);
+
+  const declaration =
+    "This is a computer generated receipt issued by R DREAM INFRA DEVELOPERS. The amount received has been credited towards the customer's plot booking/payment. Please retain this receipt for future reference.";
+
+  const lines = doc.splitTextToSize(declaration, 178);
+
+  doc.text(lines, 15, y + 13);
+
+  y += 35;
+
+  // ===========================================
+  // QR CODE
+  // ===========================================
+
+  try {
+    doc.addImage(qr, "PNG", 15, y, 28, 28);
+  } catch (e) {
+    console.warn("QR image not found.");
+  }
+
+  doc.setFontSize(8);
+  doc.text("Scan for Details", 14, y + 33);
+
+  // ===========================================
+  // COMPANY STAMP
+  // ===========================================
+
+  try {
+    doc.addImage(stamp, "PNG", 82, y - 2, 34, 34);
+  } catch (e) {
+    console.warn("Stamp image not found.");
+  }
+
+  doc.setFontSize(8);
+  doc.text("Company Stamp", 84, y + 33);
+
+  // ===========================================
+  // SIGNATURE
+  // ===========================================
+
+  try {
+    doc.addImage(signature, "PNG", 148, y + 2, 34, 18);
+  } catch (e) {
+    console.warn("Signature image not found.");
+  }
+
+  doc.setDrawColor(...COLORS.black);
+  doc.line(145, y + 24, 190, y + 24);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+
+  doc.text("Authorized Signature", 150, y + 30);
+
+  y += 42;
+
+  // ===========================================
+  // FOOTER
+  // ===========================================
+
+  doc.setFillColor(...COLORS.navy);
+  doc.rect(6, 276, 198, 15, "F");
+
+  doc.setTextColor(255, 255, 255);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+
+  doc.text(COMPANY.name, 10, 282);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
 
   doc.text(
-    "Konyapalem Venture | NTR District | Andhra Pradesh",
-    pageWidth / 2,
-    y + 15,
-    {
-      align: "center",
-    }
+    `Phone: ${COMPANY.phone}   |   Email: ${COMPANY.email}   |   Website: ${COMPANY.website}`,
+    10,
+    287
   );
 
-  doc.text(
-    "Phone: +91 98765 43210 | Email: info@rdreaminfra.com",
-    pageWidth / 2,
-    y + 21,
-    {
-      align: "center",
-    }
-  );
-
-  doc.text(
-    "Generated: " + new Date().toLocaleString("en-IN"),
-    15,
-    286
-  );
-
-  doc.text("Page 1 of 1", 195, 286, {
+  doc.text("Computer Generated Receipt", 195, 287, {
     align: "right",
   });
+
+  doc.setTextColor(...COLORS.black);
 };

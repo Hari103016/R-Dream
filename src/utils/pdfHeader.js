@@ -1,153 +1,153 @@
+// src/utils/pdfHeader.js
+
 import logo from "../assets/logo.png";
-import { COLORS, FONTS } from "./pdfStyles";
-import { generateReceiptNumber } from "./pdfHelpers";
 
+import { COLORS, COMPANY } from "./pdfStyles";
+import { generateReceiptNo, formatDate } from "./pdfHelpers";
+
+/**
+ * Draw Premium Receipt Header
+ */
 export const drawHeader = (doc) => {
-  const pageWidth = doc.internal.pageSize.getWidth();
-
-  // =====================================
+  // ===============================
   // OUTER BORDER
-  // =====================================
-
+  // ===============================
   doc.setDrawColor(...COLORS.gold);
   doc.setLineWidth(0.8);
-  doc.roundedRect(5, 5, 200, 287, 3, 3);
+  doc.rect(6, 6, 198, 285);
 
-  // =====================================
-  // LEFT LOGO CARD
-  // =====================================
+  // ===============================
+  // HEADER BACKGROUND
+  // ===============================
+  doc.setFillColor(...COLORS.navy);
+  doc.rect(6, 6, 198, 42, "F");
 
-  doc.setFillColor(255, 255, 255);
-  doc.setDrawColor(...COLORS.gold);
-  doc.roundedRect(8, 8, 38, 52, 2, 2, "FD");
-
+  // ===============================
+  // LOGO
+  // ===============================
   try {
-    doc.addImage(logo, "PNG", 11, 11, 32, 32);
-  } catch (e) {
-    console.error("Logo Error :", e);
+    doc.addImage(logo, "PNG", 12, 10, 24, 24);
+  } catch (err) {
+    console.warn("Logo not loaded", err);
   }
+
+  // ===============================
+  // COMPANY NAME
+  // ===============================
+  doc.setTextColor(255, 255, 255);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(19);
+  doc.text(COMPANY.name, 42, 18);
+
+  // ===============================
+  // PROJECT NAME
+  // ===============================
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(COMPANY.project, 42, 25);
+
+  // ===============================
+  // ADDRESS
+  // ===============================
+  doc.setFontSize(8);
+  doc.text(COMPANY.address, 42, 31);
+
+  // ===============================
+  // GOLD DIVIDER
+  // ===============================
+  doc.setDrawColor(...COLORS.gold);
+  doc.setLineWidth(0.8);
+  doc.line(42, 34, 150, 34);
+
+  // ===============================
+  // CONTACT DETAILS
+  // ===============================
+  doc.setFontSize(7.5);
+  doc.text(`Phone : ${COMPANY.phone}`, 42, 39);
+  doc.text(`Email : ${COMPANY.email}`, 90, 39);
+
+  // ===============================
+  // RECEIPT BOX
+  // ===============================
+  doc.setFillColor(...COLORS.gold);
+  doc.roundedRect(156, 10, 40, 28, 2, 2, "F");
+
+  doc.setTextColor(...COLORS.navy);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text("PAYMENT", 176, 18, {
+    align: "center",
+  });
+
+  doc.text("RECEIPT", 176, 25, {
+    align: "center",
+  });
+
+  // ===============================
+  // RECEIPT NUMBER
+  // ===============================
+  const receiptNo = generateReceiptNo();
+
+  doc.setTextColor(255, 255, 255);
+
+  doc.setFillColor(35, 35, 35);
+  doc.roundedRect(150, 51, 50, 16, 2, 2, "F");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+
+  doc.text("Receipt No.", 154, 57);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+
+  doc.text(receiptNo, 154, 63);
+
+  // ===============================
+  // DATE BOX
+  // ===============================
+  doc.setFillColor(...COLORS.lightBlue);
+  doc.setDrawColor(...COLORS.border);
+  doc.roundedRect(10, 51, 42, 16, 2, 2, "FD");
 
   doc.setTextColor(...COLORS.navy);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
 
-  doc.text("R DREAM", 27, 47, {
-    align: "center",
-  });
-
-  doc.setFontSize(7);
-
-  doc.text("INFRA DEVELOPERS", 27, 52, {
-    align: "center",
-  });
-
-  // =====================================
-  // RIGHT BADGE
-  // =====================================
-
-  doc.setFillColor(...COLORS.navy);
-  doc.roundedRect(170, 8, 32, 42, 2, 2, "F");
-
-  doc.setTextColor(255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7);
-
-  doc.text("BUILDING", 186, 19, {
-    align: "center",
-  });
-
-  doc.text("YOUR", 186, 25, {
-    align: "center",
-  });
-
-  doc.text("DREAMS", 186, 31, {
-    align: "center",
-  });
-
-  doc.text("TOGETHER", 186, 37, {
-    align: "center",
-  });
-
-  // =====================================
-  // COMPANY NAME
-  // =====================================
-
-  doc.setTextColor(...COLORS.navy);
-
-  doc.setFont("times", "bold");
-  doc.setFontSize(22);
-
-  doc.text(
-    "R DREAM INFRA DEVELOPERS",
-    pageWidth / 2,
-    20,
-    {
-      align: "center",
-    }
-  );
+  doc.text("Receipt Date", 14, 57);
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
+  doc.setFontSize(8);
 
-  doc.setTextColor(...COLORS.gold);
+  doc.text(formatDate(new Date()), 14, 63);
 
-  doc.text(
-    "DTCP Approved Open Plots | Konyapalem Venture",
-    pageWidth / 2,
-    28,
-    {
-      align: "center",
-    }
-  );
+  // ===============================
+  // WATERMARK
+  // ===============================
+  try {
+    doc.setGState(new doc.GState({ opacity: 0.05 }));
 
-  // =====================================
+    doc.addImage(
+      logo,
+      "PNG",
+      55,
+      95,
+      100,
+      100
+    );
+
+    doc.setGState(new doc.GState({ opacity: 1 }));
+  } catch (err) {
+    console.warn("Watermark skipped");
+  }
+
+  // ===============================
   // GOLD DIVIDER
-  // =====================================
-
+  // ===============================
   doc.setDrawColor(...COLORS.gold);
   doc.setLineWidth(0.5);
-  doc.line(55, 36, 155, 36);
-
-  // =====================================
-  // RECEIPT TITLE
-  // =====================================
-
-  doc.setTextColor(...COLORS.navy);
-
-  doc.setFont("times", "bold");
-  doc.setFontSize(18);
-
-  doc.text(
-    "PAYMENT RECEIPT",
-    pageWidth / 2,
-    45,
-    {
-      align: "center",
-    }
-  );
-
-  // =====================================
-  // RECEIPT DETAILS
-  // =====================================
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-
-  doc.setTextColor(40);
-
-  doc.text(
-    `Receipt No : ${generateReceiptNumber()}`,
-    15,
-    58
-  );
-
-  doc.text(
-    `Date : ${new Date().toLocaleDateString("en-IN")}`,
-    148,
-    58
-  );
-
-  // Reset colour
-  doc.setTextColor(0);
+  doc.line(10, 70, 200, 70);
 };

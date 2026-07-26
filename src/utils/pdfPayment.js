@@ -1,55 +1,69 @@
+// src/utils/pdfPayment.js
+
 import autoTable from "jspdf-autotable";
+
 import { COLORS } from "./pdfStyles";
-import { formatCurrency, formatDate } from "./pdfHelpers";
+import {
+  drawSectionTitle,
+  formatCurrency,
+  formatDate,
+  getBalance,
+} from "./pdfHelpers";
 
 export const drawPayment = (doc, customer, payment) => {
-  // ===========================
-  // PAYMENT SUMMARY TITLE
-  // ===========================
+  // ===============================
+  // PAYMENT TITLE
+  // ===============================
+  drawSectionTitle(doc, "PAYMENT SUMMARY", 10, 150);
 
-  doc.setFillColor(...COLORS.navy);
-  doc.setDrawColor(...COLORS.gold);
-  doc.roundedRect(10, 145, 190, 12, 3, 3, "FD");
+  // ===============================
+  // TABLE DATA
+  // ===============================
+  const totalAmount = Number(customer?.total_amount || 0);
+  const amountPaid = Number(customer?.amount_paid || 0);
+  const balance = getBalance(totalAmount, amountPaid);
 
-  doc.setFont("times", "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(255);
-
-  doc.text("PAYMENT SUMMARY", 105, 153, {
-    align: "center",
-  });
+  const body = [
+    [
+      "Total Plot Amount",
+      formatCurrency(totalAmount),
+    ],
+    [
+      "Amount Paid",
+      formatCurrency(amountPaid),
+    ],
+    [
+      "Current Payment",
+      formatCurrency(payment?.amount || 0),
+    ],
+    [
+      "Balance Amount",
+      formatCurrency(balance),
+    ],
+    [
+      "Payment Mode",
+      payment?.payment_mode || "-",
+    ],
+    [
+      "Payment Date",
+      formatDate(payment?.payment_date),
+    ],
+    [
+      "Transaction ID",
+      payment?.transaction_id || "-",
+    ],
+    [
+      "Remarks",
+      payment?.remarks || "-",
+    ],
+  ];
 
   autoTable(doc, {
-    startY: 157,
+    startY: 156,
 
-    margin: {
-      left: 10,
-      right: 10,
-    },
+    head: [["Description", "Details"]],
 
-    head: [["DESCRIPTION", "AMOUNT / DETAILS"]],
-
-    body: [
-      ["💰 Total Amount", formatCurrency(customer?.total_amount)],
-      ["💵 Amount Paid", formatCurrency(customer?.amount_paid)],
-      ["⚖ Balance", formatCurrency(customer?.balance)],
-      [
-        "💳 Latest Payment",
-        payment ? formatCurrency(payment.amount) : "-"
-      ],
-      [
-        "💳 Payment Mode",
-        payment?.payment_mode || "-"
-      ],
-      [
-        "📅 Payment Date",
-        formatDate(payment?.payment_date)
-      ],
-      [
-        "📝 Remarks",
-        payment?.remarks || "-"
-      ],
-    ],
+    body,
 
     theme: "grid",
 
@@ -58,41 +72,87 @@ export const drawPayment = (doc, customer, payment) => {
       textColor: [255, 255, 255],
       fontStyle: "bold",
       halign: "center",
-      fontSize: 11,
+      fontSize: 10,
     },
 
     bodyStyles: {
       fontSize: 10,
-      cellPadding: 5,
-      lineColor: [215, 215, 215],
-      lineWidth: 0.3,
-      textColor: [30, 30, 30],
+      textColor: COLORS.black,
+      valign: "middle",
     },
 
     alternateRowStyles: {
-      fillColor: [249, 249, 249],
+      fillColor: COLORS.light,
+    },
+
+    styles: {
+      lineColor: COLORS.border,
+      lineWidth: 0.2,
+      cellPadding: 4,
     },
 
     columnStyles: {
       0: {
-        cellWidth: 85,
         fontStyle: "bold",
+        cellWidth: 70,
       },
+
       1: {
-        cellWidth: 95,
+        halign: "right",
+        cellWidth: 110,
       },
     },
 
     didParseCell(data) {
       if (
         data.section === "body" &&
-        data.row.index === 2
+        data.row.index === 3 // Balance row
       ) {
-        data.cell.styles.fillColor = [255, 248, 225];
+        data.cell.styles.fillColor = COLORS.cream;
+        data.cell.styles.fontStyle = "bold";
+        data.cell.styles.textColor = COLORS.danger;
+      }
+
+      if (
+        data.section === "body" &&
+        (data.row.index === 0 ||
+          data.row.index === 1)
+      ) {
         data.cell.styles.fontStyle = "bold";
       }
     },
   });
 
-  return doc.lastAutoTable.finalY;
+  // ===============================
+  // SUMMARY BOX
+  // ===============================
+  const finalY = doc.lastAutoTable.finalY + 8;
+
+  doc.setFillColor(...COLORS.navy);
+  doc.roundedRect(120, finalY, 80, 28, 2, 2, "F");
+
+  doc.setTextColor(255, 255, 255);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+
+  doc.text("TOTAL BALANCE", 160, finalY + 8, {
+    align: "center",
+  });
+
+  doc.setFontSize(15);
+
+  doc.text(
+    formatCurrency(balance),
+    160,
+    finalY + 20,
+    {
+      align: "center",
+    }
+  );
+
+  // Reset text colour
+  doc.setTextColor(...COLORS.black);
+
+  return finalY + 35;
 };
