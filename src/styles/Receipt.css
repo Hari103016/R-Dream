@@ -1,412 +1,713 @@
-/* ===========================
-   RECEIPT PAGE
-=========================== */
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Poppins:wght@300;400;500;600;700&display=swap");
+
+/* =====================================================
+   R DREAM INFRA DEVELOPERS - PREMIUM RECEIPT
+===================================================== */
 
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:"Poppins",sans-serif;
 }
 
 body{
     background:#eef2f7;
+    font-family:"Poppins",sans-serif;
 }
 
-.receipt-page{
+.receipt-wrapper{
     width:100%;
     min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
     padding:40px;
-}
-
-.receipt{
-
-    width:900px;
-    background:#fff;
-
-    border:2px solid #d6b45d;
-
-    border-radius:18px;
-
-    overflow:hidden;
-
-    box-shadow:
-    0 20px 45px rgba(0,0,0,.12);
-
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    background:#eef2f7;
 }
 
 /* ===========================
-   HEADER
+        DOWNLOAD BUTTON
+=========================== */
+
+.download-btn{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border:none;
+    cursor:pointer;
+    margin-bottom:30px;
+    padding:14px 32px;
+    border-radius:12px;
+    background:#102646;
+    color:white;
+    font-size:16px;
+    font-weight:600;
+    transition:.3s;
+    box-shadow:0 12px 30px rgba(16,38,70,.25);
+}
+
+.download-btn:hover{
+    transform:translateY(-3px);
+    background:#173760;
+}
+
+/* ===========================
+        RECEIPT
+=========================== */
+
+.receipt{
+    width:210mm;
+    min-height:297mm;
+    background:white;
+    position:relative;
+    overflow:hidden;
+    border-radius:18px;
+    box-shadow:0 25px 60px rgba(0,0,0,.15);
+}
+
+.receipt::before{
+    content:"";
+    position:absolute;
+    inset:12px;
+    border:2px solid #d6b45d;
+    border-radius:12px;
+    pointer-events:none;
+}
+
+.receipt>*{
+    position:relative;
+    z-index:2;
+}
+
+/* ===========================
+        WATERMARK
+=========================== */
+
+.watermark{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%) rotate(-30deg);
+    font-size:58px;
+    font-weight:700;
+    color:rgba(214,180,93,.05);
+    white-space:nowrap;
+    font-family:"Cinzel",serif;
+    pointer-events:none;
+    z-index:1;
+}
+
+/* ===========================
+          HEADER
 =========================== */
 
 .receipt-header{
-
-    background:#102646;
-
-    color:#fff;
-
+    position:relative;
     display:flex;
-
-    align-items:center;
-
-    gap:25px;
-
-    padding:28px 35px;
-
-}
-
-.logo-box{
-
-    width:120px;
-    height:120px;
-
-    border-radius:14px;
-
-    background:#fff;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    padding:12px;
-
-}
-
-.logo-box img{
-
-    width:100%;
-
-}
-
-.company{
-
-    flex:1;
-
-}
-
-.company h1{
-
-    font-size:34px;
-
-    letter-spacing:.5px;
-
-}
-
-.company p{
-
-    margin-top:6px;
-
-    color:#d8d8d8;
-
-    font-size:15px;
-
-}
-
-.company h2{
-
-    margin-top:20px;
-
-    font-size:34px;
-
-    color:#d6b45d;
-
-    letter-spacing:2px;
-
-}
-
-/* ===========================
-TOP INFO
-=========================== */
-
-.top-info{
-
-    display:flex;
-
     justify-content:space-between;
-
-    padding:25px 35px;
-
+    align-items:center;
+    padding:38px;
+    color:white;
+    overflow:hidden;
+    background:linear-gradient(135deg,#102646,#173760,#204b7d);
 }
 
-.top-info div{
+.header-overlay{
+    position:absolute;
+    inset:0;
+    background:
+    radial-gradient(circle at top right,
+    rgba(255,255,255,.15),
+    transparent 45%);
+}
 
+.left-ribbon,
+.right-ribbon{
+    width:95px;
+    height:95px;
+    border-radius:50%;
+    background:white;
     display:flex;
-
-    flex-direction:column;
-
-    gap:8px;
-
+    justify-content:center;
+    align-items:center;
+    box-shadow:0 12px 25px rgba(0,0,0,.18);
 }
 
-.top-info b{
+.left-ribbon img{
+    width:70px;
+    object-fit:contain;
+}
 
+.right-ribbon svg{
     color:#102646;
-
 }
 
-.top-info span{
-
-    font-size:18px;
-
-}
-
-/* ===========================
-CARDS
-=========================== */
-
-.cards{
-
-    display:grid;
-
-    grid-template-columns:1fr 1fr;
-
-    gap:30px;
-
-    padding:0 35px;
-
-}
-
-.card{
-
-    border:1px solid #d8b45d;
-
-    border-radius:14px;
-
-    overflow:hidden;
-
-}
-
-.card h3{
-
-    background:#102646;
-
-    color:#fff;
-
-    padding:14px 20px;
-
-    font-size:18px;
-
-}
-
-.card table{
-
-    width:100%;
-
-    border-collapse:collapse;
-
-}
-
-.card td{
-
-    padding:14px 20px;
-
-    border-bottom:1px solid #ececec;
-
-    font-size:15px;
-
-}
-
-.card td:first-child{
-
-    color:#666;
-
-    width:40%;
-
-}
-
-.card tr:last-child td{
-
-    border-bottom:none;
-
-}
-
-/* ===========================
-PAYMENT
-=========================== */
-
-.payment{
-
-    margin:35px;
-
-    border:1px solid #d8b45d;
-
-    border-radius:14px;
-
-    overflow:hidden;
-
-}
-
-.payment h3{
-
-    background:#102646;
-
-    color:#fff;
-
+.company-section{
+    flex:1;
     text-align:center;
-
-    padding:16px;
-
-    font-size:24px;
-
+    padding:0 25px;
 }
 
-.payment table{
-
-    width:100%;
-
-    border-collapse:collapse;
-
-}
-
-.payment td{
-
-    padding:18px 24px;
-
-    border-bottom:1px solid #ececec;
-
-    font-size:16px;
-
-}
-
-.payment tr:last-child td{
-
-    border-bottom:none;
-
-}
-
-.payment td:first-child{
-
-    width:45%;
-
-    color:#444;
-
-    font-weight:600;
-
-}
-
-.payment td:last-child{
-
-    text-align:right;
-
-    font-weight:700;
-
+.company-tag{
+    display:inline-block;
+    background:#d6b45d;
     color:#102646;
+    padding:8px 18px;
+    border-radius:30px;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:.5px;
+}
 
+.company-section h1{
+    margin-top:18px;
+    font-family:"Cinzel",serif;
+    font-size:34px;
+    letter-spacing:2px;
+}
+
+.company-section p{
+    margin-top:10px;
+    opacity:.9;
+    font-size:14px;
+}
+
+.company-section h2{
+    margin:20px 0;
+    color:#f5d36c;
+    letter-spacing:4px;
+    font-size:30px;
+}
+
+.gold-divider{
+    width:260px;
+    height:3px;
+    margin:18px auto;
+    border-radius:20px;
+    background:linear-gradient(
+        90deg,
+        transparent,
+        #d6b45d,
+        #fff0a6,
+        #d6b45d,
+        transparent
+    );
+}
+
+.receipt-badges{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-top:18px;
+}
+
+.receipt-badges span{
+    padding:8px 16px;
+    border-radius:25px;
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.15);
+    font-size:13px;
 }
 
 /* ===========================
-DECLARATION
+      RECEIPT DETAILS
 =========================== */
+
+.receipt-top{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:25px;
+    padding:35px;
+}
+
+.detail-box{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    padding:20px;
+    border-radius:14px;
+    background:#f7f9fc;
+    border-left:6px solid #d6b45d;
+    box-shadow:0 8px 18px rgba(0,0,0,.06);
+}
+
+.detail-box svg{
+    color:#102646;
+}
+
+.detail-box small{
+    color:#777;
+    display:block;
+    margin-bottom:4px;
+}
+
+.detail-box h3{
+    color:#102646;
+    font-size:20px;
+}
+/* =====================================================
+            CUSTOMER & PLOT INFORMATION
+===================================================== */
+
+.info-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:28px;
+    padding:0 35px 35px;
+}
+
+.info-card{
+    background:#fff;
+    border-radius:18px;
+    padding:28px;
+    border:1px solid #ececec;
+    border-top:5px solid #d6b45d;
+    box-shadow:0 15px 35px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+.info-card:hover{
+    transform:translateY(-4px);
+}
+
+.info-card h3{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:#102646;
+    margin-bottom:25px;
+    font-size:22px;
+    font-weight:700;
+}
+
+.info-card h3 svg{
+    color:#d6b45d;
+}
+
+.info-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 0;
+    border-bottom:1px dashed #dddddd;
+}
+
+.info-row:last-child{
+    border-bottom:none;
+}
+
+.info-row span{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#666;
+    font-weight:500;
+}
+
+.info-row strong{
+    color:#102646;
+    font-weight:600;
+    text-align:right;
+}
+
+.status-badge{
+    margin-top:20px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 20px;
+    border-radius:40px;
+    background:#e9f8ef;
+    color:#198754;
+    font-weight:600;
+    border:1px solid #cdeed8;
+}
+
+/* =====================================================
+               PAYMENT SUMMARY
+===================================================== */
+
+.payment-section{
+    margin:0 35px;
+    padding:30px;
+    border-radius:18px;
+    background:#fff;
+    border:1px solid #ececec;
+    box-shadow:0 15px 35px rgba(0,0,0,.08);
+}
+
+.payment-section h3{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:#102646;
+    margin-bottom:25px;
+    font-size:24px;
+}
+
+.payment-section h3 svg{
+    color:#d6b45d;
+}
+
+.payment-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.payment-table thead{
+    background:#102646;
+    color:#fff;
+}
+
+.payment-table th{
+    padding:18px;
+    text-align:left;
+    font-size:15px;
+    letter-spacing:1px;
+}
+
+.payment-table td{
+    padding:18px;
+    border-bottom:1px solid #eeeeee;
+    font-size:15px;
+}
+
+.payment-table tbody tr:nth-child(even){
+    background:#fafafa;
+}
+
+.payment-table tbody tr:hover{
+    background:#f4f8ff;
+}
+
+.payment-table .paid{
+    color:#198754;
+    font-weight:700;
+}
+
+.payment-table .balance{
+    color:#dc3545;
+    font-weight:700;
+}
+
+/* =====================================================
+              PAYMENT PROGRESS
+===================================================== */
+
+.progress-card{
+    margin:35px;
+    padding:24px;
+    background:#fff;
+    border-radius:18px;
+    box-shadow:0 12px 28px rgba(0,0,0,.08);
+}
+
+.progress-top{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:15px;
+    font-weight:600;
+    color:#102646;
+}
+
+.progress-bar{
+    width:100%;
+    height:18px;
+    background:#ececec;
+    border-radius:30px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    height:100%;
+    background:linear-gradient(
+        90deg,
+        #d6b45d,
+        #ffd978,
+        #d6b45d
+    );
+    border-radius:30px;
+    transition:.5s;
+}
+
+/* =====================================================
+               AMOUNT CARDS
+===================================================== */
+
+.amount-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:25px;
+    padding:0 35px 35px;
+}
+
+.amount-card{
+    padding:30px;
+    border-radius:18px;
+    text-align:center;
+    color:white;
+    box-shadow:0 15px 35px rgba(0,0,0,.15);
+}
+
+.amount-card svg{
+    margin-bottom:12px;
+}
+
+.amount-card h4{
+    font-size:16px;
+    opacity:.9;
+    margin-bottom:12px;
+}
+
+.amount-card h2{
+    font-size:30px;
+    font-weight:700;
+}
+
+.amount-card.total{
+    background:linear-gradient(
+        135deg,
+        #102646,
+        #1c4372
+    );
+}
+
+.amount-card.paid{
+    background:linear-gradient(
+        135deg,
+        #198754,
+        #22b573
+    );
+}
+
+.amount-card.balance{
+    background:linear-gradient(
+        135deg,
+        #dc3545,
+        #ff5a5a
+    );
+}
+/* =====================================================
+                    DECLARATION
+===================================================== */
 
 .declaration{
-
-    margin:0 35px;
-
-    text-align:center;
-
-    border:1px solid #d8b45d;
-
-    border-radius:12px;
-
-    padding:22px;
-
+    margin:0 35px 35px;
+    padding:30px;
+    background:linear-gradient(135deg,#fffdf8,#fff7e6);
+    border-left:6px solid #d6b45d;
+    border-radius:18px;
+    box-shadow:0 12px 25px rgba(0,0,0,.08);
 }
 
 .declaration h3{
-
     color:#102646;
-
-    margin-bottom:15px;
-
-    font-size:26px;
-
+    margin-bottom:18px;
+    font-size:24px;
 }
 
 .declaration p{
-
+    color:#555;
     line-height:1.9;
-
-    font-size:15px;
-
-    color:#555;
-
+    margin-bottom:10px;
 }
 
-/* ===========================
-FOOTER
-=========================== */
+/* =====================================================
+                 THANK YOU MESSAGE
+===================================================== */
 
-.footer{
-
-    display:flex;
-
-    justify-content:space-around;
-
-    align-items:flex-end;
-
-    padding:40px 35px;
-
-}
-
-.footer img{
-
-    width:90px;
-
-    object-fit:contain;
-
-}
-
-.footer p{
-
-    margin-top:12px;
-
+.thank-message{
+    margin:0 35px 35px;
+    padding:30px;
+    border-radius:18px;
+    background:linear-gradient(135deg,#102646,#1f4f87);
     text-align:center;
-
-    color:#555;
-
-    font-weight:600;
-
+    color:white;
+    box-shadow:0 15px 35px rgba(16,38,70,.25);
 }
 
-/* ===========================
-BUTTON
-=========================== */
-
-.download{
-
-    width:260px;
-
-    display:block;
-
-    margin:0 auto 35px;
-
-    background:#102646;
-
-    color:#fff;
-
-    border:none;
-
-    padding:16px;
-
-    border-radius:12px;
-
-    font-size:18px;
-
-    cursor:pointer;
-
-    transition:.3s;
-
+.thank-message h2{
+    color:#d6b45d;
+    font-size:30px;
+    margin-bottom:12px;
 }
 
-.download:hover{
+.thank-message p{
+    font-size:16px;
+    line-height:1.8;
+}
 
-    background:#d6b45d;
+/* =====================================================
+                 QR / STAMP / SIGNATURE
+===================================================== */
 
+.bottom-section{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:25px;
+    padding:0 35px 35px;
+}
+
+.qr-box,
+.thank-box,
+.stamp-box,
+.signature-box{
+    background:#fff;
+    border-radius:18px;
+    text-align:center;
+    padding:25px;
+    border:1px solid #ececec;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.qr-box img,
+.stamp-box img,
+.signature-box img{
+    width:110px;
+    height:110px;
+    object-fit:contain;
+    margin-bottom:15px;
+}
+
+.qr-box h4,
+.stamp-box h4,
+.signature-box h4{
     color:#102646;
+    margin-bottom:8px;
+}
+
+.qr-box p,
+.stamp-box p,
+.signature-box p,
+.qr-box span,
+.stamp-box span,
+.signature-box span{
+    color:#777;
+    font-size:14px;
+}
+
+.thank-box{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    background:linear-gradient(135deg,#102646,#1d4675);
+    color:white;
+}
+
+.thank-box h2{
+    color:#d6b45d;
+    margin-bottom:12px;
+    font-size:28px;
+}
+
+.thank-box span{
+    color:#d6b45d;
+    margin-top:12px;
+}
+
+/* =====================================================
+                     FOOTER
+===================================================== */
+
+.receipt-footer{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:40px;
+    background:#102646;
+    color:white;
+    padding:35px;
+    border-top:5px solid #d6b45d;
+}
+
+.footer-left{
+    flex:1;
+}
+
+.footer-left h3{
+    color:#d6b45d;
+    margin-bottom:12px;
+}
+
+.footer-left p{
+    margin:6px 0;
+}
+
+.footer-right{
+    text-align:right;
+}
+
+.footer-right p{
+    margin:8px 0;
+}
+
+/* =====================================================
+                 RESPONSIVE
+===================================================== */
+
+@media (max-width:900px){
+
+.receipt{
+    width:100%;
+}
+
+.receipt-header{
+    flex-direction:column;
+    text-align:center;
+    gap:25px;
+}
+
+.receipt-top{
+    grid-template-columns:1fr;
+}
+
+.info-grid{
+    grid-template-columns:1fr;
+}
+
+.amount-grid{
+    grid-template-columns:1fr;
+}
+
+.bottom-section{
+    grid-template-columns:1fr 1fr;
+}
+
+.receipt-footer{
+    flex-direction:column;
+}
+
+.footer-right{
+    text-align:left;
+}
+
+}
+
+/* =====================================================
+                     PRINT
+===================================================== */
+
+@media print{
+
+body{
+    background:white;
+}
+
+.download-btn{
+    display:none;
+}
+
+.receipt-wrapper{
+    padding:0;
+    background:white;
+}
+
+.receipt{
+    width:210mm;
+    min-height:297mm;
+    border-radius:0;
+    box-shadow:none;
+}
 
 }
