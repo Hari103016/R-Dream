@@ -1,439 +1,542 @@
-/* ===============================
-   PAGE
-================================ */
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap");
+
+/* ==========================================
+   GLOBAL
+========================================== */
 
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:"Poppins",sans-serif;
+}
+
+html,
+body,
+#root{
+    width:100%;
+    min-height:100%;
 }
 
 body{
-    background:#edf2f7;
+    font-family:"Poppins",sans-serif;
+    background:#eef2f7;
+    color:#222;
 }
 
+/* ==========================================
+   RECEIPT PAGE
+========================================== */
+
 .receipt-page{
+    width:100%;
     min-height:100vh;
-    padding:25px;
+    padding:40px;
     display:flex;
     flex-direction:column;
     align-items:center;
+    background:
+        radial-gradient(circle at top,#ffffff,#eef2f7);
 }
 
-/* ===============================
+/* ==========================================
    DOWNLOAD BUTTON
-================================ */
+========================================== */
 
 .download-btn{
-    background:#0f3b72;
-    color:#fff;
+    padding:15px 40px;
+    margin-bottom:30px;
     border:none;
-    border-radius:10px;
-    padding:12px 22px;
-    font-size:15px;
-    font-weight:600;
-    display:flex;
-    align-items:center;
-    gap:10px;
+    border-radius:12px;
     cursor:pointer;
-    margin-bottom:20px;
+    background:linear-gradient(135deg,#07152f,#1d4f93);
+    color:#fff;
+    font-size:16px;
+    font-weight:600;
     transition:.3s;
+    box-shadow:0 12px 25px rgba(0,0,0,.20);
 }
 
 .download-btn:hover{
-    background:#08294f;
+    transform:translateY(-4px);
+    box-shadow:0 18px 35px rgba(0,0,0,.28);
 }
 
-/* ===============================
+/* ==========================================
    RECEIPT
-================================ */
+========================================== */
 
-.receipt{
-
-    width:794px;
-    min-height:1123px;
-
+.luxury-receipt{
+    width:min(1200px,100%);
     background:#fff;
-
-    border-radius:18px;
-
+    border:2px solid #d7b46d;
+    border-radius:24px;
     overflow:hidden;
-
-    box-shadow:0 12px 35px rgba(0,0,0,.18);
-
+    position:relative;
+    box-shadow:0 25px 60px rgba(0,0,0,.18);
 }
 
-/* ===============================
+.luxury-receipt::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:6px;
+    background:linear-gradient(
+        90deg,
+        #d7b46d,
+        #f5df9f,
+        #d7b46d
+    );
+}
+
+/* ==========================================
    HEADER
-================================ */
+========================================== */
 
-.receipt-header{
-
-    background:linear-gradient(135deg,#0d2f63,#1e4f93);
-
-    color:#fff;
-
-    padding:28px;
-
-}
-
-.header-top{
-
-    display:grid;
-
-    grid-template-columns:90px 1fr 110px;
-
-    align-items:center;
-
-    gap:18px;
-
-}
-
-.company-logo{
-
-    width:80px;
-
-    height:80px;
-
-    border-radius:50%;
-
-    background:#f6c54f;
-
-    color:#08294f;
-
-    font-size:34px;
-
-    font-weight:700;
-
+.top-header{
+    background:linear-gradient(
+        135deg,
+        #06152d,
+        #123a71,
+        #06152d
+    );
+    padding:55px 60px 80px;
     display:flex;
-
+    justify-content:space-between;
     align-items:center;
-
-    justify-content:center;
-
+    position:relative;
+    overflow:hidden;
 }
 
-.company-details{
+.top-header::before{
+    content:"";
+    position:absolute;
+    top:-120px;
+    right:-120px;
+    width:280px;
+    height:280px;
+    border-radius:50%;
+    background:rgba(255,255,255,.05);
+}
 
+.top-header::after{
+    content:"";
+    position:absolute;
+    left:0;
+    bottom:-35px;
+    width:100%;
+    height:70px;
+    background:#fff;
+    border-radius:0 0 50% 50%;
+}
+
+/* ==========================================
+   COMPANY TITLE
+========================================== */
+
+.title-section{
+    flex:1;
     text-align:center;
-
+    z-index:2;
 }
 
-.approval-tag{
+.title-section h1{
+    font-family:"Cinzel",serif;
+    font-size:56px;
+    font-weight:700;
+    color:#f5d48e;
+    letter-spacing:2px;
+}
 
+.title-section p{
+    margin-top:12px;
+    font-size:20px;
+    color:#fff;
+    letter-spacing:.5px;
+}
+
+.venture-tag{
     display:inline-block;
-
-    background:#f6c54f;
-
-    color:#111;
-
-    padding:6px 16px;
-
+    margin-top:22px;
+    padding:12px 34px;
     border-radius:40px;
-
-    font-size:13px;
-
+    background:linear-gradient(
+        135deg,
+        #d7b46d,
+        #f8e3ab
+    );
+    color:#07152f;
     font-weight:700;
-
-    margin-bottom:12px;
-
-}
-
-.company-details h1{
-
-    font-size:34px;
-
+    font-size:15px;
     letter-spacing:1px;
-
-    margin-bottom:8px;
-
+    box-shadow:0 8px 20px rgba(0,0,0,.25);
 }
 
-.company-details p{
+/* ==========================================
+   APPROVAL BADGE
+========================================== */
 
-    font-size:14px;
-
-    opacity:.92;
-
-}
-
-.receipt-badge{
-
-    width:90px;
-
-    height:90px;
-
+.approval-circle{
+    width:170px;
+    height:170px;
     border-radius:50%;
-
-    border:4px solid #f6c54f;
-
+    border:6px solid #f5d48e;
     display:flex;
-
     flex-direction:column;
-
     justify-content:center;
-
     align-items:center;
-
-    font-weight:700;
-
+    background:rgba(255,255,255,.05);
+    backdrop-filter:blur(4px);
+    z-index:2;
 }
 
-.receipt-badge span{
-
-    font-size:11px;
-
-}
-
-.receipt-badge strong{
-
+.approval-top{
+    color:#f5d48e;
     font-size:16px;
-
+    font-weight:700;
+    letter-spacing:2px;
 }
 
-.gold-line{
-
-    height:4px;
-
-    background:linear-gradient(90deg,#f6c54f,#fff,#f6c54f);
-
-    margin:22px 0;
-
+.approval-check{
+    margin:10px 0;
+    width:62px;
+    height:62px;
+    border-radius:50%;
+    background:#f5d48e;
+    color:#07152f;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:34px;
+    font-weight:700;
 }
+
+.approval-bottom{
+    color:#fff;
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:2px;
+}
+
+/* ==========================================
+   RECEIPT TITLE
+========================================== */
 
 .receipt-title{
-
     text-align:center;
-
+    padding:65px 40px 35px;
 }
 
 .receipt-title h2{
-
-    font-size:28px;
-
-    color:#ffd86a;
-
+    font-family:"Cinzel",serif;
+    font-size:42px;
+    color:#07152f;
     letter-spacing:2px;
-
 }
 
-.receipt-title p{
-
-    margin-top:8px;
-
-    font-size:14px;
-
-}
-
-/* ===============================
-   RECEIPT INFO
-================================ */
-
-.receipt-info{
-
-    display:grid;
-
-    grid-template-columns:repeat(3,1fr);
-
-    gap:18px;
-
-    padding:22px;
-
-}
-
-.receipt-box{
-
-    background:#f8fafc;
-
-    border:2px solid #e8edf5;
-
-    border-radius:12px;
-
-    padding:15px;
-
-    text-align:center;
-
-}
-
-.receipt-box label{
-
-    font-size:13px;
-
-    color:#6b7280;
-
-}
-
-.receipt-box h3{
-
-    margin-top:8px;
-
-    color:#12396d;
-
-}
-
-.status-paid{
-
-    color:#16a34a !important;
-
-}
-
-/* ===============================
-   DETAILS
-================================ */
-
-.details-grid{
-
-    display:grid;
-
-    grid-template-columns:1fr 1fr;
-
-    gap:20px;
-
-    padding:0 22px 22px;
-
-}
-
-.details-card{
-
-    border:2px solid #edf2f7;
-
-    border-radius:14px;
-
-    padding:18px;
-
-}
-
-.card-heading{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:10px;
-
-    color:#12396d;
-
-    margin-bottom:15px;
-
-}
-
-.detail-row{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    padding:10px 0;
-
-    border-bottom:1px dashed #d5d5d5;
-
-}
-
-.detail-row:last-child{
-
-    border:none;
-
-}
-
-.detail-row span{
-
-    color:#6b7280;
-
-}
-
-.detail-row strong{
-
-    color:#111827;
-
-}
 /* ==========================================
-   PAYMENT SECTION
+   RECEIPT INFO
 ========================================== */
 
-.payment-section{
-    margin:0 22px;
-    border:2px solid #edf2f7;
-    border-radius:14px;
-    overflow:hidden;
-}
-
-.section-title{
+.receipt-info{
     display:flex;
+    justify-content:space-between;
     align-items:center;
-    gap:10px;
-    padding:15px 20px;
-    background:#12396d;
-    color:#fff;
+    gap:30px;
+    padding:0 50px 40px;
 }
 
-.section-title h3{
+.receipt-info>div{
+    flex:1;
+    background:#fff;
+    border:2px solid #ecd8a4;
+    border-radius:18px;
+    padding:22px 28px;
+    box-shadow:0 8px 20px rgba(0,0,0,.06);
+}
+
+.receipt-info small{
+    display:block;
+    color:#777;
+    font-size:14px;
+    margin-bottom:8px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+}
+
+.receipt-info h3{
+    color:#07152f;
+    font-size:24px;
+    font-weight:700;
+}
+/* ==========================================
+   CUSTOMER & PLOT GRID
+========================================== */
+
+.info-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:35px;
+    padding:0 45px 45px;
+}
+
+/* ==========================================
+   INFO CARD
+========================================== */
+
+.info-card{
+    background:#fff;
+    border:2px solid #e8d29b;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 12px 28px rgba(0,0,0,.08);
+    transition:.3s ease;
+}
+
+.info-card:hover{
+    transform:translateY(-5px);
+    box-shadow:0 20px 38px rgba(0,0,0,.12);
+}
+
+/* ==========================================
+   CARD HEADER
+========================================== */
+
+.card-header{
+    background:linear-gradient(
+        135deg,
+        #07152f,
+        #15407d
+    );
+    color:#f5d48e;
+    padding:20px 25px;
+    font-family:"Cinzel",serif;
+    font-size:22px;
+    letter-spacing:1px;
+}
+
+/* ==========================================
+   CARD BODY
+========================================== */
+
+.card-body{
+    padding:24px 28px;
+}
+
+/* ==========================================
+   ROW
+========================================== */
+
+.row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    padding:16px 0;
+    border-bottom:1px solid #ececec;
+}
+
+.row:last-child{
+    border-bottom:none;
+}
+
+.row span{
+    color:#666;
+    font-size:15px;
+    font-weight:500;
+}
+
+.row strong{
+    color:#07152f;
+    font-size:16px;
+    font-weight:700;
+    text-align:right;
+}
+
+.row strong.price{
+    color:#b88411;
     font-size:18px;
 }
+
+.row strong.available{
+    color:#1e8e3e;
+}
+
+.row strong.pending{
+    color:#d97706;
+}
+
+.row strong.sold{
+    color:#dc2626;
+}
+
+/* ==========================================
+   PAYMENT CARD
+========================================== */
+
+.payment-card{
+    width:calc(100% - 90px);
+    margin:0 auto 45px;
+    background:#fff;
+    border:2px solid #e5c97d;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 12px 28px rgba(0,0,0,.08);
+}
+
+/* ==========================================
+   PAYMENT HEADER
+========================================== */
+
+.payment-header{
+    background:linear-gradient(
+        135deg,
+        #07152f,
+        #16437d
+    );
+    color:#f5d48e;
+    text-align:center;
+    padding:24px;
+    font-family:"Cinzel",serif;
+    font-size:30px;
+    letter-spacing:1px;
+    font-weight:700;
+}
+
+/* ==========================================
+   PAYMENT TABLE
+========================================== */
 
 .payment-table{
     width:100%;
     border-collapse:collapse;
+    table-layout:fixed;
 }
 
 .payment-table thead{
-    background:#f6c54f;
+    background:#faf5e6;
+}
+
+.payment-table thead tr{
+    background:#f8f1dc;
 }
 
 .payment-table th{
-    padding:14px;
-    color:#111;
-    font-size:15px;
+    background:#f8f1dc;
+    color:#07152f !important;
+    font-size:17px;
+    font-weight:700;
+    padding:18px;
+    border-bottom:2px solid #d7b46d;
 }
 
-.payment-table td{
-    padding:12px 16px;
-    border-bottom:1px solid #ececec;
-    font-size:14px;
+.payment-table tbody tr{
+    background:#1f2937;
 }
 
-.payment-table tbody tr:nth-child(even){
-    background:#fafafa;
+.payment-table tbody td{
+    color:#ffffff;
+    font-size:17px;
+    font-weight:600;
+    padding:18px;
 }
 
+/* Footer row */
+
+.payment-table tfoot{
+    background:#faf5e6;
+}
+
+.payment-table tfoot td{
+    color:#07152f;
+    font-size:18px;
+    font-weight:700;
+    border-top:2px solid #ead8ac;
+}
+
+/* Amount */
+
+.amount-cell{
+    color:#ffd166 !important;
+    font-size:22px !important;
+    font-weight:700 !important;
+}
 /* ==========================================
-   SUMMARY
+   SUMMARY SECTION
 ========================================== */
 
-.summary-grid{
+.summary-section{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:16px;
-    padding:22px;
+    gap:25px;
+    padding:0 45px 45px;
 }
 
 .summary-card{
-    border-radius:14px;
-    padding:18px;
+    display:grid;
+    grid-template-columns:70px 1fr auto;
+    align-items:center;
+    gap:18px;
+
+    padding:24px;
+
+    background:linear-gradient(
+        135deg,
+        #07152f,
+        #143d73
+    );
+
+    border:2px solid #d7b46d;
+    border-radius:20px;
+
+    min-height:120px;
+
     color:#fff;
-    text-align:center;
+
+    transition:.3s;
+    box-shadow:0 12px 30px rgba(0,0,0,.15);
 }
 
-.summary-card span{
-    font-size:13px;
-    opacity:.95;
+.summary-card:hover{
+    transform:translateY(-6px);
 }
 
-.summary-card h2{
-    margin-top:10px;
-    font-size:28px;
+.summary-icon{
+    width:60px;
+    height:60px;
+
+    border-radius:50%;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:#f5d48e;
+    color:#07152f;
+
+    font-size:26px;
+    font-weight:700;
 }
 
-.total-card{
-    background:#12396d;
+.summary-text small{
+    display:block;
+    color:#f5d48e;
+    font-size:17px;
+    font-weight:600;
+    line-height:1.4;
 }
 
-.paid-card{
-    background:#16a34a;
+.summary-value{
+    text-align:right;
 }
 
-.balance-card{
-    background:#dc2626;
+.summary-value h2{
+    margin:0;
+    color:#fff;
+    font-size:24px;
+    font-weight:700;
+    white-space:nowrap;
 }
 
 /* ==========================================
@@ -441,22 +544,104 @@ body{
 ========================================== */
 
 .declaration-box{
-    margin:0 22px 20px;
-    background:#fff8e7;
-    border-left:5px solid #f6c54f;
-    padding:18px;
-    border-radius:10px;
+    margin:40px;
+    padding:35px;
+
+    background:#fffdf8;
+
+    border-left:8px solid #d7b46d;
+    border-radius:18px;
+
+    box-shadow:0 12px 25px rgba(0,0,0,.08);
 }
 
-.declaration-box h3{
-    color:#12396d;
-    margin-bottom:10px;
+.declaration-title{
+    font-family:"Cinzel",serif;
+    font-size:30px;
+    color:#07152f;
+    margin-bottom:20px;
 }
 
 .declaration-box p{
-    line-height:1.7;
-    color:#444;
-    font-size:14px;
+    font-size:17px;
+    line-height:1.9;
+    color:#555;
+    text-align:justify;
+}
+
+/* ==========================================
+   SIGNATURE AREA
+========================================== */
+
+.signature-area{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+
+    gap:60px;
+
+    padding:20px 45px 45px;
+}
+
+.company-seal{
+    width:140px;
+    height:140px;
+
+    border:4px dashed #d7b46d;
+    border-radius:50%;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    text-align:center;
+
+    font-size:16px;
+    font-weight:700;
+
+    color:#b8860b;
+
+    letter-spacing:1px;
+}
+
+.signature-box{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+}
+
+.signature-line{
+    width:240px;
+    border-top:2px solid #07152f;
+    margin-bottom:12px;
+}
+
+.signature-box h4{
+    margin:0;
+    font-size:20px;
+    color:#07152f;
+}
+
+.signature-box p{
+    margin-top:6px;
+    color:#666;
+    font-size:15px;
+}
+
+/* ==========================================
+   RECEIPT NOTE
+========================================== */
+
+.signature-section{
+    padding:0 45px 45px;
+    text-align:center;
+}
+
+.receipt-note{
+    font-size:16px;
+    color:#666;
+    font-style:italic;
 }
 
 /* ==========================================
@@ -464,66 +649,71 @@ body{
 ========================================== */
 
 .receipt-footer{
-    margin:22px;
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr;
-    gap:20px;
-    align-items:end;
+    background:linear-gradient(
+        135deg,
+        #07152f,
+        #123d75
+    );
+
+    color:#fff;
+
+    text-align:center;
+
+    padding:50px 35px;
 }
 
-.footer-left h3{
-    color:#12396d;
-    margin-bottom:10px;
+.receipt-footer h3{
+    font-family:"Cinzel",serif;
+    color:#f5d48e;
+    font-size:34px;
+    margin-bottom:12px;
 }
 
-.footer-left p{
-    color:#555;
-    line-height:1.6;
+.receipt-footer h2{
+    font-family:"Cinzel",serif;
+    font-size:42px;
+    color:#fff;
+    margin-bottom:15px;
 }
 
-.seal-circle{
-    width:95px;
-    height:95px;
-    margin:auto;
-    border-radius:50%;
-    border:4px solid #f6c54f;
+.receipt-footer p{
+    color:#dddddd;
+    font-size:17px;
+    line-height:1.8;
+}
+
+.footer-contact{
+    margin-top:28px;
+
     display:flex;
-    align-items:center;
     justify-content:center;
-    text-align:center;
-    font-weight:700;
-    color:#12396d;
-    font-size:13px;
+    align-items:center;
+    flex-wrap:wrap;
+
+    gap:30px;
 }
 
-.signature-line{
-    border-top:2px solid #333;
-    margin-bottom:10px;
+.footer-contact span{
+    color:#f5d48e;
+    font-size:16px;
+    font-weight:600;
 }
-
-.footer-right{
-    text-align:center;
-}
-
 /* ==========================================
-   COMPANY FOOTER
+   BOTTOM BAR
 ========================================== */
 
-.company-footer{
-    background:#12396d;
-    color:#fff;
-    padding:18px 25px;
-    text-align:center;
-}
+.bottom-bar{
+    background:#020b18;
+    color:#d7b46d;
 
-.company-footer h4{
-    margin-bottom:8px;
-    color:#f6c54f;
-}
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
 
-.company-footer p{
-    font-size:13px;
-    line-height:1.6;
+    padding:18px 35px;
+
+    font-size:14px;
+    font-weight:600;
 }
 
 /* ==========================================
@@ -532,28 +722,77 @@ body{
 
 @media print{
 
-    body{
-        background:#fff;
-    }
-
     .download-btn{
         display:none;
     }
 
     .receipt-page{
         padding:0;
+        background:#fff;
     }
 
-    .receipt{
-        width:210mm;
-        min-height:297mm;
+    .luxury-receipt{
+        width:100%;
+        max-width:100%;
+        border:none;
         border-radius:0;
         box-shadow:none;
     }
 
-    @page{
-        size:A4 portrait;
-        margin:0;
+    .top-header,
+    .payment-card,
+    .summary-section,
+    .declaration-box{
+        page-break-inside:avoid;
+    }
+
+    .receipt-footer{
+        page-break-inside:avoid;
+    }
+}
+
+/* ==========================================
+   TABLET
+========================================== */
+
+@media (max-width:1024px){
+
+    .receipt-page{
+        padding:20px;
+    }
+
+    .top-header{
+        padding:40px;
+    }
+
+    .title-section h1{
+        font-size:42px;
+    }
+
+    .receipt-info{
+        flex-direction:column;
+    }
+
+    .info-grid{
+        grid-template-columns:1fr;
+    }
+
+    .summary-section{
+        grid-template-columns:1fr;
+    }
+
+    .payment-card{
+        width:calc(100% - 40px);
+    }
+
+    .signature-area{
+        flex-direction:column;
+        align-items:center;
+        text-align:center;
+    }
+
+    .signature-box{
+        align-items:center;
     }
 }
 
@@ -561,31 +800,147 @@ body{
    MOBILE
 ========================================== */
 
-@media(max-width:850px){
+@media (max-width:768px){
 
-    .receipt{
-        width:100%;
+    .receipt-page{
+        padding:10px;
     }
 
-    .header-top{
-        grid-template-columns:1fr;
+    .top-header{
+        flex-direction:column;
+        gap:25px;
         text-align:center;
+        padding:35px 20px 60px;
+    }
+
+    .title-section h1{
+        font-size:30px;
+    }
+
+    .title-section p{
+        font-size:15px;
+    }
+
+    .venture-tag{
+        font-size:13px;
+        padding:10px 22px;
+    }
+
+    .approval-circle{
+        width:135px;
+        height:135px;
+    }
+
+    .approval-check{
+        width:50px;
+        height:50px;
+        font-size:28px;
+    }
+
+    .receipt-title h2{
+        font-size:30px;
     }
 
     .receipt-info{
-        grid-template-columns:1fr;
+        padding:0 20px 25px;
     }
 
-    .details-grid{
-        grid-template-columns:1fr;
+    .info-grid{
+        padding:0 20px 30px;
     }
 
-    .summary-grid{
+    .card-body{
+        padding:18px;
+    }
+
+    .row{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:6px;
+    }
+
+    .row strong{
+        text-align:left;
+    }
+
+    .payment-card{
+        width:calc(100% - 20px);
+    }
+
+    .payment-header{
+        font-size:24px;
+    }
+
+    .payment-table{
+        display:block;
+        overflow-x:auto;
+        white-space:nowrap;
+    }
+
+    .summary-section{
         grid-template-columns:1fr;
+        padding:0 20px 30px;
+    }
+
+    .summary-card{
+        grid-template-columns:60px 1fr;
+        gap:15px;
+    }
+
+    .summary-value{
+        grid-column:1 / -1;
+        text-align:left;
+        margin-top:10px;
+    }
+
+    .declaration-box{
+        margin:0 20px 30px;
+        padding:25px;
+    }
+
+    .declaration-title{
+        font-size:24px;
+    }
+
+    .declaration-box p{
+        font-size:15px;
+    }
+
+    .signature-area{
+        padding:20px;
+        gap:25px;
+    }
+
+    .company-seal{
+        width:110px;
+        height:110px;
+        font-size:14px;
+    }
+
+    .signature-line{
+        width:180px;
     }
 
     .receipt-footer{
-        grid-template-columns:1fr;
+        padding:35px 20px;
+    }
+
+    .receipt-footer h2{
+        font-size:28px;
+    }
+
+    .receipt-footer h3{
+        font-size:24px;
+    }
+
+    .footer-contact{
+        flex-direction:column;
+        gap:12px;
+    }
+
+    .bottom-bar{
+        flex-direction:column;
+        gap:10px;
         text-align:center;
     }
 }

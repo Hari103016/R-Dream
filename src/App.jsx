@@ -10,19 +10,21 @@ import EditCustomer from "./pages/EditCustomer";
 import AddPayment from "./pages/AddPayment";
 import Customers from "./pages/Customers";
 import ReceiptPage from "./pages/ReceiptPage";
-
+import Plots from "./pages/Plots";
+import BookPlot from "./pages/BookPlot";
+import Bookings from "./pages/Bookings";
+import Payments from "./pages/Payments";
+import Reports from "./pages/Reports";
 function App() {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
 
   useEffect(() => {
-    // Get current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -33,11 +35,16 @@ function App() {
   }, []);
 
   if (loading) {
-    return <h2 style={{ color: "white", textAlign: "center" }}>Loading...</h2>;
+    return (
+      <h2 style={{ color: "white", textAlign: "center" }}>
+        Loading...
+      </h2>
+    );
   }
 
   return (
     <Routes>
+
       <Route
         path="/"
         element={
@@ -53,6 +60,20 @@ function App() {
       />
 
       <Route
+        path="/customers"
+        element={
+          session ? <Customers /> : <Navigate to="/" replace />
+        }
+      />
+
+      <Route
+        path="/plots"
+        element={
+          session ? <Plots /> : <Navigate to="/" replace />
+        }
+      />
+
+      <Route
         path="/customer/:id"
         element={
           session ? (
@@ -62,6 +83,29 @@ function App() {
           )
         }
       />
+
+      <Route
+        path="/edit-customer/:id"
+        element={
+          session ? (
+            <EditCustomer />
+          ) : (
+            <Navigate to="/" replace />
+          )
+        }
+      />
+
+      <Route
+        path="/add-payment/:id"
+        element={
+          session ? (
+            <AddPayment />
+          ) : (
+            <Navigate to="/" replace />
+          )
+        }
+      />
+
       <Route
         path="/receipt"
         element={
@@ -72,6 +116,7 @@ function App() {
           )
         }
       />
+
       <Route
         path="*"
         element={
@@ -81,25 +126,10 @@ function App() {
           />
         }
       />
-      <Route
-        path="/edit-customer/:id"
-        element={<EditCustomer />}
-      />
-      <Route
-        path="/add-payment/:id"
-        element={<AddPayment />}
-      />
-      <Route
-        path="/customers"
-        element={
-          session ? (
-            <Customers />
-          ) : (
-            <Navigate to="/" replace />
-          )
-        }
-      />
-      
+      <Route path="/book/:id" element={<BookPlot />} />
+      <Route path="/bookings" element={<Bookings />} />
+      <Route path="/payments" element={<Payments />} />
+      <Route path="/reports" element={<Reports />} />
     </Routes>
   );
 }

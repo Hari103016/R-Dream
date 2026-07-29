@@ -20,68 +20,83 @@ function AddPaymentModal({ customer, onClose, onSuccess }) {
   };
 
   const savePayment = async () => {
-    if (!formData.amount) {
-      alert("Please enter payment amount.");
-      return;
+    try {
+      if (!formData.amount) {
+        alert("Please enter payment amount.");
+        return;
+      }
+
+      console.log("========== CUSTOMER ==========");
+      console.log(customer);
+
+      console.log("Customer ID :", customer.id);
+      console.log("Plot No :", customer.plot_no);
+
+      // Insert payment
+      const { data, error } = await supabase
+        .from("payments")
+        .insert([
+          {
+            customer_id: customer.id,
+            amount: Number(formData.amount),
+            payment_mode: formData.payment_mode,
+            remarks: formData.remarks,
+            payment_date: formData.payment_date,
+          },
+        ])
+        .select();
+
+      console.log("Insert Data :", data);
+      console.log("Insert Error :", error);
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      const newPaid =
+        Number(customer.amount_paid || 0) +
+        Number(formData.amount);
+
+      const newBalance =
+        Number(customer.total_amount || 0) -
+        newPaid;
+
+      const { error: updateError } = await supabase
+        .from("customers")
+        .update({
+          amount_paid: newPaid,
+          balance: newBalance,
+        })
+        .eq("id", customer.id);
+
+      console.log("Update Error :", updateError);
+
+      if (updateError) {
+        alert(updateError.message);
+        return;
+      }
+
+      alert("Payment Added Successfully");
+
+      if (onSuccess) {
+        await onSuccess();
+      }
+
+      onClose();
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
     }
-
-    // 1. Insert payment
-    const { error } = await supabase
-      .from("payments")
-      .insert([
-        {
-          customer_id: customer.id,
-          amount: Number(formData.amount),
-          payment_mode: formData.payment_mode,
-          remarks: formData.remarks,
-          payment_date: formData.payment_date,
-        },
-      ]);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    // 2. Calculate new paid amount
-    const newPaid =
-      Number(customer.amount_paid || 0) +
-      Number(formData.amount);
-
-    // 3. Calculate new balance
-    const newBalance =
-      Number(customer.total_amount || 0) -
-      newPaid;
-
-    // 4. Update customer
-    const { error: updateError } = await supabase
-      .from("customers")
-      .update({
-        amount_paid: newPaid,
-        balance: newBalance,
-      })
-      .eq("id", customer.id);
-
-    if (updateError) {
-      alert(updateError.message);
-      return;
-    }
-
-    alert("Payment Added Successfully");
-
-    onSuccess();
-    onClose();
   };
 
   return (
     <div className="modal-overlay">
       <div className="payment-modal">
-
         <h2>Add Payment</h2>
 
         <div className="form-group">
           <label>Customer</label>
-
           <input
             type="text"
             value={customer.name}
@@ -91,7 +106,6 @@ function AddPaymentModal({ customer, onClose, onSuccess }) {
 
         <div className="form-group">
           <label>Amount</label>
-
           <input
             type="number"
             name="amount"
@@ -103,7 +117,6 @@ function AddPaymentModal({ customer, onClose, onSuccess }) {
 
         <div className="form-group">
           <label>Payment Mode</label>
-
           <select
             name="payment_mode"
             value={formData.payment_mode}
@@ -118,7 +131,6 @@ function AddPaymentModal({ customer, onClose, onSuccess }) {
 
         <div className="form-group">
           <label>Remarks</label>
-
           <input
             type="text"
             name="remarks"
@@ -130,7 +142,6 @@ function AddPaymentModal({ customer, onClose, onSuccess }) {
 
         <div className="form-group">
           <label>Payment Date</label>
-
           <input
             type="date"
             name="payment_date"
@@ -140,7 +151,6 @@ function AddPaymentModal({ customer, onClose, onSuccess }) {
         </div>
 
         <div className="modal-buttons">
-
           <button
             className="cancel-btn"
             onClick={onClose}
@@ -154,9 +164,7 @@ function AddPaymentModal({ customer, onClose, onSuccess }) {
           >
             Save Payment
           </button>
-
         </div>
-
       </div>
     </div>
   );

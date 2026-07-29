@@ -49,25 +49,42 @@ function Customers() {
   }, [search, customers]);
 
   async function deleteCustomer(id) {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this customer?"
-    );
-
-    if (!confirmDelete) return;
-
-    const { error } = await supabase
-      .from("customers")
-      .delete()
-      .eq("id", id);
-
-    if (error) {
-      alert(error.message);
+    if (!window.confirm("Are you sure you want to delete this customer?")) {
       return;
     }
 
+    console.log("Deleting customer:", id);
+
+    const paymentResult = await supabase
+      .from("payments")
+      .delete()
+      .eq("customer_id", id)
+      .select();
+
+    console.log("Payment Result:", paymentResult);
+
+    const customerResult = await supabase
+      .from("customers")
+      .delete()
+      .eq("id", id)
+      .select();
+
+    console.log("Customer Result:", customerResult);
+
+    if (paymentResult.error) {
+      alert("Payment Error: " + paymentResult.error.message);
+      return;
+    }
+
+    if (customerResult.error) {
+      alert("Customer Error: " + customerResult.error.message);
+      return;
+    }
+
+    alert("Customer deleted successfully");
+
     fetchCustomers();
   }
-
   return (
     <div className="dashboard">
       <Sidebar

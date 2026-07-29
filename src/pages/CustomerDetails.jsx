@@ -1,9 +1,20 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../services/supabase";
 import AddPaymentModal from "../components/AddPaymentModal";
-
 import "./CustomerDetails.css";
+
+import {
+  User,
+  Phone,
+  MapPinned,
+  Calendar,
+  IndianRupee,
+  CreditCard,
+  Wallet,
+  Receipt,
+  ArrowLeft,
+} from "lucide-react";
 
 function CustomerDetails() {
   const { id } = useParams();
@@ -40,45 +51,39 @@ function CustomerDetails() {
       const { data, error } = await supabase
         .from("customers")
         .select("*")
-        .or(`id.eq.${id},plot_no.eq.${id}`);
+        .eq("id", id)
+        .single();
 
       if (error) throw error;
 
-      if (!data || data.length === 0) {
-        setCustomer(null);
-        setPayments([]);
-        setLoading(false);
-        return;
-      }
-
-      const selectedCustomer = data[0];
-      setCustomer(selectedCustomer);
+      setCustomer(data);
 
       const { data: paymentData } = await supabase
         .from("payments")
         .select("*")
-        .eq("customer_id", selectedCustomer.id)
+        .eq("customer_id", data.id)
         .order("payment_date", { ascending: false });
 
       setPayments(paymentData || []);
     } catch (err) {
       console.error(err);
-      setCustomer(null);
-      setPayments([]);
+      alert("Customer not found.");
+      navigate("/customers");
+      return;
     }
 
     setLoading(false);
   }
 
-  const openEdit = () => {
+  function openEdit() {
     setFormData({
       ...customer,
     });
 
     setShowEdit(true);
-  };
+  }
 
-  const saveCustomer = async () => {
+  async function saveCustomer() {
     const { error } = await supabase
       .from("customers")
       .update({
@@ -88,23 +93,72 @@ function CustomerDetails() {
         plot_size: formData.plot_size,
         facing: formData.facing,
         status: formData.status,
-        total_amount: formData.total_amount,
-        amount_paid: formData.amount_paid,
-        balance: formData.balance,
+        total_amount: Number(formData.total_amount),
+        amount_paid: Number(formData.amount_paid),
+        balance: Number(formData.balance),
         booking_date: formData.booking_date,
       })
       .eq("id", customer.id);
 
     if (error) {
-      alert("Failed to update customer.");
+      alert(error.message);
       return;
     }
 
     setShowEdit(false);
+
     fetchCustomer();
 
-    alert("Customer updated successfully.");
-  };
+    alert("Customer Updated Successfully");
+  }
+
+  async function deleteCustomer() {
+  const ok = window.confirm(
+    "Delete this customer?\n\nAll payments will be deleted and the plot will become Available."
+  );
+
+  if (!ok) return;
+
+  try {
+    // 1. Make plot available
+    const { data: updatedPlot, error: plotError } = await supabase
+      .from("plots")
+      .update({
+        status: "Available",
+        customer_id: null,
+      })
+      .eq("customer_id", customer.id)
+      .select();
+
+    console.log("Customer ID:", customer.id);
+    console.log("Updated Plot:", updatedPlot);
+    console.log("Plot Error:", plotError);
+
+    if (plotError) throw plotError;
+    // 2. Delete payments
+    const { error: paymentError } = await supabase
+      .from("payments")
+      .delete()
+      .eq("customer_id", customer.id);
+
+    if (paymentError) throw paymentError;
+
+    // 3. Delete customer
+    const { error: customerError } = await supabase
+      .from("customers")
+      .delete()
+      .eq("id", customer.id);
+
+    if (customerError) throw customerError;
+
+    alert("Customer Deleted Successfully");
+
+    navigate("/plots");
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
+  }
+}
 
   if (loading) {
     return (
@@ -114,46 +168,76 @@ function CustomerDetails() {
     );
   }
 
-  if (!customer) {
-    return (
-      <div className="customer-page">
-        <h2>Customer Not Found</h2>
+  const total = Number(customer.total_amount || 0);
+  const paid = Number(customer.amount_paid || 0);
+  const balance = Number(customer.balance || 0);
 
-        <button
-          className="back-btn"
-          onClick={() => navigate("/dashboard")}
-        >
-          Back
-        </button>
-      </div>
-    );
-  }
+  const percent =
+    total === 0
+      ? 0
+      : Math.round((paid / total) * 100);
 
   return (
     <div className="customer-page">
+            {/* ============================
+          Header
+      ============================= */}
 
-      <div className="header">
+      <div className="customer-header">
 
         <button
           className="back-btn"
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/customers")}
         >
-          ← Back
+          <ArrowLeft size={18} />
+          Back
         </button>
 
-        <h1>👤 Customer Profile</h1>
+        <h1>Customer Profile</h1>
 
       </div>
+
+      {/* ============================
+          Profile Card
+      ============================= */}
 
       <div className="profile-card">
 
         <div className="profile-top">
 
-          <div>
+          <div className="avatar">
+            {customer.name
+              ? customer.name.charAt(0).toUpperCase()
+              : "C"}
+          </div>
+
+          <div className="profile-details">
 
             <h2>{customer.name}</h2>
 
-            <span className="status">
+            <p>
+              Customer ID :
+              <strong> #{customer.id}</strong>
+            </p>
+
+            <p>
+              📱 {customer.mobile}
+            </p>
+
+            <p>
+              🏡 Plot No :
+              <strong> {customer.plot_no}</strong>
+            </p>
+
+            <p>
+              📅 {customer.booking_date}
+            </p>
+
+            <span
+              className={`status-badge ${customer.status
+                .toLowerCase()
+                .replace(/\s+/g, "-")}`}
+            >
               {customer.status}
             </span>
 
@@ -161,106 +245,215 @@ function CustomerDetails() {
 
         </div>
 
-        {/* Customer Information */}
+        {/* ============================
+            Summary Cards
+        ============================= */}
 
-        <div className="customer-info-grid">
+        <div className="summary-grid">
 
-          <div className="customer-info-card">
-            <label>Plot Number</label>
-            <p>{customer.plot_no}</p>
+          <div className="summary-card">
+
+            <IndianRupee size={30} />
+
+            <h4>Total Amount</h4>
+
+            <h2>
+              ₹{total.toLocaleString()}
+            </h2>
+
           </div>
 
-          <div className="customer-info-card">
-            <label>Facing</label>
-            <p>{customer.facing}</p>
+          <div className="summary-card paid">
+
+            <Wallet size={30} />
+
+            <h4>Amount Paid</h4>
+
+            <h2>
+              ₹{paid.toLocaleString()}
+            </h2>
+
           </div>
 
-          <div className="customer-info-card">
-            <label>Mobile</label>
+          <div className="summary-card balance">
+
+            <CreditCard size={30} />
+
+            <h4>Balance</h4>
+
+            <h2>
+              ₹{balance.toLocaleString()}
+            </h2>
+
+          </div>
+
+          <div className="summary-card">
+
+            <Receipt size={30} />
+
+            <h4>Total Payments</h4>
+
+            <h2>
+              {payments.length}
+            </h2>
+
+          </div>
+
+        </div>
+
+        {/* ============================
+            Payment Progress
+        ============================= */}
+
+        <div className="progress-section">
+
+          <div className="progress-header">
+
+            <span>Payment Progress</span>
+
+            <span>{percent}%</span>
+
+          </div>
+
+          <div className="progress-bar">
+
+            <div
+              className="progress-fill"
+              style={{
+                width: `${percent}%`,
+              }}
+            />
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ============================
+          Customer Information
+      ============================= */}
+
+      <div className="cd-info-grid">
+
+        <div className="cd-info-card">
+          <User className="card-icon" />
+          <div className="card-content">
+            <h4>Customer Name</h4>
+            <p>{customer.name}</p>
+          </div>
+        </div>
+
+        <div className="cd-info-card">
+          <Phone className="card-icon" />
+          <div className="card-content">
+            <h4>Mobile Number</h4>
             <p>{customer.mobile}</p>
           </div>
+        </div>
 
-          <div className="customer-info-card">
-            <label>Plot Size</label>
+        <div className="cd-info-card">
+          <MapPinned className="card-icon" />
+          <div className="card-content">
+            <h4>Plot Number</h4>
+            <p>{customer.plot_no}</p>
+          </div>
+        </div>
+
+        <div className="cd-info-card">
+          <MapPinned className="card-icon" />
+          <div className="card-content">
+            <h4>Facing</h4>
+            <p>{customer.facing}</p>
+          </div>
+        </div>
+
+        <div className="cd-info-card">
+          <MapPinned className="card-icon" />
+          <div className="card-content">
+            <h4>Plot Size</h4>
             <p>{customer.plot_size} Sq.Yds</p>
           </div>
-
         </div>
 
-        <hr />
-
-        <h3>Payment Information</h3>
-
-        <div className="customer-payment-grid">
-
-          <div className="customer-info-card">
-            <label>Total Amount</label>
-            <p>
-              ₹{Number(customer.total_amount).toLocaleString()}
-            </p>
-          </div>
-
-          <div className="customer-info-card">
-            <label>Amount Paid</label>
-            <p>
-              ₹{Number(customer.amount_paid).toLocaleString()}
-            </p>
-          </div>
-
-          <div className="customer-info-card">
-            <label>Balance</label>
-            <p>
-              ₹{Number(customer.balance).toLocaleString()}
-            </p>
-          </div>
-
-          <div className="customer-info-card">
-            <label>Booking Date</label>
+        <div className="cd-info-card">
+          <Calendar className="card-icon" />
+          <div className="card-content">
+            <h4>Booking Date</h4>
             <p>{customer.booking_date}</p>
           </div>
-
         </div>
 
-        <div className="action-buttons">
+      </div>
+            {/* ============================
+          Action Buttons
+      ============================= */}
 
-          <button onClick={openEdit}>
-            ✏ Edit Customer
-          </button>
+      <div className="action-buttons">
 
-          <button onClick={() => setShowPayment(true)}>
-            💰 Add Payment
-          </button>
+        <button
+          className="edit-btn"
+          onClick={openEdit}
+        >
+          ✏ Edit Customer
+        </button>
 
-          <button
-            onClick={() =>
-              navigate("/receipt", {
-                state: {
-                  customer,
-                  payment:
-                    payments.length > 0
-                      ? payments[0]
-                      : null,
-                },
-              })
-            }
-          >
-            🖨 Print Receipt
-          </button>
+        <button
+          className="payment-btn"
+          onClick={() => setShowPayment(true)}
+        >
+          💰 Add Payment
+        </button>
 
-        </div>
+        <button
+          className="receipt-btn"
+          onClick={() =>
+            navigate("/receipt", {
+              state: {
+                customer,
+                payments,
+              },
+            })
+          }
+        >
+          🖨 Print Receipt
+        </button>
 
-        <hr />
-                <h2>Payment History</h2>
+        <button
+          className="delete-btn"
+          onClick={deleteCustomer}
+        >
+          🗑 Delete Customer
+        </button>
+
+      </div>
+
+      {/* ============================
+          Payment History
+      ============================= */}
+
+      <div className="payment-history">
+
+        <h2>Payment History</h2>
 
         <table className="payment-table">
 
           <thead>
+
             <tr>
+
               <th>Date</th>
+
+              <th>Receipt No</th>
+
               <th>Amount</th>
+
               <th>Mode</th>
+
               <th>Remarks</th>
+
             </tr>
+
           </thead>
 
           <tbody>
@@ -268,14 +461,16 @@ function CustomerDetails() {
             {payments.length === 0 ? (
 
               <tr>
-                <td colSpan="4">
+
+                <td colSpan="5">
                   No Payments Found
                 </td>
+
               </tr>
 
             ) : (
 
-              payments.map((payment) => (
+              payments.map((payment, index) => (
 
                 <tr key={payment.id}>
 
@@ -286,7 +481,13 @@ function CustomerDetails() {
                   </td>
 
                   <td>
-                    ₹{Number(payment.amount).toLocaleString()}
+                    RCPT-
+                    {String(index + 1).padStart(4, "0")}
+                  </td>
+
+                  <td>
+                    ₹
+                    {Number(payment.amount).toLocaleString()}
                   </td>
 
                   <td>
@@ -307,13 +508,115 @@ function CustomerDetails() {
 
         </table>
 
-        {showEdit && (
+      </div>
 
-          <div className="modal-overlay">
+      {/* ============================
+          Booking Timeline
+      ============================= */}
 
-            <div className="edit-modal">
+      <div className="timeline-section">
 
-              <h2>Edit Customer</h2>
+        <h2>Booking Timeline</h2>
+
+        <div className="timeline">
+
+          <div className="timeline-item">
+
+            <div className="timeline-icon success">
+              ✓
+            </div>
+
+            <div className="timeline-content">
+
+              <h4>Plot Booked</h4>
+
+              <p>
+                {customer.booking_date}
+              </p>
+
+            </div>
+
+          </div>
+
+          <div className="timeline-item">
+
+            <div className="timeline-icon paid">
+              ₹
+            </div>
+
+            <div className="timeline-content">
+
+              <h4>Advance Paid</h4>
+
+              <p>
+                ₹
+                {Number(customer.amount_paid).toLocaleString()}
+              </p>
+
+            </div>
+
+          </div>
+
+          {Number(customer.balance) > 0 && (
+
+            <div className="timeline-item">
+
+              <div className="timeline-icon pending">
+                !
+              </div>
+
+              <div className="timeline-content">
+
+                <h4>Balance Pending</h4>
+
+                <p>
+                  ₹
+                  {Number(customer.balance).toLocaleString()}
+                </p>
+
+              </div>
+
+            </div>
+
+          )}
+
+          {Number(customer.balance) === 0 && (
+
+            <div className="timeline-item">
+
+              <div className="timeline-icon complete">
+                ✓
+              </div>
+
+              <div className="timeline-content">
+
+                <h4>Payment Completed</h4>
+
+                <p>
+                  Customer has cleared all dues.
+                </p>
+
+              </div>
+
+            </div>
+
+          )}
+
+        </div>
+
+      </div>
+            {/* ============================
+          Edit Customer Modal
+      ============================= */}
+
+      {showEdit && (
+        <div className="modal-overlay">
+
+          <div className="modal">
+
+            <h2>Edit Customer</h2>
+
+            <div className="form-grid">
 
               <input
                 type="text"
@@ -352,7 +655,7 @@ function CustomerDetails() {
               />
 
               <input
-                type="number"
+                type="text"
                 placeholder="Plot Size"
                 value={formData.plot_size}
                 onChange={(e) =>
@@ -363,7 +666,9 @@ function CustomerDetails() {
                 }
               />
 
-              <select
+              <input
+                type="text"
+                placeholder="Facing"
                 value={formData.facing}
                 onChange={(e) =>
                   setFormData({
@@ -371,14 +676,11 @@ function CustomerDetails() {
                     facing: e.target.value,
                   })
                 }
-              >
-                <option>East</option>
-                <option>West</option>
-                <option>North</option>
-                <option>South</option>
-              </select>
+              />
 
-              <select
+              <input
+                type="text"
+                placeholder="Status"
                 value={formData.status}
                 onChange={(e) =>
                   setFormData({
@@ -386,11 +688,7 @@ function CustomerDetails() {
                     status: e.target.value,
                   })
                 }
-              >
-                <option>Available</option>
-                <option>Booked</option>
-                <option>Sold</option>
-              </select>
+              />
 
               <input
                 type="number"
@@ -400,9 +698,6 @@ function CustomerDetails() {
                   setFormData({
                     ...formData,
                     total_amount: e.target.value,
-                    balance:
-                      Number(e.target.value) -
-                      Number(formData.amount_paid),
                   })
                 }
               />
@@ -415,17 +710,20 @@ function CustomerDetails() {
                   setFormData({
                     ...formData,
                     amount_paid: e.target.value,
-                    balance:
-                      Number(formData.total_amount) -
-                      Number(e.target.value),
                   })
                 }
               />
 
               <input
                 type="number"
+                placeholder="Balance"
                 value={formData.balance}
-                readOnly
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    balance: e.target.value,
+                  })
+                }
               />
 
               <input
@@ -439,42 +737,46 @@ function CustomerDetails() {
                 }
               />
 
-              <div className="modal-buttons">
+            </div>
 
-                <button
-                  onClick={() => setShowEdit(false)}
-                >
-                  Cancel
-                </button>
+            <div className="modal-buttons">
 
-                <button
-                  onClick={saveCustomer}
-                >
-                  Save Changes
-                </button>
+              <button
+                className="save-btn"
+                onClick={saveCustomer}
+              >
+                Save Changes
+              </button>
 
-              </div>
+              <button
+                className="cancel-btn"
+                onClick={() => setShowEdit(false)}
+              >
+                Cancel
+              </button>
 
             </div>
 
           </div>
 
-        )}
+        </div>
+      )}
 
-        {showPayment && (
+      {/* ============================
+          Add Payment Modal
+      ============================= */}
 
-          <AddPaymentModal
-            customer={customer}
-            onClose={() => setShowPayment(false)}
-            onSuccess={fetchCustomer}
-          />
-
-        )}
-
-      </div>
+      {showPayment && (
+        <AddPaymentModal
+          customer={customer}
+          onClose={() => {
+            setShowPayment(false);
+            fetchCustomer();
+          }}
+        />
+      )}
 
     </div>
-
   );
 }
 
