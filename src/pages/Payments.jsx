@@ -1,22 +1,28 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
   Search,
-  Receipt,
-  User,
-  IndianRupee,
-  Calendar,
+  Download,
+  Eye,
   CreditCard,
 } from "lucide-react";
+
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
 import { supabase } from "../services/supabase";
+
 import "./Payments.css";
 
 function Payments() {
   const navigate = useNavigate();
 
   const [payments, setPayments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [filteredPayments, setFilteredPayments] = useState([]);
+
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPayments();
@@ -32,156 +38,208 @@ function Payments() {
         customers (
           id,
           name,
+          mobile,
           plot_no
         )
       `)
-      .order("payment_date", { ascending: false });
+      .order("payment_date", {
+        ascending: false,
+      });
 
     if (error) {
       console.error(error);
-    } else {
-      setPayments(data || []);
+      setLoading(false);
+      return;
     }
 
+    setPayments(data || []);
+    setFilteredPayments(data || []);
     setLoading(false);
   }
 
-  const filteredPayments = payments.filter((payment) => {
-    const customerName =
-      payment.customers?.name?.toLowerCase() || "";
+  useEffect(() => {
+    const value = search.toLowerCase();
 
-    const plot =
-      payment.customers?.plot_no?.toString() || "";
+    const result = payments.filter((payment) => {
+      return (
+        payment.customers?.name
+          ?.toLowerCase()
+          .includes(value) ||
+        payment.customers?.mobile
+          ?.includes(search) ||
+        payment.customers?.plot_no
+          ?.toString()
+          .includes(search)
+      );
+    });
 
-    return (
-      customerName.includes(search.toLowerCase()) ||
-      plot.includes(search)
+    setFilteredPayments(result);
+  }, [search, payments]);
+
+  function exportExcel() {
+    const rows = filteredPayments.map((payment) => ({
+      "Customer Name": payment.customers?.name,
+      "Plot No": payment.customers?.plot_no,
+      Mobile: payment.customers?.mobile,
+      Amount: payment.amount,
+      "Payment Mode": payment.payment_mode,
+      "Payment Date": payment.payment_date,
+      Remarks: payment.remarks,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Payments"
     );
-  });
 
-  return (
+    const buffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    saveAs(
+      new Blob([buffer]),
+      `Payments_${new Date().toLocaleDateString()}.xlsx`
+    );
+  }
+    return (
     <div className="payments-page">
 
       <div className="payments-header">
 
         <h2>Payments</h2>
 
-        <div className="search-box">
+        <div className="header-actions">
 
-          <Search size={18} />
+          <div className="search-box">
 
-          <input
-            type="text"
-            placeholder="Search Customer / Plot"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+            <Search size={18} />
+
+            <input
+              type="text"
+              placeholder="Search Name / Plot / Mobile"
+              value={search}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
+            />
+
+          </div>
+
+          <button
+            className="export-btn"
+            onClick={exportExcel}
+          >
+            <Download size={18} />
+            Export Excel
+          </button>
 
         </div>
 
       </div>
 
       {loading ? (
-        <h3>Loading...</h3>
+
+        <div className="empty">
+          Loading Payments...
+        </div>
+
       ) : filteredPayments.length === 0 ? (
-        <h3>No Payments Found</h3>
+
+        <div className="empty">
+          No Payments Found
+        </div>
+
       ) : (
 
-        <table className="payment-table">
+        <div className="table-container">
 
-          <thead>
+          <table>
 
-            <tr>
+            <thead>
 
-              <th>Receipt</th>
-              <th>Customer</th>
-              <th>Plot</th>
-              <th>Amount</th>
-              <th>Mode</th>
-              <th>Date</th>
-              <th>Action</th>
+              <tr>
 
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {filteredPayments.map((payment, index) => (
-
-              <tr key={payment.id}>
-
-                <td>
-
-                  <Receipt size={16} />
-
-                  RCPT-
-                  {String(index + 1).padStart(4, "0")}
-
-                </td>
-
-                <td>
-
-                  <User size={16} />
-
-                  {payment.customers?.name}
-
-                </td>
-
-                <td>
-
-                  {payment.customers?.plot_no}
-
-                </td>
-
-                <td>
-
-                  <IndianRupee size={16} />
-
-                  {Number(payment.amount).toLocaleString("en-IN")}
-
-                </td>
-
-                <td>
-
-                  <CreditCard size={16} />
-
-                  {payment.payment_mode}
-
-                </td>
-
-                <td>
-
-                  <Calendar size={16} />
-
-                  {payment.payment_date}
-
-                </td>
-
-                <td>
-
-                  <button
-                    className="view-btn"
-                    onClick={() =>
-                      navigate(`/customer/${payment.customer_id}`)
-                    }
-                  >
-                    View
-                  </button>
-
-                </td>
+                <th>Customer</th>
+                <th>Plot</th>
+                <th>Mobile</th>
+                <th>Amount</th>
+                <th>Mode</th>
+                <th>Date</th>
+                <th>Remarks</th>
+                <th>Action</th>
 
               </tr>
 
-            ))}
+            </thead>
 
-          </tbody>
+            <tbody>
 
-        </table>
+              {filteredPayments.map((payment) => (
+
+                <tr key={payment.id}>
+
+                  <td>{payment.customers?.name}</td>
+
+                  <td>{payment.customers?.plot_no}</td>
+
+                  <td>{payment.customers?.mobile}</td>
+
+                  <td>
+                    ₹
+                    {Number(payment.amount).toLocaleString(
+                      "en-IN"
+                    )}
+                  </td>
+
+                  <td>
+
+                    <span className="payment-mode">
+
+                      <CreditCard size={15} />
+
+                      {payment.payment_mode}
+
+                    </span>
+
+                  </td>
+
+                  <td>{payment.payment_date}</td>
+
+                  <td>{payment.remarks}</td>
+
+                  <td>
+
+                    <button
+                      className="view-btn"
+                      onClick={() =>
+                        navigate(
+                          `/customer/${payment.customer_id}`
+                        )
+                      }
+                    >
+                      <Eye size={16} />
+                    </button>
+
+                  </td>
+
+                </tr>
+
+              ))}
+
+            </tbody>
+
+          </table>
+
+        </div>
 
       )}
-
-    </div>
+          </div>
   );
 }
 

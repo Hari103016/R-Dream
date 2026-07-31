@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../services/supabase";
 import AddPaymentModal from "../components/AddPaymentModal";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 import "./CustomerDetails.css";
 
 import {
@@ -67,7 +69,7 @@ function CustomerDetails() {
       setPayments(paymentData || []);
     } catch (err) {
       console.error(err);
-      alert("Customer not found.");
+      toast.error("Customer not found.");
       navigate("/customers");
       return;
     }
@@ -101,7 +103,7 @@ function CustomerDetails() {
       .eq("id", customer.id);
 
     if (error) {
-      alert(error.message);
+      toast.error(err.message || "Something went wrong");
       return;
     }
 
@@ -109,56 +111,67 @@ function CustomerDetails() {
 
     fetchCustomer();
 
-    alert("Customer Updated Successfully");
+    toast.success("Customer Updated Successfully");
   }
 
   async function deleteCustomer() {
-  const ok = window.confirm(
-    "Delete this customer?\n\nAll payments will be deleted and the plot will become Available."
-  );
+    const result = await Swal.fire({
+      title: "Delete Customer?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#2563eb",
+    });
 
-  if (!ok) return;
+    if (!result.isConfirmed) return;
 
-  try {
-    // 1. Make plot available
-    const { data: updatedPlot, error: plotError } = await supabase
-      .from("plots")
-      .update({
-        status: "Available",
-        customer_id: null,
-      })
-      .eq("customer_id", customer.id)
-      .select();
+    try {
+      // 1. Delete payment history
+      const { error: paymentError } = await supabase
+        .from("payments")
+        .delete()
+        .eq("customer_id", customer.id);
 
-    console.log("Customer ID:", customer.id);
-    console.log("Updated Plot:", updatedPlot);
-    console.log("Plot Error:", plotError);
+      if (paymentError) throw paymentError;
 
-    if (plotError) throw plotError;
-    // 2. Delete payments
-    const { error: paymentError } = await supabase
-      .from("payments")
-      .delete()
-      .eq("customer_id", customer.id);
+      // 2. Make the plot available again
+      // 2. Make the plot available again
+      const { error: plotError } = await supabase
+        .from("plots")
+        .update({
+          status: "Available",
+          customer_id: null,
+        })
+        .eq("customer_id", customer.id);
 
-    if (paymentError) throw paymentError;
+      if (plotError) throw plotError;
 
-    // 3. Delete customer
-    const { error: customerError } = await supabase
-      .from("customers")
-      .delete()
-      .eq("id", customer.id);
+      // 3. Delete customer
+      const { error: customerError } = await supabase
+        .from("customers")
+        .delete()
+        .eq("id", customer.id);
 
-    if (customerError) throw customerError;
+      if (customerError) throw customerError;
 
-    alert("Customer Deleted Successfully");
+      await Swal.fire({
+        title: "Deleted!",
+        text: "Customer deleted successfully.",
+        icon: "success",
+        timer: 1800,
+        showConfirmButton: false,
+      });
 
-    navigate("/plots");
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
+      navigate("/plots", { replace: true });
+
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "Something went wrong");
+    }
   }
-}
 
   if (loading) {
     return (

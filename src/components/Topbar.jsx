@@ -1,5 +1,5 @@
 import "./Topbar.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
@@ -11,8 +11,11 @@ import {
 
 function Topbar({ setSidebarOpen }) {
   const [search, setSearch] = useState("");
+  const [results, setResults] = useState([]);
+
   const navigate = useNavigate();
 
+  // TODO: Replace with Supabase live search
   const handleSearch = () => {
     if (!search.trim()) return;
 
@@ -61,6 +64,12 @@ function Topbar({ setSidebarOpen }) {
           </button>
 
         </div>
+
+        {search && (
+          <div className="search-results">
+            <div className="search-item">Press Enter to search: <strong>{search}</strong></div>
+          </div>
+        )}
 
         <button className="icon-btn">
           <Bell size={20} />

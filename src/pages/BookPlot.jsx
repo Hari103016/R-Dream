@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../services/supabase";
+import { toast } from "react-toastify";
 import "./BookPlot.css";
 
 function BookPlot() {
@@ -54,17 +55,17 @@ function BookPlot() {
 
   async function saveBooking() {
     if (!formData.name.trim()) {
-      alert("Please enter customer name.");
+      toast.warning("Please enter customer name.");
       return;
     }
 
     if (!formData.mobile.trim()) {
-      alert("Please enter mobile number.");
+      toast.warning("Please enter mobile number.");
       return;
     }
 
     if (!formData.amount_paid) {
-      alert("Please enter advance amount.");
+      toast.warning("Please enter advance amount.");
       return;
     }
 
@@ -95,7 +96,7 @@ function BookPlot() {
 
     if (customerError) {
       setSaving(false);
-      alert(customerError.message);
+      toast.error(customerError.message);
       return;
     }
 
@@ -114,7 +115,7 @@ function BookPlot() {
 
       if (paymentError) {
         setSaving(false);
-        alert(paymentError.message);
+        toast.error(paymentError.message);
         return;
       }
     }
@@ -129,13 +130,13 @@ function BookPlot() {
 
     if (plotError) {
       setSaving(false);
-      alert(plotError.message);
+      toast.error(plotError.message);
       return;
     }
 
     setSaving(false);
 
-    alert("Plot Booked Successfully");
+    toast.success("Plot Booked Successfully 🎉");
 
     navigate("/plots");
   }

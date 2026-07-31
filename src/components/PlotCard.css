@@ -1,0 +1,152 @@
+/* ===========================
+   PLOT CARD
+=========================== */
+
+.plot-card{
+    background:#182235;
+    border-radius:18px;
+    border:1px solid #293548;
+    padding:22px;
+    transition:.3s;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    box-shadow:0 8px 20px rgba(0,0,0,.20);
+}
+
+.plot-card:hover{
+    transform:translateY(-6px);
+    box-shadow:0 20px 40px rgba(0,0,0,.35);
+}
+
+/* ===========================
+   HEADER
+=========================== */
+
+.plot-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.plot-header h3{
+    font-size:22px;
+    font-weight:700;
+    color:white;
+}
+
+/* ===========================
+   STATUS
+=========================== */
+
+.status{
+    padding:6px 14px;
+    border-radius:30px;
+    font-size:13px;
+    font-weight:600;
+}
+
+.available{
+    background:#0a365b;
+    color:white;
+}
+
+.booked{
+    background:#dc2626;
+    color:white;
+}
+
+.sold{
+    background:#475569;
+    color:white;
+}
+
+/* ===========================
+   BODY
+=========================== */
+
+.plot-body{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-top:10px;
+}
+
+.plot-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 0;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+.plot-row:last-child{
+    border-bottom:none;
+}
+
+.label{
+    color:#94a3b8;
+    font-size:15px;
+    font-weight:500;
+}
+
+.value{
+    color:#ffffff;
+    font-size:15px;
+    font-weight:600;
+    text-align:right;
+}
+
+/* ===========================
+   FOOTER
+=========================== */
+
+.plot-footer{
+    margin-top:10px;
+}
+
+.book-btn,
+.view-btn{
+    width:100%;
+    border:none;
+    border-radius:10px;
+    padding:14px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.book-btn{
+    background:#2563eb;
+    color:white;
+}
+
+.book-btn:hover{
+    background:#1d4ed8;
+}
+
+.view-btn{
+    background:#10b981;
+    color:white;
+}
+
+.view-btn:hover{
+    background:#059669;
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media(max-width:768px){
+
+.plot-card{
+padding:18px;
+}
+
+.plot-header h3{
+font-size:20px;
+}
+
+}

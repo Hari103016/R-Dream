@@ -1,294 +1,329 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Search,
-  MapPinned,
-  Ruler,
-  Compass,
-  IndianRupee,
-  BadgeCheck,
-} from "lucide-react";
-import { supabase } from "../services/supabase";
-import "./Plots.css";
+  import { useEffect, useMemo, useState } from "react";
+  import { useNavigate } from "react-router-dom";
+  import {
+    Plus,
+    Search,
+    Download,
+  } from "lucide-react";
+  import * as XLSX from "xlsx";
+  import { saveAs } from "file-saver";
+  import Swal from "sweetalert2";
+  import { toast } from "react-toastify";
 
-function Plots() {
-  const navigate = useNavigate();
+  import { supabase } from "../services/supabase";
 
-  const [plots, setPlots] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("All");
+  import Sidebar from "../components/Sidebar";
+  import Topbar from "../components/Topbar";
+  import PlotCard from "../components/PlotCard";
+  import AddPlotModal from "../components/AddPlotModal";
+  import EditPlotModal from "../components/EditPlotModal";
+  import BookPlotModal from "../components/BookPlotModal";
 
-  useEffect(() => {
-    fetchPlots();
-  }, []);
+  import "./Plots.css";
 
-  async function fetchPlots() {
-    setLoading(true);
+  function Plots() {
 
-    const { data, error } = await supabase
-      .from("plots")
-      .select("*")
-      .order("plot_no", { ascending: true });
+    const navigate = useNavigate();
 
-    if (error) {
-      console.error(error);
-    } else {
-      setPlots(data);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    const [plots, setPlots] = useState([]);
+
+    const [loading, setLoading] = useState(true);
+
+    const [search, setSearch] = useState("");
+
+    const [statusFilter, setStatusFilter] = useState("All");
+
+    const [showAddModal, setShowAddModal] = useState(false);
+
+    const [showEditModal, setShowEditModal] = useState(false);
+
+    const [showBookingModal, setShowBookingModal] = useState(false);
+
+    const [selectedPlot, setSelectedPlot] = useState(null);
+
+    useEffect(() => {
+      fetchPlots();
+    }, []);
+
+    async function fetchPlots() {
+
+      setLoading(true);
+
+      const { data, error } = await supabase
+        .from("plots")
+        .select("*")
+        .order("plot_no");
+
+      if (error) {
+
+        toast.error("Unable to load plots");
+
+        setLoading(false);
+
+        return;
+
+      }
+
+      setPlots(data || []);
+
+      setLoading(false);
+
     }
 
-    setLoading(false);
+    const filteredPlots = useMemo(() => {
+
+      return plots.filter((plot) => {
+
+        const matchSearch =
+          plot.plot_no
+            ?.toString()
+            .includes(search) ||
+          plot.facing
+            ?.toLowerCase()
+            .includes(search.toLowerCase());
+
+        const matchStatus =
+          statusFilter === "All" ||
+          plot.status === statusFilter;
+
+        return matchSearch && matchStatus;
+
+      });
+
+    }, [plots, search, statusFilter]);
+    function exportExcel() {
+
+    const rows = filteredPlots.map((plot) => ({
+      "Plot No": plot.plot_no,
+      "Plot Size": plot.plot_size,
+      Facing: plot.facing,
+      Rate: plot.rate,
+      Price: plot.price,
+      Status: plot.status,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Plots"
+    );
+
+    const buffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    saveAs(
+      new Blob([buffer]),
+      `Plots_${new Date().toLocaleDateString()}.xlsx`
+    );
+
   }
 
-  const filteredPlots = plots.filter((plot) => {
-    const matchesSearch = plot.plot_no
-      ?.toString()
-      .includes(search);
+  async function deletePlot(plot) {
 
-    const matchesFilter =
-      filter === "All" ||
-      plot.status?.toLowerCase() === filter.toLowerCase();
+    const result = await Swal.fire({
+      title: "Delete Plot?",
+      text: `Plot No ${plot.plot_no} will be deleted.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#2563eb",
+      confirmButtonText: "Delete",
+    });
 
-    return matchesSearch && matchesFilter;
-  });
+    if (!result.isConfirmed) return;
 
-  const totalPlots = plots.length;
+    const { error } = await supabase
+      .from("plots")
+      .delete()
+      .eq("id", plot.id);
 
-  const availablePlots = plots.filter(
-    (p) => p.status?.toLowerCase() === "available"
-  ).length;
+    if (error) {
+      toast.error("Unable to delete plot");
+      return;
+    }
 
-  const soldPlots = plots.filter(
-    (p) =>
-      p.status?.toLowerCase() === "sold" ||
-      p.status?.toLowerCase() === "booked"
-  ).length;
+    toast.success("Plot deleted successfully");
 
-  const reservedPlots = plots.filter(
-    (p) => p.status?.toLowerCase() === "reserved"
-  ).length;
+    fetchPlots();
+
+  }
 
   return (
-    <div className="plots-page">
 
-      {/* Header */}
+  <div className="dashboard">
 
-      <div className="plots-header">
+  <Sidebar
+  sidebarOpen={sidebarOpen}
+  setSidebarOpen={setSidebarOpen}
+  />
 
-        <h2>Plots Management</h2>
+  <div className="main-content">
 
-        <div className="search-box">
-          <Search size={18} />
+  <Topbar setSidebarOpen={setSidebarOpen} />
 
-          <input
-            type="text"
-            placeholder="Search Plot Number..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+  <div className="plots-page">
 
+  <div className="plots-header">
+
+  <div>
+
+  <h2>Plots Management</h2>
+
+  <p>Total Plots : {filteredPlots.length}</p>
+
+  </div>
+
+  <div className="header-actions">
+
+  <div className="search-box">
+
+  <Search size={18}/>
+
+  <input
+  type="text"
+  placeholder="Search Plot..."
+  value={search}
+  onChange={(e)=>setSearch(e.target.value)}
+  />
+
+  </div>
+
+  <select
+  className="status-filter"
+  value={statusFilter}
+  onChange={(e)=>setStatusFilter(e.target.value)}
+  >
+
+  <option>All</option>
+  <option>Available</option>
+  <option>Booked</option>
+  <option>Sold</option>
+
+  </select>
+
+  <button
+  className="export-btn"
+  onClick={exportExcel}
+  >
+
+  <Download size={18}/>
+
+  Export
+
+  </button>
+
+  <button
+  className="add-btn"
+  onClick={()=>setShowAddModal(true)}
+  >
+
+  <Plus size={18}/>
+
+  Add Plot
+
+  </button>
+
+  </div>
+
+  </div>
+  {loading ? (
+
+    <div className="empty">
+      Loading Plots...
+    </div>
+
+  ) : (
+
+    <div className="plots-grid">
+
+      {filteredPlots.length === 0 ? (
+
+        <div className="empty">
+          No Plots Found
         </div>
 
-      </div>
-
-      {/* Summary */}
-
-      <div className="summary-cards">
-
-        <div className="summary-card">
-          <h4>Total Plots</h4>
-          <h1>{totalPlots}</h1>
-        </div>
-
-        <div className="summary-card available-card">
-          <h4>Available</h4>
-          <h1>{availablePlots}</h1>
-        </div>
-
-        <div className="summary-card sold-card">
-          <h4>Sold / Booked</h4>
-          <h1>{soldPlots}</h1>
-        </div>
-
-        <div className="summary-card reserved-card">
-          <h4>Reserved</h4>
-          <h1>{reservedPlots}</h1>
-        </div>
-
-      </div>
-
-      {/* Filter */}
-
-      <div className="filter-buttons">
-
-        <button
-          className={filter === "All" ? "active" : ""}
-          onClick={() => setFilter("All")}
-        >
-          All
-        </button>
-
-        <button
-          className={filter === "Available" ? "active" : ""}
-          onClick={() => setFilter("Available")}
-        >
-          Available
-        </button>
-
-        <button
-          className={filter === "Sold" ? "active" : ""}
-          onClick={() => setFilter("Sold")}
-        >
-          Sold
-        </button>
-
-        <button
-          className={filter === "Reserved" ? "active" : ""}
-          onClick={() => setFilter("Reserved")}
-        >
-          Reserved
-        </button>
-
-      </div>
-
-      {/* Cards */}
-
-      {loading ? (
-        <h3>Loading plots...</h3>
-      ) : filteredPlots.length === 0 ? (
-        <h3>No Plots Found</h3>
       ) : (
 
-        <div className="plots-grid">
+        filteredPlots.map((plot) => (
 
-          {filteredPlots.map((plot) => {
+          <PlotCard
+            key={plot.id}
+            plot={plot}
+            onBook={(plot) => {
+              setSelectedPlot(plot);
+              setShowBookingModal(true);
+            }}
+            onView={(plot) => {
 
-            const totalPrice =
-              plot.price ??
-              (plot.plot_size || 0) * (plot.rate || 0);
+              if (!plot.customer_id) {
+                toast.error("Customer not linked to this plot.");
+                return;
+              }
 
-            return (
+              navigate(`/customer/${plot.customer_id}`);
 
-              <div className="plot-card" key={plot.id}>
+            }}
+          />
 
-                <div className="plot-title">
-
-                  <MapPinned size={24} />
-
-                  <h2>Plot No : {plot.plot_no}</h2>
-
-                </div>
-
-                <div className="plot-info">
-
-                  <div className="info-row">
-
-                    <div className="left">
-
-                      <Ruler size={18} />
-
-                      <span>Size</span>
-
-                    </div>
-
-                    <div className="right">
-                      {plot.plot_size} Sq.Yds
-                    </div>
-
-                  </div>
-
-                  <div className="info-row">
-
-                    <div className="left">
-
-                      <Compass size={18} />
-
-                      <span>Facing</span>
-
-                    </div>
-
-                    <div className="right">
-                      {plot.facing}
-                    </div>
-
-                  </div>
-
-                  <div className="info-row">
-
-                    <div className="left">
-
-                      <IndianRupee size={18} />
-
-                      <span>Price</span>
-
-                    </div>
-
-                    <div className="right">
-                      ₹{Number(totalPrice).toLocaleString("en-IN")}
-                    </div>
-
-                  </div>
-
-                  <div className="info-row">
-
-                    <div className="left">
-
-                      <BadgeCheck size={18} />
-
-                      <span>Status</span>
-
-                    </div>
-
-                    <span
-                      className={`badge ${plot.status?.toLowerCase()}`}
-                    >
-                      {plot.status}
-                    </span>
-
-                  </div>
-
-                </div>
-
-                {plot.status?.toLowerCase() === "available" ? (
-
-                  <button
-                    className="book-btn"
-                    onClick={() => navigate(`/book/${plot.id}`)}
-                  >
-                    Book Plot
-                  </button>
-
-                ) : (
-
-                  <button
-                    className="details-btn"
-                    onClick={() => {
-
-                      if (plot.customer_id) {
-                        navigate(`/customer/${plot.customer_id}`);
-                      } else {
-                        alert("Customer not assigned to this plot.");
-                      }
-
-                    }}
-                  >
-                    View Details
-                  </button>
-
-                )}
-
-              </div>
-
-            );
-
-          })}
-
-        </div>
+        ))
 
       )}
 
     </div>
-  );
-}
 
-export default Plots;
+  )}
+
+  {showAddModal && (
+
+    <AddPlotModal
+      onClose={() => {
+        setShowAddModal(false);
+        fetchPlots();
+      }}
+    />
+
+  )}
+
+  {showEditModal && (
+
+    <EditPlotModal
+      plot={selectedPlot}
+      onClose={() => {
+        setShowEditModal(false);
+        fetchPlots();
+      }}
+    />
+
+  )}
+
+  {showBookingModal && (
+
+    <BookPlotModal
+      plot={selectedPlot}
+      onClose={() => {
+        setShowBookingModal(false);
+        fetchPlots();
+      }}
+    />
+
+  )}
+
+  </div>
+
+  </div>
+
+  </div>
+
+  );
+
+  }
+
+  export default Plots;

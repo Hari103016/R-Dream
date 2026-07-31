@@ -140,3 +140,25 @@
 }
 
 }
+
+.search-results{
+  position:absolute;
+  top:72px;
+  right:220px;
+  width:320px;
+  background:#1e293b;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;
+  overflow:hidden;
+  z-index:1000;
+}
+.search-item{
+  padding:12px 16px;
+  color:#fff;
+}
+.search-item:hover{
+  background:#334155;
+}
+.topbar-right{
+  position:relative;
+}

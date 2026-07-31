@@ -12,6 +12,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.110.7",
     "chart.js": "^4.5.1",
+    "file-saver": "^2.0.5",
     "framer-motion": "^12.42.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
@@ -20,7 +21,10 @@
     "react": "^19.2.7",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.7",
-    "react-router-dom": "^7.18.1"
+    "react-router-dom": "^7.18.1",
+    "react-toastify": "^11.1.0",
+    "sweetalert2": "^11.26.25",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

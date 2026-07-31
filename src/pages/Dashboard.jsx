@@ -5,6 +5,7 @@ import Topbar from "../components/Topbar";
 import DashboardCards from "../components/DashboardCards";
 import QuickActions from "../components/QuickActions";
 import RevenueChart from "../components/RevenueChart";
+import DashboardAnalytics from "../components/DashboardAnalytics";
 import RecentCustomers from "../components/RecentCustomers";
 
 import "./Dashboard.css";
@@ -34,6 +35,8 @@ function Dashboard() {
           <div className="dashboard-grid">
             <QuickActions />
           </div>
+
+          <DashboardAnalytics />
 
           <RevenueChart />
 

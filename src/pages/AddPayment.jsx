@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../services/supabase";
+import { toast } from "react-toastify";
 import "./AddPayment.css";
 
 function AddPayment() {
@@ -12,6 +13,9 @@ function AddPayment() {
   const [paymentDate, setPaymentDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+
+  const [paymentMode, setPaymentMode] = useState("Cash");
+  const [remarks, setRemarks] = useState("");
 
   useEffect(() => {
     fetchCustomer();
@@ -25,7 +29,7 @@ function AddPayment() {
       .single();
 
     if (error) {
-      alert("Customer not found");
+      toast.error("Customer not found");
       navigate("/dashboard");
       return;
     }
@@ -41,19 +45,35 @@ function AddPayment() {
     const amount = Number(payment);
 
     if (isNaN(amount) || amount <= 0) {
-      alert("Enter a valid payment amount");
+      toast.warning("Enter a valid payment amount");
       return;
     }
 
     if (amount > Number(customer.balance)) {
-      alert("Payment cannot exceed the remaining balance");
+      toast.warning("Payment cannot exceed the remaining balance");
       return;
     }
 
     const newPaid = Number(customer.amount_paid) + amount;
     const newBalance = Number(customer.total_amount) - newPaid;
 
-    const { error } = await supabase
+    const { error: paymentError } = await supabase
+      .from("payments")
+      .insert({
+        customer_id: customer.id,
+        amount,
+        payment_mode: paymentMode,
+        remarks,
+        payment_date: paymentDate,
+      });
+
+    if (paymentError) {
+      console.error(paymentError);
+      toast.error(paymentError.message);
+      return;
+    }
+
+    const { error: customerError } = await supabase
       .from("customers")
       .update({
         amount_paid: newPaid,
@@ -61,13 +81,13 @@ function AddPayment() {
       })
       .eq("id", customer.id);
 
-    if (error) {
-      console.error(error);
-      alert("Payment update failed");
+    if (customerError) {
+      console.error(customerError);
+      toast.error("Payment update failed");
       return;
     }
 
-    alert("Payment Added Successfully");
+    toast.success("Payment Added Successfully");
 
     navigate(`/customer/${customer.id}`);
   }
@@ -98,6 +118,22 @@ function AddPayment() {
             value={payment}
             onChange={(e) => setPayment(e.target.value)}
             required
+          />
+
+          <select
+            value={paymentMode}
+            onChange={(e) => setPaymentMode(e.target.value)}
+          >
+            <option value="Cash">Cash</option>
+            <option value="UPI">UPI</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="Cheque">Cheque</option>
+          </select>
+
+          <textarea
+            placeholder="Remarks"
+            value={remarks}
+            onChange={(e) => setRemarks(e.target.value)}
           />
 
           <input
