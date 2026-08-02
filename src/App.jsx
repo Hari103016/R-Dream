@@ -16,6 +16,8 @@ import Bookings from "./pages/Bookings";
 import Payments from "./pages/Payments";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import LayoutMap from "./pages/LayoutMap";
+import AdminProfile from "./pages/AdminProfile"; // NEW
 
 function App() {
 
@@ -24,16 +26,26 @@ function App() {
 
   useEffect(() => {
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    async function checkSession() {
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       setSession(session);
       setLoading(false);
-    });
+
+    }
+
+    checkSession();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
+    } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
 
     return () => subscription.unsubscribe();
 
@@ -55,6 +67,7 @@ function App() {
   }
 
   return (
+
     <Routes>
 
       {/* Login */}
@@ -200,6 +213,17 @@ function App() {
         }
       />
 
+      {/* Admin Profile */}
+
+      <Route
+        path="/admin-profile"
+        element={
+          session
+            ? <AdminProfile />
+            : <Navigate to="/" replace />
+        }
+      />
+
       {/* Unknown Route */}
 
       <Route
@@ -211,8 +235,17 @@ function App() {
           />
         }
       />
+      <Route
+        path="/layout-map"
+        element={
+          session
+          ? <LayoutMap />
+          : <Navigate to="/" replace />
+        }
+      />
 
     </Routes>
+
   );
 }
 

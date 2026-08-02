@@ -1,6 +1,13 @@
+import { Pencil, Trash2, Calendar, Eye } from "lucide-react";
 import "./PlotCard.css";
 
-function PlotCard({ plot, onBook, onView }) {
+function PlotCard({
+  plot,
+  onBook,
+  onView,
+  onEdit,
+  onDelete,
+}) {
   return (
     <div className="plot-card">
 
@@ -26,12 +33,16 @@ function PlotCard({ plot, onBook, onView }) {
 
         <div className="plot-row">
           <span className="label">Size</span>
-          <span className="value">{plot.plot_size} Sq.Yds</span>
+          <span className="value">
+            {plot.plot_size} Sq.Yds
+          </span>
         </div>
 
         <div className="plot-row">
           <span className="label">Facing</span>
-          <span className="value">{plot.facing}</span>
+          <span className="value">
+            {plot.facing}
+          </span>
         </div>
 
         <div className="plot-row">
@@ -53,21 +64,42 @@ function PlotCard({ plot, onBook, onView }) {
       {/* Footer */}
       <div className="plot-footer">
 
+        {/* Edit Button */}
+        <button
+          className="edit-btn"
+          onClick={() => onEdit(plot)}
+          title="Edit Plot"
+        >
+          <Pencil size={18} />
+        </button>
+
+        {/* Book / View Button */}
         {plot.status === "Available" ? (
           <button
             className="book-btn"
             onClick={() => onBook(plot)}
           >
-            📅 Book Plot
+            <Calendar size={18} />
+            Book Plot
           </button>
         ) : (
           <button
             className="view-btn"
             onClick={() => onView(plot)}
           >
-            👁 View Details
+            <Eye size={18} />
+            View Details
           </button>
         )}
+
+        {/* Delete Button */}
+        <button
+          className="delete-btn"
+          onClick={() => onDelete(plot)}
+          title="Delete Plot"
+        >
+          <Trash2 size={18} />
+        </button>
 
       </div>
 
@@ -75,4 +107,4 @@ function PlotCard({ plot, onBook, onView }) {
   );
 }
 
-export default PlotCard;
+export default PlotCard; 

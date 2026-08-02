@@ -103,18 +103,16 @@ function CustomerDetails() {
       .eq("id", customer.id);
 
     if (error) {
-      toast.error(err.message || "Something went wrong");
+      toast.error(error.message || "Something went wrong");
       return;
     }
 
     setShowEdit(false);
-
     fetchCustomer();
 
     toast.success("Customer Updated Successfully");
   }
-
-  async function deleteCustomer() {
+    async function deleteCustomer() {
     const result = await Swal.fire({
       title: "Delete Customer?",
       text: "This action cannot be undone.",
@@ -129,7 +127,7 @@ function CustomerDetails() {
     if (!result.isConfirmed) return;
 
     try {
-      // 1. Delete payment history
+      // Delete payment history
       const { error: paymentError } = await supabase
         .from("payments")
         .delete()
@@ -137,8 +135,7 @@ function CustomerDetails() {
 
       if (paymentError) throw paymentError;
 
-      // 2. Make the plot available again
-      // 2. Make the plot available again
+      // Make plot available again
       const { error: plotError } = await supabase
         .from("plots")
         .update({
@@ -149,7 +146,7 @@ function CustomerDetails() {
 
       if (plotError) throw plotError;
 
-      // 3. Delete customer
+      // Delete customer
       const { error: customerError } = await supabase
         .from("customers")
         .delete()
@@ -173,6 +170,38 @@ function CustomerDetails() {
     }
   }
 
+  function sendWhatsApp() {
+    if (!customer?.mobile) {
+      toast.error("Customer mobile number not found.");
+      return;
+    }
+
+    const phone = customer.mobile.replace(/\D/g, "");
+
+    const message = `🏡 *R DREAM INFRA DEVELOPERS*
+
+Hello ${customer.name},
+
+Your Plot Details
+
+📍 Plot No : ${customer.plot_no}
+📐 Plot Size : ${customer.plot_size} Sq.Yds
+🧭 Facing : ${customer.facing}
+
+💰 Total Amount : ₹${Number(customer.total_amount).toLocaleString("en-IN")}
+💵 Amount Paid : ₹${Number(customer.amount_paid).toLocaleString("en-IN")}
+💳 Balance : ₹${Number(customer.balance).toLocaleString("en-IN")}
+
+Thank you for choosing R Dream Infra Developers.
+
+📞 Contact us for any assistance.`;
+
+    window.open(
+      `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`,
+      "_blank"
+    );
+  }
+
   if (loading) {
     return (
       <div className="customer-page">
@@ -192,7 +221,8 @@ function CustomerDetails() {
 
   return (
     <div className="customer-page">
-            {/* ============================
+
+      {/* ============================
           Header
       ============================= */}
 
@@ -257,191 +287,168 @@ function CustomerDetails() {
           </div>
 
         </div>
+              {/* ============================
+          Summary Cards
+      ============================= */}
 
-        {/* ============================
-            Summary Cards
-        ============================= */}
+      <div className="summary-grid">
 
-        <div className="summary-grid">
-
-          <div className="summary-card">
-
-            <IndianRupee size={30} />
-
-            <h4>Total Amount</h4>
-
-            <h2>
-              ₹{total.toLocaleString()}
-            </h2>
-
-          </div>
-
-          <div className="summary-card paid">
-
-            <Wallet size={30} />
-
-            <h4>Amount Paid</h4>
-
-            <h2>
-              ₹{paid.toLocaleString()}
-            </h2>
-
-          </div>
-
-          <div className="summary-card balance">
-
-            <CreditCard size={30} />
-
-            <h4>Balance</h4>
-
-            <h2>
-              ₹{balance.toLocaleString()}
-            </h2>
-
-          </div>
-
-          <div className="summary-card">
-
-            <Receipt size={30} />
-
-            <h4>Total Payments</h4>
-
-            <h2>
-              {payments.length}
-            </h2>
-
-          </div>
-
+        <div className="summary-card">
+          <IndianRupee size={30} />
+          <h4>Total Amount</h4>
+          <h2>₹{total.toLocaleString()}</h2>
         </div>
 
-        {/* ============================
-            Payment Progress
-        ============================= */}
+        <div className="summary-card paid">
+          <Wallet size={30} />
+          <h4>Amount Paid</h4>
+          <h2>₹{paid.toLocaleString()}</h2>
+        </div>
 
-        <div className="progress-section">
+        <div className="summary-card balance">
+          <CreditCard size={30} />
+          <h4>Balance</h4>
+          <h2>₹{balance.toLocaleString()}</h2>
+        </div>
 
-          <div className="progress-header">
-
-            <span>Payment Progress</span>
-
-            <span>{percent}%</span>
-
-          </div>
-
-          <div className="progress-bar">
-
-            <div
-              className="progress-fill"
-              style={{
-                width: `${percent}%`,
-              }}
-            />
-
-          </div>
-
+        <div className="summary-card">
+          <Receipt size={30} />
+          <h4>Total Payments</h4>
+          <h2>{payments.length}</h2>
         </div>
 
       </div>
 
       {/* ============================
-          Customer Information
+          Payment Progress
       ============================= */}
 
-      <div className="cd-info-grid">
+      <div className="progress-section">
 
-        <div className="cd-info-card">
-          <User className="card-icon" />
-          <div className="card-content">
-            <h4>Customer Name</h4>
-            <p>{customer.name}</p>
-          </div>
+        <div className="progress-header">
+          <span>Payment Progress</span>
+          <span>{percent}%</span>
         </div>
 
-        <div className="cd-info-card">
-          <Phone className="card-icon" />
-          <div className="card-content">
-            <h4>Mobile Number</h4>
-            <p>{customer.mobile}</p>
-          </div>
-        </div>
-
-        <div className="cd-info-card">
-          <MapPinned className="card-icon" />
-          <div className="card-content">
-            <h4>Plot Number</h4>
-            <p>{customer.plot_no}</p>
-          </div>
-        </div>
-
-        <div className="cd-info-card">
-          <MapPinned className="card-icon" />
-          <div className="card-content">
-            <h4>Facing</h4>
-            <p>{customer.facing}</p>
-          </div>
-        </div>
-
-        <div className="cd-info-card">
-          <MapPinned className="card-icon" />
-          <div className="card-content">
-            <h4>Plot Size</h4>
-            <p>{customer.plot_size} Sq.Yds</p>
-          </div>
-        </div>
-
-        <div className="cd-info-card">
-          <Calendar className="card-icon" />
-          <div className="card-content">
-            <h4>Booking Date</h4>
-            <p>{customer.booking_date}</p>
-          </div>
+        <div className="progress-bar">
+          <div
+            className="progress-fill"
+            style={{ width: `${percent}%` }}
+          />
         </div>
 
       </div>
-            {/* ============================
-          Action Buttons
-      ============================= */}
 
-      <div className="action-buttons">
+    </div>
 
-        <button
-          className="edit-btn"
-          onClick={openEdit}
-        >
-          ✏ Edit Customer
-        </button>
+    {/* ============================
+        Customer Information
+    ============================= */}
 
-        <button
-          className="payment-btn"
-          onClick={() => setShowPayment(true)}
-        >
-          💰 Add Payment
-        </button>
+    <div className="cd-info-grid">
 
-        <button
-          className="receipt-btn"
-          onClick={() =>
-            navigate("/receipt", {
-              state: {
-                customer,
-                payments,
-              },
-            })
-          }
-        >
-          🖨 Print Receipt
-        </button>
-
-        <button
-          className="delete-btn"
-          onClick={deleteCustomer}
-        >
-          🗑 Delete Customer
-        </button>
-
+      <div className="cd-info-card">
+        <User className="card-icon" />
+        <div className="card-content">
+          <h4>Customer Name</h4>
+          <p>{customer.name}</p>
+        </div>
       </div>
 
-      {/* ============================
+      <div className="cd-info-card">
+        <Phone className="card-icon" />
+        <div className="card-content">
+          <h4>Mobile Number</h4>
+          <p>{customer.mobile}</p>
+        </div>
+      </div>
+
+      <div className="cd-info-card">
+        <MapPinned className="card-icon" />
+        <div className="card-content">
+          <h4>Plot Number</h4>
+          <p>{customer.plot_no}</p>
+        </div>
+      </div>
+
+      <div className="cd-info-card">
+        <MapPinned className="card-icon" />
+        <div className="card-content">
+          <h4>Facing</h4>
+          <p>{customer.facing}</p>
+        </div>
+      </div>
+
+      <div className="cd-info-card">
+        <MapPinned className="card-icon" />
+        <div className="card-content">
+          <h4>Plot Size</h4>
+          <p>{customer.plot_size} Sq.Yds</p>
+        </div>
+      </div>
+
+      <div className="cd-info-card">
+        <Calendar className="card-icon" />
+        <div className="card-content">
+          <h4>Booking Date</h4>
+          <p>{customer.booking_date}</p>
+        </div>
+      </div>
+
+    </div>
+
+    {/* ============================
+        Action Buttons
+    ============================= */}
+
+    <div className="action-buttons">
+
+      <button
+        className="edit-btn"
+        onClick={openEdit}
+      >
+        ✏ Edit Customer
+      </button>
+
+      <button
+        className="payment-btn"
+        onClick={() => setShowPayment(true)}
+      >
+        💰 Add Payment
+      </button>
+
+      {/* NEW WHATSAPP BUTTON */}
+
+      <button
+        className="whatsapp-btn"
+        onClick={sendWhatsApp}
+      >
+        💬 WhatsApp
+      </button>
+
+      <button
+        className="receipt-btn"
+        onClick={() =>
+          navigate("/receipt", {
+            state: {
+              customer,
+              payments,
+            },
+          })
+        }
+      >
+        🖨 Print Receipt
+      </button>
+
+      <button
+        className="delete-btn"
+        onClick={deleteCustomer}
+      >
+        🗑 Delete Customer
+      </button>
+
+    </div>
+          {/* ============================
           Payment History
       ============================= */}
 
@@ -452,21 +459,13 @@ function CustomerDetails() {
         <table className="payment-table">
 
           <thead>
-
             <tr>
-
               <th>Date</th>
-
               <th>Receipt No</th>
-
               <th>Amount</th>
-
               <th>Mode</th>
-
               <th>Remarks</th>
-
             </tr>
-
           </thead>
 
           <tbody>
@@ -474,11 +473,9 @@ function CustomerDetails() {
             {payments.length === 0 ? (
 
               <tr>
-
                 <td colSpan="5">
                   No Payments Found
                 </td>
-
               </tr>
 
             ) : (
@@ -499,8 +496,7 @@ function CustomerDetails() {
                   </td>
 
                   <td>
-                    ₹
-                    {Number(payment.amount).toLocaleString()}
+                    ₹{Number(payment.amount).toLocaleString()}
                   </td>
 
                   <td>
@@ -533,6 +529,8 @@ function CustomerDetails() {
 
         <div className="timeline">
 
+          {/* Booking */}
+
           <div className="timeline-item">
 
             <div className="timeline-icon success">
@@ -540,16 +538,13 @@ function CustomerDetails() {
             </div>
 
             <div className="timeline-content">
-
               <h4>Plot Booked</h4>
-
-              <p>
-                {customer.booking_date}
-              </p>
-
+              <p>{customer.booking_date}</p>
             </div>
 
           </div>
+
+          {/* Advance Payment */}
 
           <div className="timeline-item">
 
@@ -558,17 +553,15 @@ function CustomerDetails() {
             </div>
 
             <div className="timeline-content">
-
               <h4>Advance Paid</h4>
-
               <p>
-                ₹
-                {Number(customer.amount_paid).toLocaleString()}
+                ₹{Number(customer.amount_paid).toLocaleString()}
               </p>
-
             </div>
 
           </div>
+
+          {/* Pending */}
 
           {Number(customer.balance) > 0 && (
 
@@ -579,19 +572,17 @@ function CustomerDetails() {
               </div>
 
               <div className="timeline-content">
-
                 <h4>Balance Pending</h4>
-
                 <p>
-                  ₹
-                  {Number(customer.balance).toLocaleString()}
+                  ₹{Number(customer.balance).toLocaleString()}
                 </p>
-
               </div>
 
             </div>
 
           )}
+
+          {/* Completed */}
 
           {Number(customer.balance) === 0 && (
 
@@ -602,13 +593,10 @@ function CustomerDetails() {
               </div>
 
               <div className="timeline-content">
-
                 <h4>Payment Completed</h4>
-
                 <p>
                   Customer has cleared all dues.
                 </p>
-
               </div>
 
             </div>

@@ -18,8 +18,8 @@ import "./Reports.css";
 
 function Reports() {
   const [customers, setCustomers] = useState([]);
+  const [plots, setPlots] = useState([]);
   const [search, setSearch] = useState("");
-
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,20 +29,32 @@ function Reports() {
   async function fetchReports() {
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from("customers")
-      .select("*")
-      .order("booking_date", {
-        ascending: false,
-      });
+    // Customers
+    const { data: customerData, error: customerError } =
+      await supabase
+        .from("customers")
+        .select("*")
+        .order("booking_date", {
+          ascending: false,
+        });
 
-    if (error) {
-      console.error(error);
-      setLoading(false);
-      return;
+    if (customerError) {
+      console.error(customerError);
+    } else {
+      setCustomers(customerData || []);
     }
 
-    setCustomers(data || []);
+    // Plots
+    const { data: plotData, error: plotError } =
+      await supabase
+        .from("plots")
+        .select("*");
+
+    if (plotError) {
+      console.error(plotError);
+    } else {
+      setPlots(plotData || []);
+    }
 
     setLoading(false);
   }
@@ -59,6 +71,7 @@ function Reports() {
     });
   }, [customers, search]);
 
+  // Customer Statistics
   const totalCustomers = filteredCustomers.length;
 
   const totalRevenue = filteredCustomers.reduce(
@@ -79,6 +92,21 @@ function Reports() {
     0
   );
 
+  // Plot Statistics
+  const totalPlots = plots.length;
+
+  const availablePlots = plots.filter(
+    (plot) => plot.status === "Available"
+  ).length;
+
+  const bookedPlots = plots.filter(
+    (plot) => plot.status === "Booked"
+  ).length;
+
+  const soldPlots = plots.filter(
+    (plot) => plot.status === "Sold"
+  ).length;
+
   function exportExcel() {
     const rows = filteredCustomers.map((customer) => ({
       "Plot No": customer.plot_no,
@@ -91,11 +119,9 @@ function Reports() {
       "Booking Date": customer.booking_date,
     }));
 
-    const worksheet =
-      XLSX.utils.json_to_sheet(rows);
+    const worksheet = XLSX.utils.json_to_sheet(rows);
 
-    const workbook =
-      XLSX.utils.book_new();
+    const workbook = XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(
       workbook,
@@ -113,7 +139,8 @@ function Reports() {
       `Reports_${new Date().toLocaleDateString()}.xlsx`
     );
   }
-    return (
+
+  return (
     <div className="reports-page">
 
       <div className="reports-header">
@@ -149,56 +176,67 @@ function Reports() {
 
       </div>
 
+      {/* Report Cards */}
+
       <div className="report-cards">
 
         <div className="report-card">
-
-          <Users size={32} />
-
-          <h3>{totalCustomers}</h3>
-
-          <p>Total Customers</p>
-
+          <MapPinned size={32} />
+          <h3>{totalPlots}</h3>
+          <p>Total Plots</p>
         </div>
 
         <div className="report-card">
+          <MapPinned size={32} />
+          <h3>{availablePlots}</h3>
+          <p>Available Plots</p>
+        </div>
 
+        <div className="report-card">
+          <MapPinned size={32} />
+          <h3>{bookedPlots}</h3>
+          <p>Booked Plots</p>
+        </div>
+
+        <div className="report-card">
+          <MapPinned size={32} />
+          <h3>{soldPlots}</h3>
+          <p>Sold Plots</p>
+        </div>
+
+        <div className="report-card">
+          <Users size={32} />
+          <h3>{totalCustomers}</h3>
+          <p>Total Customers</p>
+        </div>
+
+        <div className="report-card">
           <IndianRupee size={32} />
-
           <h3>
             ₹{totalRevenue.toLocaleString("en-IN")}
           </h3>
-
           <p>Total Revenue</p>
-
         </div>
 
         <div className="report-card">
-
           <Wallet size={32} />
-
           <h3>
             ₹{totalReceived.toLocaleString("en-IN")}
           </h3>
-
           <p>Amount Received</p>
-
         </div>
 
         <div className="report-card">
-
-          <MapPinned size={32} />
-
+          <IndianRupee size={32} />
           <h3>
             ₹{totalBalance.toLocaleString("en-IN")}
           </h3>
-
           <p>Pending Balance</p>
-
         </div>
 
       </div>
-            {loading ? (
+
+      {loading ? (
 
         <div className="empty">
           Loading Reports...
@@ -213,7 +251,6 @@ function Reports() {
             <thead>
 
               <tr>
-
                 <th>Plot</th>
                 <th>Name</th>
                 <th>Mobile</th>
@@ -221,7 +258,6 @@ function Reports() {
                 <th>Total</th>
                 <th>Paid</th>
                 <th>Balance</th>
-
               </tr>
 
             </thead>

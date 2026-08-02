@@ -1,3 +1,7 @@
+/* ===========================
+   SIDEBAR
+=========================== */
+
 .sidebar{
     width:280px;
     height:100vh;
@@ -9,54 +13,62 @@
     flex-direction:column;
 
     background:#0b1220;
-
     border-right:1px solid rgba(255,255,255,.08);
 
     padding:25px;
 
-    color:white;
+    color:#fff;
 
-    transition:0.3s;
+    transition:.3s;
     z-index:1000;
 }
 
-/* Logo */
+/* ===========================
+   LOGO
+=========================== */
 
 .logo{
     display:flex;
     align-items:center;
-    gap:15px;
+    gap:16px;
     margin-bottom:45px;
+    padding-bottom:20px;
+    border-bottom:1px solid rgba(255,255,255,.08);
 }
 
-.logo-icon{
-    width:60px;
-    height:60px;
-
+.company-logo{
+    width:68px;
+    height:68px;
+    object-fit:cover;
     border-radius:18px;
+    background:#fff;
+    padding:6px;
+    box-shadow:0 10px 25px rgba(37,99,235,.35);
+    flex-shrink:0;
+}
 
+.company-details{
     display:flex;
-    justify-content:center;
-    align-items:center;
-
-    background:linear-gradient(135deg,#2563eb,#60a5fa);
-
-    font-size:28px;
-
-    box-shadow:0 0 30px rgba(37,99,235,.4);
+    flex-direction:column;
 }
 
-.logo h2{
-    font-size:28px;
+.company-details h2{
     margin:0;
+    font-size:34px;
+    font-weight:800;
+    color:#fff;
+    letter-spacing:.5px;
 }
 
-.logo span{
-    color:#94a3b8;
+.company-details span{
+    margin-top:4px;
     font-size:13px;
+    color:#94a3b8;
 }
 
-/* Navigation */
+/* ===========================
+   NAVIGATION
+=========================== */
 
 nav{
     display:flex;
@@ -73,51 +85,67 @@ nav a{
 
     color:#d1d5db;
 
-    padding:16px;
+    padding:15px 18px;
 
     border-radius:14px;
 
     transition:.3s;
 }
 
+nav a span{
+    font-size:16px;
+    font-weight:500;
+}
+
 nav a:hover{
     background:#1e293b;
-    color:white;
+    color:#fff;
     transform:translateX(5px);
 }
 
 .active{
     background:linear-gradient(135deg,#2563eb,#3b82f6);
-    color:white !important;
-
-    box-shadow:0 10px 25px rgba(37,99,235,.4);
+    color:#fff !important;
+    box-shadow:0 10px 25px rgba(37,99,235,.35);
 }
 
-/* Profile */
+/* ===========================
+   BOTTOM
+=========================== */
+
+.sidebar-bottom{
+    margin-top:auto;
+}
+
+/* ===========================
+   PROFILE
+=========================== */
 
 .profile{
-    margin-top:auto;
-    padding:18px;
     background:#111827;
     border-radius:18px;
+    padding:18px;
+    margin-bottom:18px;
 }
 
-
-
-.profile h4{
+.profile-info h4{
     margin:0;
+    color:#fff;
+    font-size:18px;
 }
 
-.profile p{
-    margin:0;
+.profile-info p{
+    margin-top:4px;
     color:#94a3b8;
     font-size:13px;
 }
 
-/* Logout */
+/* ===========================
+   LOGOUT
+=========================== */
 
 .logout{
-    margin-top:20px;
+    width:100%;
 
     border:none;
 
@@ -136,6 +164,7 @@ nav a:hover{
 
     color:#111827;
 
+    font-size:15px;
     font-weight:700;
 
     transition:.3s;
@@ -143,98 +172,95 @@ nav a:hover{
 
 .logout:hover{
     transform:translateY(-3px);
-    box-shadow:0 12px 25px rgba(251,191,36,.4);
+    box-shadow:0 12px 25px rgba(251,191,36,.35);
 }
 
-/* Close Button */
+/* ===========================
+   CLOSE BUTTON
+=========================== */
 
 .close-btn{
     display:none;
 
     position:absolute;
-    top:15px;
-    right:15px;
+    top:18px;
+    right:18px;
 
-    background:none;
     border:none;
-    color:white;
+    background:none;
+
+    color:#fff;
 
     cursor:pointer;
 }
 
-/* Overlay */
+/* ===========================
+   OVERLAY
+=========================== */
 
 .sidebar-overlay{
     display:none;
 }
 
-/* ========================= */
-/* Mobile Responsive */
-/* ========================= */
+/* ===========================
+   MOBILE
+=========================== */
 
-@media (max-width:768px){
+@media(max-width:768px){
 
 .sidebar{
-
     left:-100%;
     width:270px;
-
 }
 
 .sidebar.open{
-
     left:0;
-
 }
 
 .close-btn{
-
     display:block;
-
 }
 
 .sidebar-overlay{
-
     display:block;
-
     position:fixed;
-
     inset:0;
-
-    background:rgba(0,0,0,.5);
-
+    background:rgba(0,0,0,.55);
     z-index:999;
-
 }
 
-.logo h2{
-
-    font-size:24px;
-
+.company-logo{
+    width:56px;
+    height:56px;
 }
 
-.logo span{
+.company-details h2{
+    font-size:26px;
+}
 
+.company-details span{
     font-size:12px;
-
 }
 
 nav a{
-
-    padding:14px;
-
+    padding:14px 16px;
 }
 
 .profile{
-
-    padding:15px;
-
+    padding:16px;
 }
 
 .logout{
-
     padding:14px;
-
 }
-
+.profile-avatar {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+    min-height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    flex-shrink: 0;
+}
 }

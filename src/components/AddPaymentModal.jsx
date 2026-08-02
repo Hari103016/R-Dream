@@ -26,55 +26,98 @@ function AddPaymentModal({ customer, onClose, onSuccess }) {
         return;
       }
 
-      console.log("========== CUSTOMER ==========");
-      console.log(customer);
+      const paymentAmount = Number(formData.amount);
 
-      console.log("Customer ID :", customer.id);
-      console.log("Plot No :", customer.plot_no);
+      if (paymentAmount <= 0) {
+        alert("Enter a valid payment amount.");
+        return;
+      }
 
-      // Insert payment
-      const { data, error } = await supabase
+      if (paymentAmount > Number(customer.balance)) {
+        alert("Payment exceeds the remaining balance.");
+        return;
+      }
+
+      // ==========================
+      // STEP 1 : Save Payment
+      // ==========================
+
+      const { error: paymentError } = await supabase
         .from("payments")
         .insert([
           {
             customer_id: customer.id,
-            amount: Number(formData.amount),
+            amount: paymentAmount,
             payment_mode: formData.payment_mode,
             remarks: formData.remarks,
             payment_date: formData.payment_date,
           },
-        ])
-        .select();
+        ]);
 
-      console.log("Insert Data :", data);
-      console.log("Insert Error :", error);
-
-      if (error) {
-        alert(error.message);
+      if (paymentError) {
+        alert(paymentError.message);
         return;
       }
 
+      // ==========================
+      // STEP 2 : Calculate Values
+      // ==========================
+
       const newPaid =
-        Number(customer.amount_paid || 0) +
-        Number(formData.amount);
+        Number(customer.amount_paid || 0) + paymentAmount;
 
-      const newBalance =
-        Number(customer.total_amount || 0) -
-        newPaid;
+      const newBalance = Math.max(
+        Number(customer.total_amount || 0) - newPaid,
+        0
+      );
 
-      const { error: updateError } = await supabase
+      const customerStatus =
+        newBalance === 0 ? "Sold" : "Booked";
+
+      // ==========================
+      // STEP 3 : Update Customer
+      // ==========================
+
+      const { error: customerError } = await supabase
         .from("customers")
         .update({
           amount_paid: newPaid,
           balance: newBalance,
+          status: customerStatus,
         })
         .eq("id", customer.id);
 
-      console.log("Update Error :", updateError);
-
-      if (updateError) {
-        alert(updateError.message);
+      if (customerError) {
+        alert(customerError.message);
         return;
+      }
+
+      // ==========================
+      // STEP 4 : Update Plot
+      // ==========================
+
+      if (newBalance === 0) {
+
+        const { data: updatedPlot, error: plotError } =
+          await supabase
+            .from("plots")
+            .update({
+              status: "Sold",
+            })
+            .eq("plot_no", Number(customer.plot_no))
+            .select();
+
+        console.log("Updated Plot:", updatedPlot);
+
+        if (plotError) {
+          alert(plotError.message);
+          return;
+        }
+
+        if (!updatedPlot || updatedPlot.length === 0) {
+          alert("Plot not found.");
+          return;
+        }
       }
 
       alert("Payment Added Successfully");
@@ -84,6 +127,7 @@ function AddPaymentModal({ customer, onClose, onSuccess }) {
       }
 
       onClose();
+
     } catch (err) {
       console.error(err);
       alert(err.message);
@@ -93,6 +137,7 @@ function AddPaymentModal({ customer, onClose, onSuccess }) {
   return (
     <div className="modal-overlay">
       <div className="payment-modal">
+
         <h2>Add Payment</h2>
 
         <div className="form-group">
@@ -100,6 +145,24 @@ function AddPaymentModal({ customer, onClose, onSuccess }) {
           <input
             type="text"
             value={customer.name}
+            readOnly
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Plot Number</label>
+          <input
+            type="text"
+            value={customer.plot_no}
+            readOnly
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Remaining Balance</label>
+          <input
+            type="text"
+            value={`₹ ${Number(customer.balance).toLocaleString("en-IN")}`}
             readOnly
           />
         </div>
@@ -165,6 +228,7 @@ function AddPaymentModal({ customer, onClose, onSuccess }) {
             Save Payment
           </button>
         </div>
+
       </div>
     </div>
   );

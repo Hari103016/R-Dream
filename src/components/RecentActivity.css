@@ -1,0 +1,30 @@
+.activity-card{
+    background:#151d2e;
+    border-radius:15px;
+    padding:20px;
+    margin-top:25px;
+}
+
+.activity-card h2{
+    color:white;
+    margin-bottom:20px;
+}
+
+.activity-item{
+    padding:15px;
+    border-bottom:1px solid #2a3550;
+}
+
+.activity-item h4{
+    color:#4f8cff;
+    margin-bottom:5px;
+}
+
+.activity-item p{
+    color:#d1d5db;
+    margin-bottom:5px;
+}
+
+.activity-item small{
+    color:#9ca3af;
+}

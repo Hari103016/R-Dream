@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
+import logo from "../assets/logo.png";
 import "./Login.css";
 
 function Login() {
@@ -10,7 +11,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e) => {
+  async function handleLogin(e) {
     e.preventDefault();
 
     setLoading(true);
@@ -26,69 +27,146 @@ function Login() {
       return;
     }
 
-    // Save login status
     localStorage.setItem("loggedIn", "true");
 
-    setLoading(false);
-
-    // Redirect to dashboard
     navigate("/dashboard", { replace: true });
-  };
+  }
 
   return (
     <div className="login-page">
+
       <div className="overlay"></div>
 
-      <div className="login-card">
-        <div className="logo">🏡</div>
+      <div className="login-container">
 
-        <h1>R DREAM</h1>
+        {/* ================= LEFT PANEL ================= */}
 
-        <p>Luxury Real Estate Management</p>
+        <div className="left-panel">
 
-        <form onSubmit={handleLogin}>
-          <div className="input-group">
-            <label>Email Address</label>
+          <img
+            src={logo}
+            alt="R Dream Infra Developers"
+            className="brand-logo"
+          />
 
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+          <h1>R DREAM</h1>
+
+          <h2>REAL ESTATE CRM</h2>
+
+          <p className="brand-description">
+            Manage your plots, customers, bookings,
+            payments and reports from one secure dashboard.
+          </p>
+
+          <div className="highlights">
+
+            
+
+            <div>✔ Ready For Registration</div>
+
+            <div>✔ Premium Residential Plots</div>
+
+            <div>✔ Secure Cloud Based CRM</div>
+
           </div>
 
-          <div className="input-group">
-            <label>Password</label>
+          <div className="features">
 
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="feature-card">
+              <h3>272+</h3>
+              <span>Premium Plots</span>
+            </div>
+
+            <div className="feature-card">
+              <h3>180+</h3>
+              <span>Happy Customers</span>
+            </div>
+
+            <div className="feature-card">
+              <h3>₹12Cr+</h3>
+              <span>Property Value</span>
+            </div>
+
           </div>
 
-          <div className="login-options">
-            <label>
-              <input type="checkbox" />
-              Remember Me
-            </label>
+        </div>
 
-            <a href="/">Forgot Password?</a>
+        {/* ================= RIGHT PANEL ================= */}
+
+        <div className="login-card">
+
+          <div className="login-header">
+
+            <h2>Welcome Back</h2>
+
+            <p>
+              Sign in to access your Real Estate CRM dashboard.
+            </p>
+
           </div>
 
-          <button
-            type="submit"
-            className="login-btn"
-            disabled={loading}
-          >
-            {loading ? "Signing In..." : "Sign In"}
-          </button>
-        </form>
+          <form onSubmit={handleLogin}>
+
+            <div className="input-group">
+
+              <label>Email Address</label>
+
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+
+            </div>
+
+            <div className="input-group">
+
+              <label>Password</label>
+
+              <input
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+
+            </div>
+
+            <div className="login-options">
+
+              <label>
+
+                <input type="checkbox" />
+
+                Remember Me
+
+              </label>
+
+              <a href="/">Forgot Password?</a>
+
+            </div>
+
+            <button
+              type="submit"
+              className="login-btn"
+              disabled={loading}
+            >
+              {loading ? "Signing In..." : "Sign In"}
+            </button>
+
+          </form>
+
+          <div className="login-footer">
+            © {new Date().getFullYear()} R Dream Infra Developers
+          </div>
+
+        </div>
+
       </div>
+
     </div>
   );
 }

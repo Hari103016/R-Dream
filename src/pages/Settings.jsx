@@ -1,224 +1,102 @@
-import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
-import {
-  Building2,
-  Phone,
-  Mail,
-  MapPin,
-  User,
-  Save,
-} from "lucide-react";
-import { supabase } from "../services/supabase";
+import { useState } from "react";
+
+import CompanyTab from "./CompanyTab";
+import LogoTab from "./LogoTab";
+import AppearanceTab from "./AppearanceTab";
+import NotificationTab from "./NotificationTab";
+import WhatsAppTab from "./WhatsAppTab";
+import EmailTab from "./EmailTab";
+import UsersTab from "./UsersTab";
+import SecurityTab from "./SecurityTab";
+import ReceiptTab from "./ReceiptTab";
+import BackupTab from "./BackupTab";
+import AboutTab from "./AboutTab";
+
 import "./Settings.css";
 
 function Settings() {
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState("company");
 
-  const [settingsId, setSettingsId] = useState(null);
+  const menu = [
+    { id: "company", label: "🏢 Company" },
+    { id: "logo", label: "🖼 Logo" },
+    { id: "appearance", label: "🎨 Appearance" },
+    { id: "notifications", label: "🔔 Notifications" },
+    { id: "whatsapp", label: "💬 WhatsApp" },
+    { id: "email", label: "📧 Email" },
+    { id: "users", label: "👥 Users" },
+    { id: "security", label: "🔒 Security" },
+    { id: "receipt", label: "🧾 Receipt" },
+    { id: "backup", label: "💾 Backup & Restore" },
+    { id: "about", label: "ℹ About" },
+  ];
 
-  const [formData, setFormData] = useState({
-    company_name: "",
-    company_phone: "",
-    company_email: "",
-    company_address: "",
-    admin_name: "",
-    admin_username: "",
-  });
+  function renderTab() {
+    switch (activeTab) {
+      case "company":
+        return <CompanyTab />;
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
+      case "logo":
+        return <LogoTab />;
 
-  async function fetchSettings() {
-    setLoading(true);
+      case "appearance":
+        return <AppearanceTab />;
 
-    const { data, error } = await supabase
-      .from("settings")
-      .select("*")
-      .limit(1)
-      .single();
+      case "notifications":
+        return <NotificationTab />;
 
-    if (error) {
-      console.error(error);
-      setLoading(false);
-      return;
+      case "whatsapp":
+        return <WhatsAppTab />;
+
+      case "email":
+        return <EmailTab />;
+
+      case "users":
+        return <UsersTab />;
+
+      case "security":
+        return <SecurityTab />;
+
+      case "receipt":
+        return <ReceiptTab />;
+
+      case "backup":
+        return <BackupTab />;
+
+      case "about":
+        return <AboutTab />;
+
+      default:
+        return <CompanyTab />;
     }
-
-    setSettingsId(data.id);
-
-    setFormData({
-      company_name: data.company_name || "",
-      company_phone: data.company_phone || "",
-      company_email: data.company_email || "",
-      company_address: data.company_address || "",
-      admin_name: data.admin_name || "",
-      admin_username: data.admin_username || "",
-    });
-
-    setLoading(false);
-  }
-
-  function handleChange(e) {
-    const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  }
-
-  async function saveSettings() {
-    setSaving(true);
-
-    const { error } = await supabase
-      .from("settings")
-      .update({
-        company_name: formData.company_name,
-        company_phone: formData.company_phone,
-        company_email: formData.company_email,
-        company_address: formData.company_address,
-        admin_name: formData.admin_name,
-        admin_username: formData.admin_username,
-      })
-      .eq("id", settingsId);
-
-    setSaving(false);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    toast.success("Settings Saved");
-  }
-
-  if (loading) {
-    return (
-      <div className="settings-page">
-        <h2>Loading Settings...</h2>
-      </div>
-    );
   }
 
   return (
-    <div className="settings-page">
+    <div className="settings-wrapper">
 
-      <h2>Settings</h2>
+      <div className="settings-sidebar">
 
-      <div className="settings-card">
+        <h2>Settings</h2>
 
-        <h3>Company Information</h3>
-
-        <div className="settings-grid">
-
-          <div className="form-group">
-            <label>
-              <Building2 size={18} />
-              Company Name
-            </label>
-
-            <input
-              type="text"
-              name="company_name"
-              value={formData.company_name}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>
-              <Phone size={18} />
-              Phone Number
-            </label>
-
-            <input
-              type="text"
-              name="company_phone"
-              value={formData.company_phone}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>
-              <Mail size={18} />
-              Email
-            </label>
-
-            <input
-              type="email"
-              name="company_email"
-              value={formData.company_email}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="form-group full-width">
-            <label>
-              <MapPin size={18} />
-              Company Address
-            </label>
-
-            <textarea
-              rows="4"
-              name="company_address"
-              value={formData.company_address}
-              onChange={handleChange}
-            />
-          </div>
-
-        </div>
+        {menu.map((item) => (
+          <button
+            key={item.id}
+            className={
+              activeTab === item.id
+                ? "settings-menu active"
+                : "settings-menu"
+            }
+            onClick={() => setActiveTab(item.id)}
+          >
+            {item.label}
+          </button>
+        ))}
 
       </div>
 
-      <div className="settings-card">
-
-        <h3>Administrator</h3>
-
-        <div className="settings-grid">
-
-          <div className="form-group">
-            <label>
-              <User size={18} />
-              Admin Name
-            </label>
-
-            <input
-              type="text"
-              name="admin_name"
-              value={formData.admin_name}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>
-              <User size={18} />
-              Username
-            </label>
-
-            <input
-              type="text"
-              name="admin_username"
-              value={formData.admin_username}
-              onChange={handleChange}
-            />
-          </div>
-
-        </div>
-
+      <div className="settings-content">
+        {renderTab()}
       </div>
-
-      <button
-        className="save-settings-btn"
-        onClick={saveSettings}
-        disabled={saving}
-      >
-        <Save size={18} />
-
-        {saving ? "Saving..." : "Save Settings"}
-      </button>
 
     </div>
   );

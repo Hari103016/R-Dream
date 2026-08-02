@@ -209,7 +209,9 @@ function Payments() {
 
                   </td>
 
-                  <td>{payment.payment_date}</td>
+                  <td>
+                    {new Date(payment.payment_date).toLocaleDateString("en-IN")}
+                  </td>
 
                   <td>{payment.remarks}</td>
 

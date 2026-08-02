@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import {
   Map,
   CheckCircle2,
+  Bookmark,
   Home,
   IndianRupee,
+  Wallet,
+  CreditCard,
   TrendingUp,
 } from "lucide-react";
 
@@ -14,8 +17,11 @@ function DashboardCards() {
   const [stats, setStats] = useState({
     totalPlots: 0,
     available: 0,
+    booked: 0,
     sold: 0,
     revenue: 0,
+    collected: 0,
+    pending: 0,
   });
 
   useEffect(() => {
@@ -24,41 +30,66 @@ function DashboardCards() {
 
   async function fetchDashboardStats() {
     try {
-      // Total Plots
+      // -----------------------------
+      // Plot Statistics
+      // -----------------------------
       const { count: totalPlots } = await supabase
-        .from("customers")
+        .from("plots")
         .select("*", { count: "exact", head: true });
 
-      // Available
       const { count: available } = await supabase
-        .from("customers")
+        .from("plots")
         .select("*", { count: "exact", head: true })
         .eq("status", "Available");
 
-      // Booked
-      const { count: sold } = await supabase
-        .from("customers")
+      const { count: booked } = await supabase
+        .from("plots")
         .select("*", { count: "exact", head: true })
         .eq("status", "Booked");
-      // Revenue
-      const { data } = await supabase
+
+      const { count: sold } = await supabase
+        .from("plots")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "Sold");
+
+      // -----------------------------
+      // Financial Statistics
+      // -----------------------------
+      const { data: customers } = await supabase
         .from("customers")
-        .select("total_amount");
+        .select(
+          "total_amount, amount_paid, balance"
+        );
 
       const revenue =
-        data?.reduce(
-        (sum, item) => sum + Number(item.total_amount || 0),
-        0
-      ) || 0;
+        customers?.reduce(
+          (sum, c) => sum + Number(c.total_amount || 0),
+          0
+        ) || 0;
+
+      const collected =
+        customers?.reduce(
+          (sum, c) => sum + Number(c.amount_paid || 0),
+          0
+        ) || 0;
+
+      const pending =
+        customers?.reduce(
+          (sum, c) => sum + Number(c.balance || 0),
+          0
+        ) || 0;
 
       setStats({
         totalPlots: totalPlots || 0,
         available: available || 0,
+        booked: booked || 0,
         sold: sold || 0,
         revenue,
+        collected,
+        pending,
       });
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -66,30 +97,44 @@ function DashboardCards() {
     {
       title: "Total Plots",
       value: stats.totalPlots,
-      icon: <Map size={34} />,
-      color: "#4F8CFF",
-      growth: "+12%",
+      icon: <Map size={32} />,
+      color: "#2563EB",
     },
     {
       title: "Available",
       value: stats.available,
-      icon: <CheckCircle2 size={34} />,
+      icon: <CheckCircle2 size={32} />,
       color: "#10B981",
-      growth: "+8%",
+    },
+    {
+      title: "Booked",
+      value: stats.booked,
+      icon: <Bookmark size={32} />,
+      color: "#F59E0B",
     },
     {
       title: "Sold",
       value: stats.sold,
-      icon: <Home size={34} />,
-      color: "#F59E0B",
-      growth: "+25%",
+      icon: <Home size={32} />,
+      color: "#EF4444",
     },
     {
       title: "Revenue",
-      value: `₹${stats.revenue.toLocaleString()}`,
-      icon: <IndianRupee size={34} />,
+      value: `₹${stats.revenue.toLocaleString("en-IN")}`,
+      icon: <IndianRupee size={32} />,
       color: "#8B5CF6",
-      growth: "+18%",
+    },
+    {
+      title: "Collected",
+      value: `₹${stats.collected.toLocaleString("en-IN")}`,
+      icon: <Wallet size={32} />,
+      color: "#06B6D4",
+    },
+    {
+      title: "Pending",
+      value: `₹${stats.pending.toLocaleString("en-IN")}`,
+      icon: <CreditCard size={32} />,
+      color: "#F97316",
     },
   ];
 
@@ -107,7 +152,6 @@ function DashboardCards() {
 
             <div className="growth">
               <TrendingUp size={16} />
-              {card.growth}
             </div>
           </div>
 

@@ -1,5 +1,6 @@
   import { useEffect, useMemo, useState } from "react";
   import { useNavigate } from "react-router-dom";
+  import { Pencil } from "lucide-react";
   import {
     Plus,
     Search,
@@ -257,19 +258,28 @@
           <PlotCard
             key={plot.id}
             plot={plot}
+
+            onEdit={(plot) => {
+              setSelectedPlot(plot);
+              setShowEditModal(true);
+            }}
+
             onBook={(plot) => {
               setSelectedPlot(plot);
               setShowBookingModal(true);
             }}
-            onView={(plot) => {
 
+            onView={(plot) => {
               if (!plot.customer_id) {
                 toast.error("Customer not linked to this plot.");
                 return;
               }
 
               navigate(`/customer/${plot.customer_id}`);
+            }}
 
+            onDelete={(plot) => {
+              deletePlot(plot);
             }}
           />
 
@@ -324,6 +334,6 @@
 
   );
 
-  }
+}
 
   export default Plots;
