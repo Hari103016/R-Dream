@@ -16,7 +16,7 @@ import Bookings from "./pages/Bookings";
 import Payments from "./pages/Payments";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
-import LayoutMap from "./pages/LayoutMap";
+
 import AdminProfile from "./pages/AdminProfile"; // NEW
 
 function App() {
@@ -235,14 +235,7 @@ function App() {
           />
         }
       />
-      <Route
-        path="/layout-map"
-        element={
-          session
-          ? <LayoutMap />
-          : <Navigate to="/" replace />
-        }
-      />
+     
 
     </Routes>
 

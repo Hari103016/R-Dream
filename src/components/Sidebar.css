@@ -8,17 +8,12 @@
     position:fixed;
     left:0;
     top:0;
-
     display:flex;
     flex-direction:column;
-
     background:#0b1220;
     border-right:1px solid rgba(255,255,255,.08);
-
     padding:25px;
-
     color:#fff;
-
     transition:.3s;
     z-index:1000;
 }
@@ -29,41 +24,21 @@
 
 .logo{
     display:flex;
+    justify-content:center;
     align-items:center;
-    gap:16px;
-    margin-bottom:45px;
-    padding-bottom:20px;
+    margin-bottom:35px;
+    padding-bottom:25px;
     border-bottom:1px solid rgba(255,255,255,.08);
 }
 
 .company-logo{
-    width:68px;
-    height:68px;
-    object-fit:cover;
-    border-radius:18px;
+    width:170px;
+    height:170px;
+    object-fit:contain;
     background:#fff;
-    padding:6px;
-    box-shadow:0 10px 25px rgba(37,99,235,.35);
-    flex-shrink:0;
-}
-
-.company-details{
-    display:flex;
-    flex-direction:column;
-}
-
-.company-details h2{
-    margin:0;
-    font-size:34px;
-    font-weight:800;
-    color:#fff;
-    letter-spacing:.5px;
-}
-
-.company-details span{
-    margin-top:4px;
-    font-size:13px;
-    color:#94a3b8;
+    padding:12px;
+    border-radius:26px;
+    box-shadow:0 20px 40px rgba(37,99,235,.35);
 }
 
 /* ===========================
@@ -80,15 +55,10 @@ nav a{
     display:flex;
     align-items:center;
     gap:15px;
-
     text-decoration:none;
-
     color:#d1d5db;
-
     padding:15px 18px;
-
     border-radius:14px;
-
     transition:.3s;
 }
 
@@ -126,6 +96,24 @@ nav a:hover{
     border-radius:18px;
     padding:18px;
     margin-bottom:18px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.profile:hover{
+    background:#1e293b;
+}
+
+.profile-avatar{
+    width:50px;
+    height:50px;
+    min-width:50px;
+    border-radius:50%;
+    background:#444;
+    flex-shrink:0;
 }
 
 .profile-info h4{
@@ -146,27 +134,18 @@ nav a:hover{
 
 .logout{
     width:100%;
-
     border:none;
-
     padding:16px;
-
     border-radius:14px;
-
     display:flex;
     justify-content:center;
     align-items:center;
     gap:10px;
-
     cursor:pointer;
-
     background:linear-gradient(135deg,#f59e0b,#fbbf24);
-
     color:#111827;
-
     font-size:15px;
     font-weight:700;
-
     transition:.3s;
 }
 
@@ -181,16 +160,12 @@ nav a:hover{
 
 .close-btn{
     display:none;
-
     position:absolute;
     top:18px;
     right:18px;
-
     border:none;
     background:none;
-
     color:#fff;
-
     cursor:pointer;
 }
 
@@ -230,16 +205,8 @@ nav a:hover{
 }
 
 .company-logo{
-    width:56px;
-    height:56px;
-}
-
-.company-details h2{
-    font-size:26px;
-}
-
-.company-details span{
-    font-size:12px;
+    width:95px;
+    height:95px;
 }
 
 nav a{
@@ -252,15 +219,5 @@ nav a{
 
 .logout{
     padding:14px;
-}
-.profile-avatar {
-    width: 50px;
-    height: 50px;
-    min-width: 50px;
-    min-height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-    display: block;
-    flex-shrink: 0;
 }
 }

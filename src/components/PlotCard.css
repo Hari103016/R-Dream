@@ -6,11 +6,11 @@
     background:#182235;
     border-radius:18px;
     border:1px solid #293548;
-    padding:22px;
+    padding:24px;
     transition:.3s;
     display:flex;
     flex-direction:column;
-    gap:20px;
+    gap:22px;
     box-shadow:0 8px 20px rgba(0,0,0,.20);
 }
 
@@ -18,6 +18,7 @@
     transform:translateY(-6px);
     box-shadow:0 20px 40px rgba(0,0,0,.35);
 }
+
 
 /* ===========================
    HEADER
@@ -29,198 +30,382 @@
     align-items:center;
 }
 
+
 .plot-header h3{
-    font-size:22px;
-    font-weight:700;
+    font-size:26px;
+    font-weight:800;
     color:#fff;
+    margin:0;
 }
+
+
+/* ===========================
+   CHECKBOX
+=========================== */
+
+.plot-checkbox{
+
+    width:24px;
+    height:24px;
+
+    cursor:pointer;
+
+    accent-color:#2563eb;
+
+    margin-right:10px;
+
+}
+
+
 
 /* ===========================
    STATUS
 =========================== */
 
 .status{
-    padding:6px 14px;
+
+    padding:8px 16px;
+
     border-radius:30px;
-    font-size:13px;
-    font-weight:600;
+
+    font-size:15px;
+
+    font-weight:700;
+
 }
+
 
 .available{
+
     background:#059669;
+
     color:#fff;
+
 }
+
 
 .booked{
+
     background:#f59e0b;
+
     color:#fff;
+
 }
 
+
 .sold{
+
     background:#ef4444;
+
     color:#fff;
+
 }
+
+
 
 /* ===========================
    BODY
 =========================== */
 
 .plot-body{
+
     display:flex;
+
     flex-direction:column;
-    gap:12px;
+
+    gap:16px;
+
 }
+
+
+
+/* ===========================
+   DETAILS BOX
+=========================== */
+
 
 .plot-row{
-    display:flex;
-    justify-content:space-between;
+
+    display:grid;
+
+    grid-template-columns:120px 1fr;
+
     align-items:center;
-    padding:10px 0;
-    border-bottom:1px solid rgba(255,255,255,.08);
+
+    min-height:70px;
+
+    padding:18px 20px;
+
+    background:#202d44;
+
+    border-radius:12px;
+
+    border:1px solid rgba(255,255,255,.05);
+
 }
 
-.plot-row:last-child{
-    border-bottom:none;
+
+
+/* ===========================
+   LABEL
+=========================== */
+
+
+.plot-card .plot-body .label{
+
+    color:#cbd5e1 !important;
+
+    font-size:15px !important;
+
+    font-weight:700 !important;
+
+    text-align:left;
+
 }
 
-.label{
-    color:#94a3b8;
-    font-size:15px;
-    font-weight:500;
+
+
+/* ===========================
+   VALUE
+=========================== */
+
+
+.plot-card .plot-body .value{
+
+    color:#ffffff !important;
+
+    font-size:15px !important;
+
+    font-weight:800 !important;
+
+    text-align:right;
+
 }
 
-.value{
-    color:#fff;
-    font-size:15px;
-    font-weight:600;
-}
+
 
 /* ===========================
    FOOTER
 =========================== */
 
+
 .plot-footer{
+
     display:flex;
+
     align-items:center;
-    gap:10px;
-    margin-top:15px;
+
+    gap:12px;
+
+    margin-top:18px;
+
 }
+
+
 
 /* ===========================
    EDIT BUTTON
 =========================== */
 
+
 .edit-btn{
-    width:46px;
-    height:46px;
+
+    width:50px;
+
+    height:50px;
+
     border:none;
-    border-radius:10px;
+
+    border-radius:12px;
+
     background:#f59e0b;
-    color:#fff;
+
+    color:white;
+
     display:flex;
-    align-items:center;
+
     justify-content:center;
+
+    align-items:center;
+
     cursor:pointer;
-    transition:.3s;
+
     flex-shrink:0;
+
 }
 
+
 .edit-btn:hover{
+
     background:#d97706;
+
     transform:scale(1.05);
+
 }
+
+
 
 /* ===========================
    BOOK / VIEW BUTTON
 =========================== */
 
+
 .book-btn,
 .view-btn{
+
     flex:1;
-    height:46px;
+
+    height:50px;
+
     border:none;
-    border-radius:10px;
+
+    border-radius:12px;
+
     cursor:pointer;
-    font-size:15px;
-    font-weight:600;
+
+    font-size:16px;
+
+    font-weight:700;
+
     display:flex;
+
     align-items:center;
+
     justify-content:center;
+
     gap:8px;
-    transition:.3s;
+
 }
+
 
 .book-btn{
+
     background:#2563eb;
-    color:#fff;
+
+    color:white;
+
 }
+
 
 .book-btn:hover{
+
     background:#1d4ed8;
+
 }
+
+
 
 .view-btn{
+
     background:#10b981;
-    color:#fff;
+
+    color:white;
+
 }
 
+
 .view-btn:hover{
+
     background:#059669;
+
 }
+
+
 
 /* ===========================
    DELETE BUTTON
 =========================== */
 
+
 .delete-btn{
-    width:46px;
-    height:46px;
+
+    width:50px;
+
+    height:50px;
+
     border:none;
-    border-radius:10px;
+
+    border-radius:12px;
+
     background:#ef4444;
-    color:#fff;
+
+    color:white;
+
     display:flex;
-    align-items:center;
+
     justify-content:center;
+
+    align-items:center;
+
     cursor:pointer;
-    transition:.3s;
+
     flex-shrink:0;
+
 }
 
+
 .delete-btn:hover{
+
     background:#dc2626;
+
     transform:scale(1.05);
+
 }
+
+
 
 /* ===========================
    RESPONSIVE
 =========================== */
 
-@media (max-width:768px){
+
+@media(max-width:768px){
 
     .plot-card{
+
         padding:18px;
+
     }
+
 
     .plot-header h3{
-        font-size:20px;
+
+        font-size:22px;
+
     }
 
-    .plot-footer{
-        gap:8px;
+
+    .plot-row{
+
+        grid-template-columns:90px 1fr;
+
+        min-height:60px;
+
+        padding:15px;
+
     }
 
-    .edit-btn,
-    .delete-btn{
-        width:42px;
-        height:42px;
+
+    .plot-card .plot-body .label{
+
+        font-size:14px !important;
+
     }
 
-    .book-btn,
-    .view-btn{
-        height:42px;
-        font-size:14px;
+
+    .plot-card .plot-body .value{
+
+        font-size:14px !important;
+
     }
 
+
+    .plot-checkbox{
+
+        width:20px;
+
+        height:20px;
+
+    }
 
 }

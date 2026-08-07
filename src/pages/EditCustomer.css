@@ -71,3 +71,191 @@
 .save-btn:hover{
     opacity:.9;
 }
+/* ================================
+   EDIT CUSTOMER MODAL
+================================ */
+
+.modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.75);
+    backdrop-filter:blur(8px);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+}
+
+
+.modal{
+    width:650px;
+    max-width:90%;
+    background:#111827;
+    border:1px solid #263244;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 25px 60px rgba(0,0,0,0.5);
+    animation:modalShow .3s ease;
+}
+
+
+@keyframes modalShow{
+
+    from{
+        opacity:0;
+        transform:translateY(-20px) scale(.95);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+
+}
+
+
+
+.modal h2{
+
+    color:#ffffff;
+    font-size:26px;
+    font-weight:700;
+    margin-bottom:25px;
+
+}
+
+
+/* ================================
+   EDIT FORM GRID
+================================ */
+
+.modal form{
+
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:18px;
+
+}
+
+
+.modal input,
+.modal select{
+
+    width:100%;
+    height:45px;
+    padding:0 14px;
+    background:#1e293b;
+    border:1px solid #334155;
+    border-radius:10px;
+    color:#ffffff;
+    font-size:14px;
+    outline:none;
+    transition:.3s;
+
+}
+
+
+
+.modal input:focus,
+.modal select:focus{
+
+    border-color:#2563eb;
+    box-shadow:0 0 0 3px rgba(37,99,235,.2);
+
+}
+
+
+
+.modal input::placeholder{
+
+    color:#94a3b8;
+
+}
+
+
+
+/* ================================
+   BUTTONS
+================================ */
+
+.modal-buttons{
+
+    display:flex;
+    justify-content:flex-end;
+    gap:15px;
+    margin-top:25px;
+
+}
+
+
+
+.save-btn,
+.cancel-btn{
+
+    height:45px;
+    padding:0 28px;
+    border:none;
+    border-radius:12px;
+    color:white;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+
+}
+
+
+
+.save-btn{
+
+    background:#10b981;
+
+}
+
+
+.save-btn:hover{
+
+    background:#059669;
+    transform:translateY(-2px);
+
+}
+
+
+
+.cancel-btn{
+
+    background:#ef4444;
+
+}
+
+
+.cancel-btn:hover{
+
+    background:#dc2626;
+    transform:translateY(-2px);
+
+}
+
+
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media(max-width:700px){
+
+    .modal{
+
+        width:95%;
+        padding:20px;
+
+    }
+
+
+    .modal form{
+
+        grid-template-columns:1fr;
+
+    }
+
+}

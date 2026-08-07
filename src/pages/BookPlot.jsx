@@ -232,13 +232,19 @@ function BookPlot() {
 
           <div className="form-group">
             <label>Advance Amount</label>
-            <input
-              type="number"
-              name="amount_paid"
-              value={formData.amount_paid}
-              onChange={handleChange}
-              placeholder="Enter advance amount"
-            />
+              <input
+                type="text"
+                name="amount_paid"
+                value={formData.amount_paid}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, "");
+                  setFormData((prev) => ({
+                    ...prev,
+                    amount_paid: value,
+                  }));
+                }}
+                placeholder="Enter advance amount"
+              />
           </div>
 
           <div className="form-group">

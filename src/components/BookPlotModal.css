@@ -6,7 +6,7 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -18,13 +18,13 @@
 =========================== */
 
 .modal {
-  width: 750px;
+  width: 760px;
   max-width: 95%;
   background: #111827;
   border-radius: 18px;
   padding: 28px;
-  color: white;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, .45);
+  color: #fff;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
 }
 
 /* ===========================
@@ -39,21 +39,25 @@
 }
 
 .modal-header h2 {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
 }
 
 .modal-header button {
-  background: transparent;
+  width: 36px;
+  height: 36px;
   border: none;
-  color: white;
+  background: transparent;
+  color: #fff;
   cursor: pointer;
-  transition: .3s;
+  border-radius: 8px;
+  transition: 0.3s;
 }
 
 .modal-header button:hover {
+  background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
-  transform: rotate(90deg);
 }
 
 /* ===========================
@@ -72,23 +76,30 @@
 }
 
 .form-group label {
-  margin-bottom: 8px;
-  color: #cbd5e1;
   font-size: 14px;
-  font-weight: 500;
+  color: #cbd5e1;
+  margin-bottom: 8px;
+  font-weight: 600;
 }
+
+/* ===========================
+   INPUTS
+=========================== */
 
 .form-group input,
 .form-group select,
 .form-group textarea {
+  width: 100%;
   height: 48px;
   padding: 0 14px;
-  border-radius: 10px;
-  border: 1px solid #334155;
   background: #1e293b;
-  color: white;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 15px;
   outline: none;
-  transition: .25s;
+  box-sizing: border-box;
+  transition: all 0.25s ease;
 }
 
 .form-group textarea {
@@ -97,25 +108,45 @@
   resize: none;
 }
 
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #94a3b8;
+}
+
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, .15);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
 }
+
+/* Remove number arrows */
+
+.form-group input[type="number"]::-webkit-inner-spin-button,
+.form-group input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.form-group input[type="number"] {
+  appearance: textfield;
+}
+
+/* Readonly Inputs */
 
 .form-group input[readonly] {
   background: #0f172a;
   color: #22c55e;
-  font-weight: 700;
+  font-weight: 600;
+  cursor: not-allowed;
 }
 
 /* ===========================
-   ACTION BUTTONS
+   BUTTONS
 =========================== */
 
 .modal-actions {
-  margin-top: 30px;
+  margin-top: 28px;
   display: flex;
   justify-content: flex-end;
   gap: 15px;
@@ -123,68 +154,37 @@
 
 .cancel-btn,
 .save-btn {
-  padding: 12px 22px;
   border: none;
+  padding: 12px 22px;
   border-radius: 10px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: .25s;
+  transition: 0.25s;
 }
 
 .cancel-btn {
-  background: #475569;
+  background: #ef4444;
   color: white;
 }
 
 .cancel-btn:hover {
-  background: #334155;
+  background: #dc2626;
 }
 
 .save-btn {
-  background: #16a34a;
+  background: #10b981;
   color: white;
 }
 
 .save-btn:hover {
-  background: #15803d;
+  background: #059669;
 }
 
-.save-btn:disabled {
-  background: #64748b;
+.save-btn:disabled,
+.cancel-btn:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
-}
-
-/* ===========================
-   SUMMARY BOX
-=========================== */
-
-.summary-box {
-  margin-top: 25px;
-  background: #0f172a;
-  border: 1px solid #334155;
-  border-radius: 12px;
-  padding: 18px;
-}
-
-.summary-box h3 {
-  margin-bottom: 15px;
-  font-size: 18px;
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  color: #e2e8f0;
-}
-
-.summary-row:last-child {
-  margin-bottom: 0;
-}
-
-.summary-row strong {
-  color: #22c55e;
 }
 
 /* ===========================
@@ -192,7 +192,6 @@
 =========================== */
 
 @media (max-width: 768px) {
-
   .modal {
     width: 95%;
     padding: 20px;
@@ -210,5 +209,4 @@
   .save-btn {
     width: 100%;
   }
-
 }

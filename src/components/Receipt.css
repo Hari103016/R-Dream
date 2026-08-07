@@ -944,3 +944,265 @@ body{
         text-align:center;
     }
 }
+/* ================================
+   RECEIPT WATERMARK
+================================ */
+
+.luxury-receipt{
+    position:relative;
+    overflow:hidden;
+}
+
+
+.receipt-watermark{
+
+    position:absolute;
+
+    width:140px;
+
+    height:140px;
+
+    object-fit:contain;
+
+    top:50%;
+
+    left:50%;
+
+    transform:translate(-50%,-50%);
+
+    opacity:0.04;
+
+    z-index:0;
+
+    pointer-events:none;
+
+}
+
+
+.luxury-receipt > *:not(.receipt-watermark){
+
+    position:relative;
+
+    z-index:1;
+
+}
+/* ===========================
+   RECEIPT ACTION BUTTONS
+=========================== */
+
+.receipt-actions{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    gap:0;
+
+    margin-bottom:30px;
+
+}
+
+
+/* ===========================
+   DOWNLOAD BUTTON
+=========================== */
+
+.download-btn{
+
+    height:42px;
+
+    min-width:140px;
+
+    padding:0 22px;
+
+    background:#123b78;
+
+    color:white;
+
+    border:none;
+
+    border-radius:8px 0 0 8px;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+
+.download-btn:hover{
+
+    background:#0b2a55;
+
+}
+
+
+/* ===========================
+   RECEIPT ACTION BUTTONS
+=========================== */
+
+.receipt-actions{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:0;
+    margin-bottom:30px;
+    transform:translateY(-15px);
+}
+
+
+/* DOWNLOAD BUTTON */
+
+.download-btn{
+
+    height:42px;
+    width:140px;
+
+    border:none;
+    border-radius:8px 0 0 8px;
+
+    background:#123b78;
+    color:#ffffff;
+
+    font-size:14px;
+    font-weight:700;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:0;
+    margin:0;
+
+    cursor:pointer;
+}
+
+
+/* WHATSAPP BUTTON */
+
+.whatsapp-share-btn{
+
+    height:42px;
+    width:160px;
+
+    border:none;
+    border-radius:0 8px 8px 0;
+
+    background:#25D366;
+    color:#ffffff;
+
+    font-size:14px;
+    font-weight:700;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:0;
+    margin:0;
+
+    cursor:pointer;
+}
+
+
+/* HOVER */
+
+.download-btn:hover{
+    background:#0b2a55;
+}
+
+
+.whatsapp-share-btn:hover{
+    background:#128C7E;
+}
+.receipt-actions{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:8px;
+    margin-bottom:30px;
+    transform:translateY(-15px);
+}
+
+
+.download-btn,
+.whatsapp-share-btn{
+
+    height:42px !important;
+
+    display:flex !important;
+
+    align-items:center !important;
+
+    justify-content:center !important;
+
+    white-space:nowrap !important;
+
+    padding:0 22px !important;
+
+    border:none !important;
+
+    outline:none !important;
+
+    font-size:13px !important;
+
+    font-weight:700 !important;
+
+}
+
+
+/* PDF */
+
+.download-btn{
+
+    width:120px;
+
+    background:#123b78;
+
+    color:white;
+
+    border-radius:8px 0 0 8px;
+
+}
+
+
+/* WHATSAPP */
+
+.whatsapp-share-btn{
+
+    width:150px;
+
+    background:#25D366;
+
+    color:white;
+
+    border-radius:0 8px 8px 0;
+
+}
+.receipt-actions .whatsapp-share-btn{
+
+    width:220px !important;
+
+    height:42px;
+
+    white-space:nowrap;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+}

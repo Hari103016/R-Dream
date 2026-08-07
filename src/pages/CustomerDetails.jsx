@@ -24,6 +24,7 @@ function CustomerDetails() {
 
   const [customer, setCustomer] = useState(null);
   const [payments, setPayments] = useState([]);
+  const [plots,setPlots] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [showEdit, setShowEdit] = useState(false);
@@ -59,6 +60,23 @@ function CustomerDetails() {
       if (error) throw error;
 
       setCustomer(data);
+      const plotNumbers = data.plot_no
+        ? data.plot_no
+          .split(",")
+          .map((p)=>Number(p.trim()))
+          .filter(Boolean)
+        : [];
+      if(plotNumbers.length > 0){
+        const {data:plotData,error:plotError} = await supabase
+          .from("plots")
+          .select("*")
+          .in("plot_no",plotNumbers);
+        if(plotError) throw plotError;
+        setPlots(plotData || []);
+      }
+      else{
+        setPlots([]);
+      }
 
       const { data: paymentData } = await supabase
         .from("payments")
@@ -84,7 +102,56 @@ function CustomerDetails() {
 
     setShowEdit(true);
   }
+  async function handleRemovePlot(plot) {
+    const result = await Swal.fire({
+      title: "Remove Plot?",
+      text: `Remove Plot ${plot.plot_no}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Remove",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#2563eb",
+      reverseButtons: true
 
+    });
+    if (!result.isConfirmed) {
+      return;
+    }
+    try {
+      const { error } = await supabase
+        .from("plots")
+        .update({
+          status: "Available",
+          customer_id: null
+        })
+        .eq("id", plot.id);
+      if (error) {
+         throw error;
+      }
+      const updatedPlots = plots.filter(
+        item => item.id !== plot.id
+      );
+      setPlots(updatedPlots);
+      await Swal.fire({
+        title: "Removed!",
+        text: `Plot ${plot.plot_no} removed successfully.`,
+        icon: "success",
+        confirmButtonColor: "#2563eb"
+      });
+      fetchCustomer();
+    } catch(error) {
+      Swal.fire({
+        title:"Error",
+        text:error.message,
+        icon:"error",
+        confirmButtonColor:"#2563eb"
+
+      });
+
+
+    }
+  }
   async function saveCustomer() {
     const { error } = await supabase
       .from("customers")
@@ -108,8 +175,16 @@ function CustomerDetails() {
     }
 
     setShowEdit(false);
-    fetchCustomer();
 
+    Swal.fire({
+      title:"Customer Updated Successfully!",
+      text:"Customer details have been saved.",
+      icon:"success",
+      confirmButtonText:"OK",
+      confirmButtonColor:"#2563eb"
+    }).then(()=>{
+      fetchCustomer();
+    });
     toast.success("Customer Updated Successfully");
   }
     async function deleteCustomer() {
@@ -366,24 +441,41 @@ Thank you for choosing R Dream Infra Developers.
       <div className="cd-info-card">
         <MapPinned className="card-icon" />
         <div className="card-content">
-          <h4>Plot Number</h4>
-          <p>{customer.plot_no}</p>
-        </div>
-      </div>
-
-      <div className="cd-info-card">
-        <MapPinned className="card-icon" />
-        <div className="card-content">
           <h4>Facing</h4>
           <p>{customer.facing}</p>
         </div>
       </div>
 
-      <div className="cd-info-card">
-        <MapPinned className="card-icon" />
+      <div className="cd-info-card plots-card">
+        <MapPinned className="card-icon"/>
         <div className="card-content">
-          <h4>Plot Size</h4>
-          <p>{customer.plot_size} Sq.Yds</p>
+          <h4>
+            Plot No & Size
+          </h4>
+          <div className="plot-scroll">
+            {plots.map((plot)=>(
+              <div
+                className="plot-row"
+                key={plot.id}
+              >
+                <div>
+                  <p>
+                    Plot #{plot.plot_no}
+                  </p>
+                  <span>
+                      {plot.plot_size} Sq.Yds
+                  </span>
+
+                </div>
+                <button
+                  className="remove-plot-btn"
+                  onClick={() => handleRemovePlot(plot)}
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -419,12 +511,7 @@ Thank you for choosing R Dream Infra Developers.
 
       {/* NEW WHATSAPP BUTTON */}
 
-      <button
-        className="whatsapp-btn"
-        onClick={sendWhatsApp}
-      >
-        💬 WhatsApp
-      </button>
+      
 
       <button
         className="receipt-btn"

@@ -1,38 +1,144 @@
 import React, { useRef } from "react";
 import { useLocation } from "react-router-dom";
+import logo from "../assets/logo.png";
 import "./Receipt.css";
 import downloadReceipt from "../utils/downloadReceipt";
 
+
 export default function Receipt() {
+
   const receiptRef = useRef();
 
-  // Receive data from CustomerDetails.jsx
   const { state } = useLocation();
 
   const customer = state?.customer;
+
   const payments = state?.payments || [];
 
+
   if (!customer) {
+
     return <h2>No Receipt Found</h2>;
+
   }
 
+
   const receiptNo = `RD-${customer.id}`;
+
   const today = new Date().toLocaleDateString("en-IN");
 
+
+
+  // ==========================
+  // DOWNLOAD PDF
+  // ==========================
+
+  function downloadPDF(){
+
+    downloadReceipt(receiptRef);
+
+  }
+
+
+
+  // ==========================
+  // SHARE WHATSAPP
+  // ==========================
+
+  function shareWhatsApp(){
+
+    const pdfLink =
+    
+    "https://rdream-admin.vercel.app/receipts/receipt.pdf";
+
+
+    const paidAmount =
+    payments
+    .reduce(
+        (total,payment)=> 
+        total + Number(payment.amount || 0),
+        0
+    )
+    .toLocaleString("en-IN");
+
+
+    const message =
+`🏡 R DREAM INFRA DEVELOPERS
+
+Payment Receipt Details
+
+Customer Name : ${customer.name}
+
+Mobile : ${customer.mobile}
+
+Plot No : ${customer.plot_no}
+
+Plot Size : ${customer.plot_size} Sq.Yds
+
+Facing : ${customer.facing}
+
+Total Amount : ₹${Number(customer.total_amount)
+.toLocaleString("en-IN")}
+
+Paid Amount : ₹${paidAmount}
+
+Balance Amount : ₹${Number(customer.balance)
+.toLocaleString("en-IN")}
+
+
+📄 Receipt PDF:
+
+${pdfLink}
+
+
+Thank you for choosing
+
+R DREAM INFRA DEVELOPERS`;
+
+
+    const whatsappURL =
+    
+    `https://api.whatsapp.com/send?phone=91${customer.mobile}&text=${encodeURIComponent(message)}`;
+
+
+    window.open(
+        whatsappURL,
+        "_blank"
+    );
+
+}
   return (
     <div className="receipt-page">
 
-      <button
-        className="download-btn"
-        onClick={() => downloadReceipt(receiptRef)}
-      >
-        Download PDF
-      </button>
+      <div className="receipt-actions">
+        <button 
+          className="download-btn"
+          onClick={downloadPDF}
+        >
+          Download PDF
+        </button>
+
+
+        <button
+          className="whatsapp-share-btn"
+          onClick={shareWhatsApp}
+        >
+          💬 Share via WhatsApp
+        </button>
+
+    </div>
 
       <div
         className="luxury-receipt"
         ref={receiptRef}
       >
+
+        <img
+          src={logo}
+          className="receipt-watermark"
+          alt="Dream Infra"
+        />
+
 
         {/* ================= HEADER ================= */}
 
@@ -45,26 +151,12 @@ export default function Receipt() {
             <p>Premium Residential Open Plots</p>
 
             <div className="venture-tag">
-              KONYAPALEM VENTURE
+              GUDIMETTLA VENTURE
             </div>
 
           </div>
 
-          <div className="approval-circle">
-
-            <span className="approval-top">
-              PANCHAYAT
-            </span>
-
-            <div className="approval-check">
-              ✓
-            </div>
-
-            <span className="approval-bottom">
-              APPROVED
-            </span>
-
-          </div>
+         
 
         </div>
 
@@ -127,10 +219,7 @@ export default function Receipt() {
                 <strong>{customer.status || "-"}</strong>
               </div>
 
-              <div className="row">
-                <span>Address</span>
-                <strong>{customer.address || "-"}</strong>
-              </div>
+              
 
             </div>
 
@@ -165,10 +254,7 @@ export default function Receipt() {
                 <strong>{customer.facing || "-"}</strong>
               </div>
 
-              <div className="row">
-                <span>Project</span>
-                <strong>Konyapalem Venture</strong>
-              </div>
+              
 
               <div className="row">
                 <span>Receipt Status</span>
@@ -443,3 +529,4 @@ export default function Receipt() {
     </div>
   );
 }
+
