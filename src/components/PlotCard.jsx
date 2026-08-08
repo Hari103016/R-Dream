@@ -3,41 +3,43 @@ import {
   Trash2,
   Calendar,
   Eye,
+  MapPinned,
+  Star,
+  BadgeCheck,
+  ArrowUpRight,
+  Ruler,
+  Compass,
+  Route,
+  IndianRupee,
 } from "lucide-react";
 
 import "./PlotCard.css";
 
 function PlotCard({
-
   plot,
-
   selectionMode = false,
-
   checked = false,
-
   onCheck,
-
   onBook,
-
   onView,
-
   onEdit,
-
   onDelete,
-
 }) {
 
   return (
 
     <div className="plot-card">
 
-      {/* Header */}
+      <div className="shine"></div>
+
+      {/* ================= HEADER ================= */}
 
       <div className="plot-header">
 
         <div className="plot-title">
 
-          {selectionMode && plot.status === "Available" && (
+          {selectionMode &&
+            plot.status === "Available" && (
 
             <input
               type="checkbox"
@@ -50,7 +52,9 @@ function PlotCard({
 
           <h3>
 
-            Plot - {plot.plot_no}
+            <MapPinned size={20}/>
+
+            Plot-{plot.plot_no}
 
           </h3>
 
@@ -65,26 +69,56 @@ function PlotCard({
               : "sold"
           }`}
         >
-
           {plot.status}
-
         </span>
 
       </div>
 
-      {/* Body */}
+      {/* ================= BADGES ================= */}
 
-      <div className="plot-body">
+      <div className="plot-badges">
 
-        <div className="plot-row">
+        {plot.premium && (
 
-          <span className="label">
+          <span className="premium-badge">
+
+            <Star size={14}/>
+
+            Premium
+
+          </span>
+
+        )}
+
+        {plot.dtcp && (
+
+          <span className="dtcp-badge">
+
+            <BadgeCheck size={14}/>
+
+            DTCP
+
+          </span>
+
+        )}
+
+      </div>
+
+      {/* ================= DETAILS ================= */}
+
+      <div className="plot-details">
+
+        <div className="detail-row">
+
+          <span className="detail-label">
+
+            <Ruler size={16}/>
 
             Size
 
           </span>
 
-          <span className="value">
+          <span className="detail-value">
 
             {plot.plot_size} Sq.Yds
 
@@ -92,15 +126,17 @@ function PlotCard({
 
         </div>
 
-        <div className="plot-row">
+        <div className="detail-row">
 
-          <span className="label">
+          <span className="detail-label">
+
+            <Compass size={16}/>
 
             Facing
 
           </span>
 
-          <span className="value">
+          <span className="detail-value">
 
             {plot.facing}
 
@@ -108,15 +144,50 @@ function PlotCard({
 
         </div>
 
-        <div className="plot-row">
+        <div className="detail-row">
 
-          <span className="label">
+          <span className="detail-label">
+
+            <Route size={16}/>
+
+            Road
+
+          </span>
+
+          <span className="detail-value">
+
+            {plot.road_width || "24 Ft"}
+
+          </span>
+
+        </div>
+                <div className="detail-row">
+
+          <span className="detail-label">
+
+            📍 Corner
+
+          </span>
+
+          <span className="detail-value">
+
+            {plot.corner_plot ? "Yes" : "No"}
+
+          </span>
+
+        </div>
+
+        <div className="detail-row">
+
+          <span className="detail-label">
+
+            <IndianRupee size={16}/>
 
             Rate
 
           </span>
 
-          <span className="value">
+          <span className="detail-value">
 
             ₹{Number(plot.rate).toLocaleString("en-IN")}
 
@@ -124,46 +195,61 @@ function PlotCard({
 
         </div>
 
-        <div className="plot-row">
+      </div>
 
-          <span className="label">
+      {/* ================= PRICE ================= */}
 
-            Price
+      <div className="price-card">
 
-          </span>
+        <span className="price-title">
 
-          <span className="value">
+          Current Price
 
-            ₹{Number(plot.price).toLocaleString("en-IN")}
+        </span>
 
-          </span>
+        <h2>
+
+          ₹{Number(plot.price).toLocaleString("en-IN")}
+
+        </h2>
+
+        <div className="price-growth">
+
+          <ArrowUpRight size={15}/>
+
+          +8% Appreciation
 
         </div>
 
       </div>
 
-      {/* Footer */}
+      {/* ================= FOOTER ================= */}
 
       <div className="plot-footer">
 
         <button
+
           className="edit-btn"
+
           onClick={() => onEdit(plot)}
-          title="Edit Plot"
+
         >
 
-          <Pencil size={18} />
+          <Pencil size={18}/>
 
         </button>
 
         {plot.status === "Available" ? (
 
           <button
+
             className="book-btn"
+
             onClick={() => onBook(plot)}
+
           >
 
-            <Calendar size={18} />
+            <Calendar size={18}/>
 
             Book Plot
 
@@ -172,11 +258,14 @@ function PlotCard({
         ) : (
 
           <button
+
             className="view-btn"
+
             onClick={() => onView(plot)}
+
           >
 
-            <Eye size={18} />
+            <Eye size={18}/>
 
             View Details
 
@@ -185,12 +274,14 @@ function PlotCard({
         )}
 
         <button
+
           className="delete-btn"
+
           onClick={() => onDelete(plot)}
-          title="Delete Plot"
+
         >
 
-          <Trash2 size={18} />
+          <Trash2 size={18}/>
 
         </button>
 

@@ -10,7 +10,9 @@ import "react-toastify/dist/ReactToastify.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
+
     <BrowserRouter>
+
       <App />
 
       <ToastContainer
@@ -23,6 +25,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         draggable
         theme="dark"
       />
+
     </BrowserRouter>
+
   </React.StrictMode>
 );

@@ -2,419 +2,580 @@
    ADMIN PROFILE
 =========================================== */
 
-.admin-profile-page{
-    width:100%;
-    min-height:100vh;
-    padding:30px;
-    background:#08111f;
+.admin-profile-page {
+    width: 100%;
+    min-height: 100vh;
+
+    padding: 30px;
+
+    background: #08111f;
+
+    box-sizing: border-box;
 }
 
-.profile-card{
 
-    width:100%;
-    max-width:1400px;
+/* ===========================================
+   PROFILE CARD
+=========================================== */
 
-    margin:auto;
+.profile-card {
+    width: 100%;
+    max-width: 1400px;
 
-    display:grid;
-    grid-template-columns:320px 1fr;
-    gap:40px;
+    margin: auto;
 
-    background:linear-gradient(
+    display: grid;
+
+    grid-template-columns: 320px 1fr;
+
+    gap: 40px;
+
+    background: linear-gradient(
         145deg,
         #111827,
         #1e293b
     );
 
-    border-radius:24px;
+    border-radius: 24px;
 
-    border:1px solid rgba(255,255,255,.08);
+    border: 1px solid
+        rgba(255, 255, 255, 0.08);
 
-    padding:35px;
+    padding: 35px;
 
     box-shadow:
-        0 20px 50px rgba(0,0,0,.35);
+        0 20px 50px
+        rgba(0, 0, 0, 0.35);
 
+    box-sizing: border-box;
 }
+
 
 /* ===========================================
    LEFT SIDE
 =========================================== */
 
-.avatar-section{
+.avatar-section {
+    display: flex;
 
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:flex-start;
+    flex-direction: column;
 
+    align-items: center;
+
+    justify-content: flex-start;
+
+    width: 100%;
 }
 
-.avatar-box{
 
-    width:220px;
-    height:220px;
+/* ===========================================
+   AVATAR
+=========================================== */
 
-    border-radius:50%;
+.avatar-box {
+    width: 220px;
+    height: 220px;
 
-    overflow:hidden;
+    border-radius: 50%;
 
-    background:#1f2937;
+    overflow: hidden;
 
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    background: #1f2937;
 
-    border:6px solid #d4af37;
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: 6px solid #d4af37;
 
     box-shadow:
-        0 0 35px rgba(212,175,55,.35);
+        0 0 35px
+        rgba(212, 175, 55, 0.35);
 
-    transition:.35s;
+    transition: 0.35s;
 
+    flex-shrink: 0;
 }
 
-.avatar-box:hover{
-
-    transform:scale(1.05);
-
+.avatar-box:hover {
+    transform: scale(1.05);
 }
 
-.avatar-image{
 
-    width:100%;
-    height:100%;
+/* ===========================================
+   PROFILE IMAGE
+=========================================== */
 
-    object-fit:cover;
+.avatar-image {
+    width: 100%;
+    height: 100%;
 
+    object-fit: cover;
+
+    display: block;
 }
 
-.avatar-placeholder{
 
-    font-size:80px;
-    font-weight:700;
+/* ===========================================
+   PLACEHOLDER
+=========================================== */
 
-    color:#fff;
+.avatar-placeholder {
+    font-size: 80px;
 
+    font-weight: 700;
+
+    color: #ffffff;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
 }
 
-.upload-photo{
 
-    margin-top:25px;
+/* ===========================================
+   PHOTO ACTIONS
+=========================================== */
 
-    padding:13px 22px;
+.photo-actions {
+    width: 100%;
 
-    border-radius:14px;
+    margin-top: 25px;
 
-    background:linear-gradient(
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 12px;
+}
+
+
+/* ===========================================
+   UPLOAD PHOTO
+=========================================== */
+
+.upload-photo {
+    width: 180px;
+
+    min-height: 46px;
+
+    padding: 12px 20px;
+
+    box-sizing: border-box;
+
+    border-radius: 14px;
+
+    background: linear-gradient(
         135deg,
-        #D4AF37,
-        #F4D03F
+        #d4af37,
+        #f4d03f
     );
 
-    color:#111827;
+    color: #111827;
 
-    font-weight:700;
+    font-size: 14px;
 
-    display:flex;
-    align-items:center;
-    gap:10px;
+    font-weight: 700;
 
-    cursor:pointer;
+    display: flex;
 
-    transition:.3s;
+    align-items: center;
 
+    justify-content: center;
+
+    gap: 10px;
+
+    cursor: pointer;
+
+    transition: 0.3s;
+
+    border: none;
 }
 
-.upload-photo:hover{
-
-    transform:translateY(-3px);
+.upload-photo:hover {
+    transform: translateY(-3px);
 
     box-shadow:
-        0 18px 30px rgba(212,175,55,.35);
-
+        0 18px 30px
+        rgba(212, 175, 55, 0.35);
 }
 
-/* Remove Button */
 
-.remove-photo{
+/* ===========================================
+   DELETE PHOTO
+=========================================== */
 
-    margin-top:15px;
+.delete-photo-btn {
+    width: 180px;
 
-    width:100%;
+    min-height: 46px;
 
-    padding:13px;
+    padding: 12px 20px;
 
-    border:none;
+    box-sizing: border-box;
 
-    border-radius:14px;
+    border: none;
 
-    background:#ef4444;
+    border-radius: 14px;
 
-    color:white;
+    background: #ef4444;
 
-    font-size:15px;
+    color: #ffffff;
 
-    font-weight:600;
+    font-size: 14px;
 
-    cursor:pointer;
+    font-weight: 700;
 
-    transition:.3s;
+    display: flex;
 
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    cursor: pointer;
+
+    transition: 0.3s;
 }
 
-.remove-photo:hover{
+.delete-photo-btn:hover {
+    background: #dc2626;
 
-    background:#dc2626;
+    transform: translateY(-3px);
 
-    transform:translateY(-3px);
-
+    box-shadow:
+        0 12px 25px
+        rgba(239, 68, 68, 0.3);
 }
+
+.delete-photo-btn:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+
+    transform: none;
+
+    box-shadow: none;
+}
+
 
 /* ===========================================
    FORM
 =========================================== */
 
-.profile-form{
+.profile-form {
+    width: 100%;
 
-    width:100%;
+    display: grid;
 
-    display:grid;
+    grid-template-columns:
+        repeat(2, 1fr);
 
-    grid-template-columns:repeat(2,1fr);
+    gap: 22px;
 
-    gap:22px;
-
+    align-content: start;
 }
 
-.form-group{
 
-    display:flex;
+/* ===========================================
+   FORM GROUP
+=========================================== */
 
-    flex-direction:column;
+.form-group {
+    display: flex;
 
-    gap:10px;
+    flex-direction: column;
 
+    gap: 10px;
 }
 
-.form-group label{
 
-    display:flex;
-    align-items:center;
-    gap:8px;
+/* ===========================================
+   LABEL
+=========================================== */
 
-    color:white;
+.form-group label {
+    display: flex;
 
-    font-size:15px;
+    align-items: center;
 
-    font-weight:600;
+    gap: 8px;
 
+    color: #ffffff;
+
+    font-size: 15px;
+
+    font-weight: 600;
 }
 
-.form-group input{
 
-    width:100%;
+/* ===========================================
+   INPUT
+=========================================== */
 
-    height:55px;
+.form-group input {
+    width: 100%;
 
-    border-radius:14px;
+    height: 55px;
 
-    border:1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
 
-    background:#0f172a;
+    border: 1px solid
+        rgba(255, 255, 255, 0.08);
 
-    color:white;
+    background: #0f172a;
 
-    padding:0 18px;
+    color: #ffffff;
 
-    outline:none;
+    padding: 0 18px;
 
-    transition:.3s;
+    outline: none;
 
-    font-size:15px;
+    transition: 0.3s;
 
+    font-size: 15px;
+
+    box-sizing: border-box;
 }
 
-.form-group input:focus{
-
-    border-color:#2563eb;
+.form-group input:focus {
+    border-color: #2563eb;
 
     box-shadow:
-        0 0 18px rgba(37,99,235,.25);
-
+        0 0 18px
+        rgba(37, 99, 235, 0.25);
 }
 
-.form-group input:disabled{
-
-    opacity:.7;
-
-    cursor:not-allowed;
-
+.form-group input::placeholder {
+    color: #64748b;
 }
+
+.form-group input:disabled {
+    opacity: 0.7;
+
+    cursor: not-allowed;
+
+    background: #111827;
+}
+
 
 /* ===========================================
    SAVE BUTTON
 =========================================== */
 
-.save-profile-btn{
+.save-profile-btn {
+    grid-column: 1 / -1;
 
-    grid-column:1/-1;
+    margin-top: 10px;
 
-    margin-top:10px;
+    width: 100%;
 
-    width:100%;
+    height: 58px;
 
-    height:58px;
+    border: none;
 
-    border:none;
+    border-radius: 14px;
 
-    border-radius:14px;
-
-    background:linear-gradient(
+    background: linear-gradient(
         135deg,
         #2563eb,
         #3b82f6
     );
 
-    color:white;
+    color: #ffffff;
 
-    font-size:17px;
+    font-size: 17px;
 
-    font-weight:700;
+    font-weight: 700;
 
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:12px;
+    display: flex;
 
-    cursor:pointer;
+    align-items: center;
 
-    transition:.35s;
+    justify-content: center;
 
+    gap: 12px;
+
+    cursor: pointer;
+
+    transition: 0.35s;
 }
 
-.save-profile-btn:hover{
-
-    transform:translateY(-3px);
+.save-profile-btn:hover {
+    transform: translateY(-3px);
 
     box-shadow:
-        0 18px 35px rgba(37,99,235,.35);
-
+        0 18px 35px
+        rgba(37, 99, 235, 0.35);
 }
 
-.save-profile-btn:disabled{
+.save-profile-btn:disabled {
+    opacity: 0.6;
 
-    opacity:.6;
+    cursor: not-allowed;
 
-    cursor:not-allowed;
+    transform: none;
 
+    box-shadow: none;
 }
+
 
 /* ===========================================
    LOADING
 =========================================== */
 
-.admin-profile-loading{
+.admin-profile-loading {
+    width: 100%;
 
-    width:100%;
+    min-height: 100vh;
 
-    min-height:100vh;
+    display: flex;
 
-    display:flex;
+    align-items: center;
 
-    align-items:center;
+    justify-content: center;
 
-    justify-content:center;
+    color: #ffffff;
 
-    color:white;
+    font-size: 28px;
 
-    font-size:28px;
+    font-weight: 700;
 
-    font-weight:700;
-
+    background: #08111f;
 }
+
 
 /* ===========================================
-   RESPONSIVE
+   RESPONSIVE - 1200px
 =========================================== */
 
-@media(max-width:1200px){
+@media (max-width: 1200px) {
 
-.profile-card{
+    .profile-card {
+        grid-template-columns:
+            280px 1fr;
 
-    grid-template-columns:280px 1fr;
+        gap: 30px;
+    }
 
+    .profile-form {
+        grid-template-columns: 1fr;
+    }
+
+    .save-profile-btn {
+        grid-column: 1;
+    }
 }
 
-.profile-form{
 
-    grid-template-columns:1fr;
+/* ===========================================
+   RESPONSIVE - 900px
+=========================================== */
 
+@media (max-width: 900px) {
+
+    .profile-card {
+        grid-template-columns: 1fr;
+
+        text-align: center;
+
+        gap: 30px;
+    }
+
+    .avatar-section {
+        margin-bottom: 10px;
+    }
+
+    .profile-form {
+        grid-template-columns: 1fr;
+
+        text-align: left;
+    }
+
+    .save-profile-btn {
+        grid-column: 1;
+    }
+
+    .photo-actions {
+        width: 100%;
+    }
 }
 
+
+/* ===========================================
+   RESPONSIVE - 600px
+=========================================== */
+
+@media (max-width: 600px) {
+
+    .admin-profile-page {
+        padding: 15px;
+    }
+
+    .profile-card {
+        padding: 20px;
+
+        border-radius: 18px;
+
+        gap: 25px;
+    }
+
+    .avatar-box {
+        width: 170px;
+        height: 170px;
+    }
+
+    .avatar-placeholder {
+        font-size: 60px;
+    }
+
+    .upload-photo,
+    .delete-photo-btn {
+        width: 180px;
+    }
+
+    .form-group input {
+        height: 50px;
+
+        font-size: 14px;
+    }
+
+    .save-profile-btn {
+        height: 52px;
+
+        font-size: 15px;
+    }
 }
 
-@media(max-width:900px){
 
-.profile-card{
+/* ===========================================
+   RESPONSIVE - 400px
+=========================================== */
 
-    grid-template-columns:1fr;
+@media (max-width: 400px) {
 
-    text-align:center;
+    .admin-profile-page {
+        padding: 10px;
+    }
 
-}
+    .profile-card {
+        padding: 15px;
+    }
 
-.avatar-section{
+    .avatar-box {
+        width: 150px;
+        height: 150px;
+    }
 
-    margin-bottom:20px;
-
-}
-
-.profile-form{
-
-    grid-template-columns:1fr;
-
-}
-
-}
-
-@media(max-width:600px){
-
-.admin-profile-page{
-
-    padding:15px;
-
-}
-
-.profile-card{
-
-    padding:20px;
-
-}
-
-.avatar-box{
-
-    width:170px;
-    height:170px;
-
-}
-
-.avatar-placeholder{
-
-    font-size:60px;
-
-}
-
-.form-group input{
-
-    height:50px;
-
-}
-
-.save-profile-btn{
-
-    height:52px;
-
-}
-
+    .upload-photo,
+    .delete-photo-btn {
+        width: 100%;
+    }
 }

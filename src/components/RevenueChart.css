@@ -1,12 +1,463 @@
-.revenue-chart{
-    background:#111827;
-    border-radius:22px;
-    padding:25px;
-    margin-top:30px;
-    box-shadow:0 15px 35px rgba(0,0,0,.25);
+/* ==========================================================
+   REVENUE CHART
+========================================================== */
+
+.revenue-chart {
+    margin-top: 30px;
+
+    background: linear-gradient(
+        145deg,
+        #162235,
+        #111827
+    );
+
+    border: 1px solid rgba(255,255,255,.06);
+
+    border-radius: 22px;
+
+    padding: 28px;
+
+    box-shadow:
+        0 15px 35px rgba(0,0,0,.25);
+
+    overflow: hidden;
+
+    position: relative;
 }
 
-.revenue-chart h2{
-    color:white;
-    margin-bottom:20px;
+/* ==========================================================
+   HEADER
+========================================================== */
+
+.chart-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 28px;
+
+}
+
+.chart-header h2 {
+
+    color: #FFFFFF;
+
+    font-size: 26px;
+
+    font-weight: 700;
+
+    margin-bottom: 6px;
+
+}
+
+.chart-header p {
+
+    color: #94A3B8;
+
+    font-size: 14px;
+
+}
+
+/* ==========================================================
+   SUMMARY CARDS
+========================================================== */
+
+.chart-stats {
+
+    display: grid;
+
+    grid-template-columns: repeat(3,1fr);
+
+    gap: 18px;
+
+    margin-bottom: 28px;
+
+}
+
+.mini-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 16px;
+
+    padding: 18px;
+
+    border-radius: 18px;
+
+    background: rgba(255,255,255,.04);
+
+    border: 1px solid rgba(255,255,255,.05);
+
+    transition: .35s;
+
+}
+
+.mini-card:hover {
+
+    transform: translateY(-5px);
+
+    border-color: rgba(59,130,246,.25);
+
+    box-shadow:
+        0 15px 30px rgba(37,99,235,.15);
+
+}
+/* ==========================================================
+   MINI CARD CONTENT
+========================================================== */
+
+.mini-icon {
+
+    width: 54px;
+    height: 54px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 16px;
+
+    color: #FFFFFF;
+
+    flex-shrink: 0;
+
+    transition: .35s;
+
+}
+
+.mini-card:hover .mini-icon {
+
+    transform: rotate(-8deg) scale(1.08);
+
+}
+
+.mini-card span {
+
+    display: block;
+
+    color: #94A3B8;
+
+    font-size: 13px;
+
+    margin-bottom: 6px;
+
+}
+
+.mini-card h3 {
+
+    color: #FFFFFF;
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+}
+
+/* ==========================================================
+   ICON COLORS
+========================================================== */
+
+.mini-icon.blue {
+
+    background: linear-gradient(
+        135deg,
+        #2563EB,
+        #3B82F6
+    );
+
+}
+
+.mini-icon.green {
+
+    background: linear-gradient(
+        135deg,
+        #059669,
+        #10B981
+    );
+
+}
+
+.mini-icon.purple {
+
+    background: linear-gradient(
+        135deg,
+        #7C3AED,
+        #A855F7
+    );
+
+}
+
+/* ==========================================================
+   CHART CONTAINER
+========================================================== */
+
+.chart-box {
+
+    position: relative;
+
+    width: 100%;
+
+    height: 420px;
+
+    padding: 20px;
+
+    border-radius: 18px;
+
+    background: rgba(255,255,255,.03);
+
+    border: 1px solid rgba(255,255,255,.05);
+
+    overflow: hidden;
+
+}
+
+/* ==========================================================
+   LOADING
+========================================================== */
+
+.chart-loading {
+
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: #94A3B8;
+
+    font-size: 18px;
+    font-weight: 500;
+
+}
+
+/* ==========================================================
+   CHART GLOW
+========================================================== */
+
+.chart-box::before {
+
+    content: "";
+
+    position: absolute;
+
+    right: -120px;
+    top: -120px;
+
+    width: 260px;
+    height: 260px;
+
+    border-radius: 50%;
+
+    background: rgba(37,99,235,.08);
+
+    filter: blur(50px);
+
+    pointer-events: none;
+
+}
+
+.chart-box::after {
+
+    content: "";
+
+    position: absolute;
+
+    left: -80px;
+    bottom: -80px;
+
+    width: 180px;
+    height: 180px;
+
+    border-radius: 50%;
+
+    background: rgba(124,58,237,.08);
+
+    filter: blur(45px);
+
+    pointer-events: none;
+
+}
+/* ==========================================================
+   HOVER EFFECTS
+========================================================== */
+
+.revenue-chart {
+    transition:
+        transform .35s ease,
+        box-shadow .35s ease;
+}
+
+.revenue-chart:hover {
+    transform: translateY(-4px);
+
+    box-shadow:
+        0 25px 45px rgba(37,99,235,.18);
+}
+
+.chart-box {
+    transition: .35s ease;
+}
+
+.chart-box:hover {
+    border-color: rgba(59,130,246,.25);
+}
+
+/* ==========================================================
+   PAGE ANIMATION
+========================================================== */
+
+.revenue-chart {
+    animation: chartFade .5s ease;
+}
+
+@keyframes chartFade {
+
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+/* ==========================================================
+   MINI CARD ANIMATION
+========================================================== */
+
+.mini-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.mini-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: -100%;
+
+    width: 60%;
+    height: 100%;
+
+    transform: skewX(-25deg);
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,.10),
+        transparent
+    );
+
+    transition: .8s;
+
+}
+
+.mini-card:hover::before {
+
+    left: 180%;
+
+}
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width: 1100px) {
+
+    .chart-stats {
+        grid-template-columns: repeat(2,1fr);
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    .revenue-chart {
+        padding: 20px;
+    }
+
+    .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .chart-header h2 {
+        font-size: 22px;
+    }
+
+    .chart-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-box {
+        height: 320px;
+        padding: 15px;
+    }
+
+}
+
+@media (max-width: 480px) {
+
+    .mini-card {
+        padding: 15px;
+    }
+
+    .mini-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+    }
+
+    .mini-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .mini-card h3 {
+        font-size: 18px;
+    }
+
+    .mini-card span {
+        font-size: 12px;
+    }
+
+    .chart-box {
+        height: 280px;
+    }
+
+}
+
+/* ==========================================================
+   SCROLLBAR
+========================================================== */
+
+.chart-box::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.chart-box::-webkit-scrollbar-track {
+    background: #111827;
+}
+
+.chart-box::-webkit-scrollbar-thumb {
+    background: #2563EB;
+    border-radius: 20px;
+}
+
+.chart-box::-webkit-scrollbar-thumb:hover {
+    background: #3B82F6;
 }

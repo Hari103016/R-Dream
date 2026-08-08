@@ -1,8 +1,8 @@
 /* ==========================================================
-   PAYMENT REMINDERS
+   TODAY'S BOOKINGS
 ========================================================== */
 
-.payment-reminders {
+.todays-bookings {
     width: 100%;
 
     margin-top: 30px;
@@ -13,35 +13,25 @@
         #111827
     );
 
-    border: 1px solid rgba(
-        255,
-        255,
-        255,
-        .06
-    );
+    border: 1px solid rgba(255,255,255,.06);
 
     border-radius: 22px;
 
     padding: 25px;
 
     box-shadow:
-        0 15px 35px rgba(
-            0,
-            0,
-            0,
-            .25
-        );
+        0 15px 35px rgba(0,0,0,.25);
 
     overflow: hidden;
 
-    animation: paymentFade .45s ease;
+    animation: todayBookingsFade .45s ease;
 }
 
 /* ==========================================================
    HEADER
 ========================================================== */
 
-.payment-reminders-header {
+.today-bookings-header {
     display: flex;
 
     justify-content: space-between;
@@ -53,7 +43,7 @@
     margin-bottom: 25px;
 }
 
-.payment-reminders-title {
+.today-bookings-title {
     display: flex;
 
     align-items: center;
@@ -61,7 +51,7 @@
     gap: 14px;
 }
 
-.payment-reminders-icon {
+.today-bookings-icon {
     width: 46px;
     height: 46px;
 
@@ -77,14 +67,14 @@
 
     background: linear-gradient(
         135deg,
-        #f97316,
-        #ef4444
+        #f59e0b,
+        #f97316
     );
 
     flex-shrink: 0;
 }
 
-.payment-reminders-title h2 {
+.today-bookings-title h2 {
     color: #ffffff;
 
     font-size: 22px;
@@ -94,7 +84,7 @@
     margin: 0 0 4px;
 }
 
-.payment-reminders-title p {
+.today-bookings-title p {
     color: #94a3b8;
 
     font-size: 13px;
@@ -106,7 +96,7 @@
    REFRESH
 ========================================================== */
 
-.payment-refresh-btn {
+.today-refresh-btn {
     width: 40px;
     height: 40px;
 
@@ -139,21 +129,21 @@
     transition: .3s;
 }
 
-.payment-refresh-btn:hover {
+.today-refresh-btn:hover {
     color: #ffffff;
 
-    background: #f97316;
+    background: #f59e0b;
 
-    border-color: #f97316;
+    border-color: #f59e0b;
 
     transform: rotate(90deg);
 }
 
 /* ==========================================================
-   LIST
+   BOOKINGS LIST
 ========================================================== */
 
-.payment-reminder-list {
+.today-bookings-list {
     display: flex;
 
     flex-direction: column;
@@ -162,22 +152,22 @@
 }
 
 /* ==========================================================
-   ITEM
+   BOOKING ITEM
 ========================================================== */
 
-.payment-reminder-item {
+.today-booking-item {
     display: grid;
 
     grid-template-columns:
-        minmax(200px, 1.5fr)
-        minmax(130px, 1fr)
-        minmax(130px, 1fr)
-        minmax(90px, .7fr)
+        minmax(220px, 1.7fr)
+        minmax(80px, .6fr)
+        minmax(150px, 1fr)
+        minmax(100px, .8fr)
         auto;
 
     align-items: center;
 
-    gap: 18px;
+    gap: 20px;
 
     padding: 17px;
 
@@ -200,7 +190,7 @@
     transition: .3s;
 }
 
-.payment-reminder-item:hover {
+.today-booking-item:hover {
     transform: translateY(-3px);
 
     background: rgba(
@@ -211,9 +201,9 @@
     );
 
     border-color: rgba(
-        249,
-        115,
-        22,
+        245,
+        158,
+        11,
         .25
     );
 
@@ -230,7 +220,7 @@
    CUSTOMER
 ========================================================== */
 
-.payment-customer {
+.today-customer {
     display: flex;
 
     align-items: center;
@@ -240,7 +230,7 @@
     min-width: 0;
 }
 
-.payment-avatar {
+.today-avatar {
     width: 44px;
     height: 44px;
 
@@ -267,11 +257,11 @@
     flex-shrink: 0;
 }
 
-.payment-customer-info {
+.today-customer-info {
     min-width: 0;
 }
 
-.payment-customer-info h3 {
+.today-customer-info h3 {
     color: #ffffff;
 
     font-size: 14px;
@@ -287,7 +277,7 @@
     text-overflow: ellipsis;
 }
 
-.payment-customer-info p {
+.today-customer-info p {
     color: #64748b;
 
     font-size: 11px;
@@ -296,12 +286,10 @@
 }
 
 /* ==========================================================
-   BALANCE / DATE / PRIORITY
+   COLUMNS
 ========================================================== */
 
-.payment-balance,
-.payment-due,
-.payment-priority {
+.today-booking-column {
     display: flex;
 
     flex-direction: column;
@@ -309,7 +297,7 @@
     gap: 5px;
 }
 
-.payment-label {
+.today-label {
     color: #64748b;
 
     font-size: 10px;
@@ -319,25 +307,23 @@
     letter-spacing: .5px;
 }
 
-.payment-balance strong {
-    color: #f87171;
+.today-booking-column strong {
+    color: #e2e8f0;
 
-    font-size: 15px;
+    font-size: 14px;
 
-    font-weight: 700;
+    font-weight: 600;
 }
 
-.payment-due span:last-child {
-    color: #cbd5e1;
-
-    font-size: 12px;
+.booking-amount {
+    color: #4ade80 !important;
 }
 
 /* ==========================================================
-   PRIORITY
+   STATUS
 ========================================================== */
 
-.priority-badge {
+.today-status {
     width: fit-content;
 
     display: inline-flex;
@@ -348,23 +334,12 @@
 
     border-radius: 20px;
 
-    font-size: 10px;
+    font-size: 11px;
 
-    font-weight: 700;
+    font-weight: 600;
 }
 
-.priority-badge.high {
-    color: #f87171;
-
-    background: rgba(
-        239,
-        68,
-        68,
-        .12
-    );
-}
-
-.priority-badge.medium {
+.today-status.booked {
     color: #fbbf24;
 
     background: rgba(
@@ -375,7 +350,7 @@
     );
 }
 
-.priority-badge.low {
+.today-status.completed {
     color: #4ade80;
 
     background: rgba(
@@ -386,20 +361,33 @@
     );
 }
 
-/* ==========================================================
-   ACTIONS
-========================================================== */
+.today-status.sold {
+    color: #f87171;
 
-.payment-actions {
-    display: flex;
-
-    align-items: center;
-
-    gap: 7px;
+    background: rgba(
+        239,
+        68,
+        68,
+        .12
+    );
 }
 
-.quick-payment-btn,
-.payment-view-btn {
+.today-status.cancelled {
+    color: #f87171;
+
+    background: rgba(
+        239,
+        68,
+        68,
+        .12
+    );
+}
+
+/* ==========================================================
+   VIEW BUTTON
+========================================================== */
+
+.today-view-btn {
     display: flex;
 
     align-items: center;
@@ -408,61 +396,44 @@
 
     gap: 6px;
 
+    padding: 9px 13px;
+
     border: none;
 
     border-radius: 9px;
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+    font-size: 12px;
+
+    font-weight: 600;
 
     cursor: pointer;
 
     transition: .3s;
 }
 
-.quick-payment-btn {
-    padding: 9px 12px;
-
-    background: #16a34a;
-
-    color: #ffffff;
-
-    font-size: 11px;
-
-    font-weight: 600;
-}
-
-.quick-payment-btn:hover {
-    background: #15803d;
+.today-view-btn:hover {
+    background: #1d4ed8;
 
     transform: translateY(-2px);
 
     box-shadow:
         0 8px 18px rgba(
-            22,
-            163,
-            74,
-            .22
+            37,
+            99,
+            235,
+            .25
         );
-}
-
-.payment-view-btn {
-    width: 36px;
-    height: 36px;
-
-    background: #2563eb;
-
-    color: #ffffff;
-}
-
-.payment-view-btn:hover {
-    background: #1d4ed8;
-
-    transform: translateY(-2px);
 }
 
 /* ==========================================================
    EMPTY
 ========================================================== */
 
-.payment-reminders-empty {
+.today-bookings-empty {
     min-height: 220px;
 
     display: flex;
@@ -478,7 +449,7 @@
     padding: 30px;
 }
 
-.payment-empty-icon {
+.today-empty-icon {
     width: 58px;
     height: 58px;
 
@@ -490,19 +461,19 @@
 
     border-radius: 16px;
 
-    color: #4ade80;
+    color: #f59e0b;
 
     background: rgba(
-        16,
-        185,
-        129,
+        245,
+        158,
+        11,
         .10
     );
 
     margin-bottom: 15px;
 }
 
-.payment-reminders-empty h3 {
+.today-bookings-empty h3 {
     color: #e2e8f0;
 
     font-size: 16px;
@@ -510,7 +481,7 @@
     margin: 0 0 6px;
 }
 
-.payment-reminders-empty p {
+.today-bookings-empty p {
     color: #64748b;
 
     font-size: 13px;
@@ -522,7 +493,7 @@
    LOADING
 ========================================================== */
 
-.payment-reminders-loading {
+.today-bookings-loading {
     min-height: 220px;
 
     display: flex;
@@ -540,7 +511,7 @@
     font-size: 14px;
 }
 
-.payment-spinner {
+.today-spinner {
     width: 32px;
     height: 32px;
 
@@ -551,25 +522,25 @@
         .08
     );
 
-    border-top-color: #f97316;
+    border-top-color: #f59e0b;
 
     border-radius: 50%;
 
     animation:
-        paymentSpinner .8s linear infinite;
+        todaySpinner .8s linear infinite;
 }
 
 /* ==========================================================
-   ANIMATIONS
+   ANIMATION
 ========================================================== */
 
-@keyframes paymentSpinner {
+@keyframes todaySpinner {
     to {
         transform: rotate(360deg);
     }
 }
 
-@keyframes paymentFade {
+@keyframes todayBookingsFade {
     from {
         opacity: 0;
 
@@ -589,15 +560,15 @@
 
 @media (max-width: 1200px) {
 
-    .payment-reminder-item {
+    .today-booking-item {
         grid-template-columns:
-            minmax(170px, 1.4fr)
-            minmax(120px, 1fr)
-            minmax(120px, 1fr)
-            minmax(80px, .7fr)
+            minmax(180px, 1.5fr)
+            minmax(70px, .5fr)
+            minmax(130px, 1fr)
+            minmax(90px, .7fr)
             auto;
 
-        gap: 13px;
+        gap: 14px;
     }
 
 }
@@ -608,29 +579,19 @@
 
 @media (max-width: 992px) {
 
-    .payment-reminder-item {
+    .today-booking-item {
         grid-template-columns:
             1fr 1fr;
 
         gap: 16px;
     }
 
-    .payment-customer {
+    .today-customer {
         grid-column: 1 / -1;
     }
 
-    .payment-actions {
-        grid-column: 1 / -1;
-
+    .today-view-btn {
         width: 100%;
-    }
-
-    .quick-payment-btn {
-        flex: 1;
-    }
-
-    .payment-view-btn {
-        width: 42px;
     }
 
 }
@@ -641,7 +602,7 @@
 
 @media (max-width: 768px) {
 
-    .payment-reminders {
+    .todays-bookings {
         margin-top: 20px;
 
         padding: 20px;
@@ -649,22 +610,24 @@
         border-radius: 18px;
     }
 
-    .payment-reminders-title h2 {
+    .today-bookings-title h2 {
         font-size: 20px;
     }
 
-    .payment-reminders-title p {
+    .today-bookings-title p {
         font-size: 12px;
     }
 
-    .payment-reminders-icon {
+    .today-bookings-icon {
         width: 42px;
         height: 42px;
 
         border-radius: 12px;
     }
 
-    .payment-reminder-item {
+    .today-booking-item {
+        display: grid;
+
         grid-template-columns: 1fr 1fr;
 
         padding: 16px;
@@ -672,23 +635,14 @@
         gap: 15px;
     }
 
-    .payment-customer {
+    .today-customer {
         grid-column: 1 / -1;
     }
 
-    .payment-actions {
+    .today-view-btn {
         grid-column: 1 / -1;
-    }
 
-    .quick-payment-btn {
-        flex: 1;
-
-        min-height: 40px;
-    }
-
-    .payment-view-btn {
-        width: 42px;
-        height: 40px;
+        width: 100%;
     }
 
 }
@@ -699,39 +653,39 @@
 
 @media (max-width: 480px) {
 
-    .payment-reminders {
+    .todays-bookings {
         padding: 16px;
     }
 
-    .payment-reminders-header {
+    .today-bookings-header {
         margin-bottom: 20px;
     }
 
-    .payment-reminders-title {
+    .today-bookings-title {
         gap: 10px;
     }
 
-    .payment-reminders-title h2 {
+    .today-bookings-title h2 {
         font-size: 18px;
     }
 
-    .payment-reminders-title p {
+    .today-bookings-title p {
         font-size: 11px;
     }
 
-    .payment-reminders-icon {
+    .today-bookings-icon {
         width: 38px;
         height: 38px;
 
         border-radius: 11px;
     }
 
-    .payment-refresh-btn {
+    .today-refresh-btn {
         width: 36px;
         height: 36px;
     }
 
-    .payment-reminder-item {
+    .today-booking-item {
         padding: 14px;
 
         border-radius: 14px;
@@ -739,37 +693,31 @@
         gap: 13px;
     }
 
-    .payment-avatar {
+    .today-avatar {
         width: 40px;
         height: 40px;
 
         border-radius: 11px;
     }
 
-    .payment-customer-info h3 {
+    .today-customer-info h3 {
         font-size: 13px;
     }
 
-    .payment-customer-info p {
+    .today-customer-info p {
         font-size: 10px;
     }
 
-    .payment-label {
+    .today-label {
         font-size: 9px;
     }
 
-    .payment-balance strong {
+    .today-booking-column strong {
         font-size: 13px;
     }
 
-    .payment-due span:last-child {
-        font-size: 11px;
-    }
-
-    .priority-badge {
-        font-size: 9px;
-
-        padding: 4px 8px;
+    .today-status {
+        font-size: 10px;
     }
 
 }

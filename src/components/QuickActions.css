@@ -1,47 +1,542 @@
-.quick-actions{
-    background:#111827;
-    border-radius:22px;
-    padding:25px;
-    margin-top:30px;
+/* ==========================================================
+   QUICK ACTIONS
+========================================================== */
+
+.quick-actions {
+    margin-top: 30px;
+
+    background: linear-gradient(
+        145deg,
+        #162235,
+        #111827
+    );
+
+    border: 1px solid rgba(255,255,255,.06);
+
+    border-radius: 22px;
+
+    padding: 28px;
+
+    box-shadow:
+        0 15px 35px rgba(0,0,0,.25);
+
+    position: relative;
+
+    overflow: hidden;
 }
 
-.quick-actions h2{
-    color:white;
-    margin-bottom:25px;
+/* ==========================================================
+   HEADER
+========================================================== */
+
+.quick-header {
+    margin-bottom: 28px;
 }
 
-.action-grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:20px;
+.quick-header h2 {
+    color: #FFFFFF;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
 }
 
-.action-card{
-    background:#1f2937;
-    border-radius:18px;
-    padding:25px;
-    cursor:pointer;
-    transition:.3s;
-    text-align:center;
+.quick-header p {
+    color: #94A3B8;
+    font-size: 14px;
 }
 
-.action-card:hover{
-    transform:translateY(-6px);
-    background:#2563eb;
+/* ==========================================================
+   GRID
+========================================================== */
+
+.action-grid {
+    display: grid;
+
+    grid-template-columns: repeat(3,1fr);
+
+    gap: 20px;
 }
 
-.action-icon{
-    width:60px;
-    height:60px;
-    margin:auto;
-    border-radius:16px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    color:white;
-    margin-bottom:15px;
+/* ==========================================================
+   CARD
+========================================================== */
+
+.action-card {
+    position: relative;
+
+    overflow: hidden;
+
+    padding: 22px;
+
+    border-radius: 18px;
+
+    background: rgba(255,255,255,.04);
+
+    border: 1px solid rgba(255,255,255,.06);
+
+    transition: .35s ease;
+
+    cursor: pointer;
 }
 
-.action-card h4{
-    color:white;
+.action-card:hover {
+    transform: translateY(-8px);
+
+    border-color: rgba(59,130,246,.25);
+
+    box-shadow:
+        0 18px 35px rgba(37,99,235,.18);
+}
+
+/* ==========================================================
+   CARD TOP
+========================================================== */
+
+.action-top {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 20px;
+}
+
+/* ==========================================================
+   ICON
+========================================================== */
+
+.action-icon {
+    width: 58px;
+    height: 58px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    border-radius: 16px;
+
+    color: #FFFFFF;
+
+    transition: .35s ease;
+}
+
+.action-card:hover .action-icon {
+    transform: rotate(-8deg) scale(1.08);
+}
+/* ==========================================================
+   CONTENT
+========================================================== */
+
+.action-content h4 {
+    color: #FFFFFF;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.action-content p {
+    color: #94A3B8;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* ==========================================================
+   ARROW
+========================================================== */
+
+.action-arrow {
+    color: #94A3B8;
+    transition: .35s ease;
+}
+
+.action-card:hover .action-arrow {
+    color: #FFFFFF;
+    transform: translateX(6px);
+}
+
+/* ==========================================================
+   GLOW
+========================================================== */
+
+.action-glow {
+    position: absolute;
+
+    width: 180px;
+    height: 180px;
+
+    right: -80px;
+    bottom: -80px;
+
+    border-radius: 50%;
+
+    opacity: .08;
+
+    filter: blur(35px);
+
+    transition: .35s;
+}
+
+.action-card:hover .action-glow {
+    opacity: .18;
+    transform: scale(1.2);
+}
+
+/* ==========================================================
+   BLUE
+========================================================== */
+
+.action-card.blue .action-icon {
+    background: linear-gradient(
+        135deg,
+        #2563EB,
+        #3B82F6
+    );
+}
+
+.action-card.blue .action-glow {
+    background: #2563EB;
+}
+
+/* ==========================================================
+   GREEN
+========================================================== */
+
+.action-card.green .action-icon {
+    background: linear-gradient(
+        135deg,
+        #059669,
+        #10B981
+    );
+}
+
+.action-card.green .action-glow {
+    background: #10B981;
+}
+
+/* ==========================================================
+   ORANGE
+========================================================== */
+
+.action-card.orange .action-icon {
+    background: linear-gradient(
+        135deg,
+        #EA580C,
+        #F97316
+    );
+}
+
+.action-card.orange .action-glow {
+    background: #F97316;
+}
+
+/* ==========================================================
+   PURPLE
+========================================================== */
+
+.action-card.purple .action-icon {
+    background: linear-gradient(
+        135deg,
+        #7C3AED,
+        #A855F7
+    );
+}
+
+.action-card.purple .action-glow {
+    background: #8B5CF6;
+}
+
+/* ==========================================================
+   CYAN
+========================================================== */
+
+.action-card.cyan .action-icon {
+    background: linear-gradient(
+        135deg,
+        #0891B2,
+        #06B6D4
+    );
+}
+
+.action-card.cyan .action-glow {
+    background: #06B6D4;
+}
+
+/* ==========================================================
+   RED
+========================================================== */
+
+.action-card.red .action-icon {
+    background: linear-gradient(
+        135deg,
+        #DC2626,
+        #EF4444
+    );
+}
+
+.action-card.red .action-glow {
+    background: #EF4444;
+}
+/* ==========================================================
+   CARD SHINE EFFECT
+========================================================== */
+
+.action-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: -120%;
+
+    width: 60%;
+    height: 100%;
+
+    transform: skewX(-25deg);
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,.12),
+        transparent
+    );
+
+    transition: .8s;
+}
+
+.action-card:hover::before {
+
+    left: 180%;
+
+}
+
+/* ==========================================================
+   CONTENT ANIMATION
+========================================================== */
+
+.action-content h4,
+.action-content p,
+.action-icon,
+.action-arrow {
+
+    transition: .35s ease;
+
+}
+
+.action-card:hover .action-content h4 {
+
+    color: #FFFFFF;
+
+}
+
+.action-card:hover .action-content p {
+
+    color: #CBD5E1;
+
+}
+
+.action-card:hover .action-icon {
+
+    transform: rotate(-8deg) scale(1.08);
+
+}
+
+.action-card:hover .action-arrow {
+
+    transform: translateX(8px);
+
+}
+
+/* ==========================================================
+   FADE ANIMATION
+========================================================== */
+
+.quick-actions {
+
+    animation: quickFade .45s ease;
+
+}
+
+@keyframes quickFade {
+
+    from {
+
+        opacity: 0;
+        transform: translateY(15px);
+
+    }
+
+    to {
+
+        opacity: 1;
+        transform: translateY(0);
+
+    }
+
+}
+
+/* ==========================================================
+   RESPONSIVE - LAPTOP
+========================================================== */
+
+@media (max-width:1200px){
+
+    .action-grid{
+
+        grid-template-columns:repeat(2,1fr);
+
+    }
+
+}
+
+/* ==========================================================
+   RESPONSIVE - TABLET
+========================================================== */
+
+@media (max-width:768px){
+
+    .quick-actions{
+
+        padding:20px;
+
+        margin-top:20px;
+
+    }
+
+    .quick-header h2{
+
+        font-size:22px;
+
+    }
+
+    .quick-header p{
+
+        font-size:13px;
+
+    }
+
+    .action-grid{
+
+        grid-template-columns:1fr;
+
+        gap:16px;
+
+    }
+
+    .action-card{
+
+        padding:18px;
+
+    }
+
+    .action-icon{
+
+        width:52px;
+        height:52px;
+
+    }
+
+    .action-icon svg{
+
+        width:22px;
+        height:22px;
+
+    }
+
+    .action-content h4{
+
+        font-size:16px;
+
+    }
+
+    .action-content p{
+
+        font-size:12px;
+
+    }
+
+}
+
+/* ==========================================================
+   RESPONSIVE - MOBILE
+========================================================== */
+
+@media (max-width:480px){
+
+    .quick-actions{
+
+        padding:16px;
+
+    }
+
+    .quick-header{
+
+        margin-bottom:20px;
+
+    }
+
+    .quick-header h2{
+
+        font-size:20px;
+
+    }
+
+    .quick-header p{
+
+        font-size:12px;
+
+    }
+
+    .action-card{
+
+        padding:16px;
+
+        border-radius:16px;
+
+    }
+
+    .action-top{
+
+        margin-bottom:16px;
+
+    }
+
+    .action-icon{
+
+        width:46px;
+        height:46px;
+
+        border-radius:14px;
+
+    }
+
+    .action-icon svg{
+
+        width:20px;
+        height:20px;
+
+    }
+
+    .action-content h4{
+
+        font-size:15px;
+
+    }
+
+    .action-content p{
+
+        font-size:11px;
+
+    }
+
+    .action-arrow{
+
+        width:16px;
+        height:16px;
+
+    }
+
 }

@@ -1,126 +1,660 @@
-.dashboard-cards{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:25px;
-    margin-bottom:35px;
+/* ==========================================================
+   DASHBOARD CARDS GRID
+========================================================== */
+
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
 }
 
-.luxury-card{
-    position:relative;
-    overflow:hidden;
+/* ==========================================================
+   CARD
+========================================================== */
 
-    background:linear-gradient(
+.luxury-card {
+    position: relative;
+    overflow: hidden;
+
+    padding: 24px;
+
+    border-radius: 20px;
+
+    background: linear-gradient(
         145deg,
-        rgba(25,33,48,.96),
-        rgba(16,22,35,.96)
+        #162235,
+        #111827
     );
 
-    border:1px solid rgba(255,255,255,.06);
-
-    border-radius:22px;
-
-    padding:28px;
-
-    transition:all .35s ease;
+    border: 1px solid rgba(255,255,255,.06);
 
     box-shadow:
-        0 15px 35px rgba(0,0,0,.35);
+        0 12px 30px rgba(0,0,0,.25);
+
+    transition: all .35s ease;
+
+    cursor: pointer;
 }
 
-/* Gradient top border */
-.luxury-card::before{
-    content:"";
-    position:absolute;
-    left:0;
-    top:0;
-    width:100%;
-    height:4px;
-    background:linear-gradient(
-        90deg,
+.luxury-card:hover {
+
+    transform: translateY(-8px);
+
+    border-color: rgba(59,130,246,.35);
+
+    box-shadow:
+        0 22px 45px rgba(37,99,235,.18);
+
+}
+
+/* ==========================================================
+   TOP BAR
+========================================================== */
+
+.card-top {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    margin-bottom: 28px;
+
+}
+
+/* ==========================================================
+   ICON BOX
+========================================================== */
+
+.icon-box {
+
+    width: 62px;
+
+    height: 62px;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    border-radius: 18px;
+
+    color: #fff;
+
+    transition: .35s;
+
+}
+
+.luxury-card:hover .icon-box {
+
+    transform: rotate(-8deg) scale(1.08);
+
+}
+
+/* ==========================================================
+   BADGE
+========================================================== */
+
+.card-badge {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 6px 12px;
+
+    border-radius: 30px;
+
+    background: rgba(255,255,255,.08);
+
+    color: #CBD5E1;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+}
+
+.card-badge svg {
+
+    color: #4ADE80;
+
+}
+/* ==========================================================
+   CARD CONTENT
+========================================================== */
+
+.card-content h4 {
+    color: #94A3B8;
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.card-content h2 {
+    color: #FFFFFF;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 8px;
+
+    word-break: break-word;
+}
+
+.card-content p {
+    color: #64748B;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* ==========================================================
+   GLOW EFFECT
+========================================================== */
+
+.card-glow {
+    position: absolute;
+
+    right: -70px;
+    bottom: -70px;
+
+    width: 160px;
+    height: 160px;
+
+    border-radius: 50%;
+
+    opacity: .08;
+    filter: blur(30px);
+
+    transition: .35s ease;
+}
+
+.luxury-card:hover .card-glow {
+    opacity: .18;
+    transform: scale(1.2);
+}
+
+/* ==========================================================
+   PURPLE
+========================================================== */
+
+.luxury-card.purple .icon-box {
+    background: linear-gradient(
+        135deg,
+        #7C3AED,
+        #A855F7
+    );
+}
+
+.luxury-card.purple .card-glow {
+    background: #8B5CF6;
+}
+
+/* ==========================================================
+   BLUE
+========================================================== */
+
+.luxury-card.blue .icon-box {
+    background: linear-gradient(
+        135deg,
         #2563EB,
-        #8B5CF6,
-        #06B6D4
+        #3B82F6
     );
 }
 
-.luxury-card:hover{
-    transform:translateY(-10px);
-
-    border-color:#2563EB;
-
-    box-shadow:
-        0 20px 50px rgba(37,99,235,.25);
+.luxury-card.blue .card-glow {
+    background: #2563EB;
 }
 
-.card-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:30px;
+/* ==========================================================
+   ORANGE
+========================================================== */
+
+.luxury-card.orange .icon-box {
+    background: linear-gradient(
+        135deg,
+        #EA580C,
+        #FB923C
+    );
 }
 
-.icon-box{
-    width:64px;
-    height:64px;
-    border-radius:18px;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    color:white;
-
-    transition:.3s;
+.luxury-card.orange .card-glow {
+    background: #F97316;
 }
 
-.luxury-card:hover .icon-box{
-    transform:scale(1.08) rotate(5deg);
+/* ==========================================================
+   GREEN
+========================================================== */
+
+.luxury-card.green .icon-box {
+    background: linear-gradient(
+        135deg,
+        #16A34A,
+        #22C55E
+    );
 }
 
-.growth{
-    display:flex;
-    align-items:center;
-    gap:6px;
-
-    color:#4ADE80;
-
-    font-size:14px;
-    font-weight:600;
-
-    background:rgba(74,222,128,.1);
-    padding:6px 12px;
-    border-radius:20px;
+.luxury-card.green .card-glow {
+    background: #22C55E;
 }
 
-.luxury-card h4{
-    color:#94A3B8;
-    font-size:16px;
-    margin-bottom:10px;
-    font-weight:500;
+/* ==========================================================
+   INDIGO
+========================================================== */
+
+.luxury-card.indigo .icon-box {
+    background: linear-gradient(
+        135deg,
+        #4338CA,
+        #6366F1
+    );
 }
 
-.luxury-card h1{
-    color:white;
-    font-size:38px;
-    font-weight:700;
+.luxury-card.indigo .card-glow {
+    background: #6366F1;
 }
 
-@media(max-width:1200px){
-    .dashboard-cards{
-        grid-template-columns:repeat(2,1fr);
+/* ==========================================================
+   EMERALD
+========================================================== */
+
+.luxury-card.emerald .icon-box {
+    background: linear-gradient(
+        135deg,
+        #059669,
+        #10B981
+    );
+}
+
+.luxury-card.emerald .card-glow {
+    background: #10B981;
+}
+
+/* ==========================================================
+   YELLOW
+========================================================== */
+
+.luxury-card.yellow .icon-box {
+    background: linear-gradient(
+        135deg,
+        #D97706,
+        #F59E0B
+    );
+}
+
+.luxury-card.yellow .card-glow {
+    background: #F59E0B;
+}
+
+/* ==========================================================
+   RED
+========================================================== */
+
+.luxury-card.red .icon-box {
+    background: linear-gradient(
+        135deg,
+        #DC2626,
+        #EF4444
+    );
+}
+
+.luxury-card.red .card-glow {
+    background: #EF4444;
+}
+/* ==========================================================
+   LOADING CARD
+========================================================== */
+
+.loading-card {
+    min-height: 210px;
+    pointer-events: none;
+}
+
+.loading-shimmer {
+    width: 100%;
+    height: 100%;
+
+    border-radius: 18px;
+
+    background: linear-gradient(
+        90deg,
+        rgba(255,255,255,.03) 25%,
+        rgba(255,255,255,.08) 50%,
+        rgba(255,255,255,.03) 75%
+    );
+
+    background-size: 400% 100%;
+
+    animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+
+    0% {
+        background-position: 100% 0;
     }
+
+    100% {
+        background-position: -100% 0;
+    }
+
 }
 
-@media(max-width:768px){
-    .dashboard-cards{
-        grid-template-columns:1fr;
+/* ==========================================================
+   CARD ANIMATION
+========================================================== */
+
+.luxury-card {
+    animation: cardFade .45s ease;
+}
+
+@keyframes cardFade {
+
+    from {
+        opacity: 0;
+        transform: translateY(18px);
     }
 
-    .luxury-card{
-        padding:22px;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 
-    .luxury-card h1{
-        font-size:30px;
+}
+
+/* ==========================================================
+   PREMIUM HOVER
+========================================================== */
+
+.luxury-card::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    border-radius: inherit;
+
+    background: linear-gradient(
+        135deg,
+        rgba(255,255,255,.05),
+        transparent 45%
+    );
+
+    opacity: 0;
+
+    transition: .35s;
+
+    pointer-events: none;
+
+}
+
+.luxury-card:hover::after {
+
+    opacity: 1;
+
+}
+
+/* ==========================================================
+   SHINE EFFECT
+========================================================== */
+
+.luxury-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: -120%;
+
+    width: 60%;
+    height: 100%;
+
+    transform: skewX(-25deg);
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,.12),
+        transparent
+    );
+
+    transition: .8s;
+
+}
+
+.luxury-card:hover::before {
+
+    left: 170%;
+
+}
+
+/* ==========================================================
+   VALUE ANIMATION
+========================================================== */
+
+.card-content h2 {
+
+    transition: .3s;
+
+}
+
+.luxury-card:hover .card-content h2 {
+
+    color: #FFFFFF;
+
+    transform: scale(1.03);
+
+}
+
+/* ==========================================================
+   BADGE EFFECT
+========================================================== */
+
+.card-badge {
+
+    transition: .3s;
+
+}
+
+.luxury-card:hover .card-badge {
+
+    background: rgba(59,130,246,.15);
+
+    color: #FFFFFF;
+
+}
+
+/* ==========================================================
+   ICON EFFECT
+========================================================== */
+
+.icon-box svg {
+
+    transition: .35s;
+
+}
+
+.luxury-card:hover .icon-box svg {
+
+    transform: scale(1.12);
+
+}
+
+/* ==========================================================
+   SUBTITLE EFFECT
+========================================================== */
+
+.card-content p {
+
+    transition: .3s;
+
+}
+
+.luxury-card:hover .card-content p {
+
+    color: #94A3B8;
+
+}
+/* ==========================================================
+   RESPONSIVE - LARGE TABLETS
+========================================================== */
+
+@media (max-width: 1400px) {
+
+    .dashboard-cards {
+        grid-template-columns: repeat(3, 1fr);
     }
+
+}
+
+/* ==========================================================
+   RESPONSIVE - TABLETS
+========================================================== */
+
+@media (max-width: 1100px) {
+
+    .dashboard-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+}
+
+/* ==========================================================
+   RESPONSIVE - MOBILE
+========================================================== */
+
+@media (max-width: 768px) {
+
+    .dashboard-cards {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .luxury-card {
+        padding: 22px;
+    }
+
+    .card-top {
+        margin-bottom: 22px;
+    }
+
+    .icon-box {
+        width: 56px;
+        height: 56px;
+    }
+
+    .icon-box svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .card-content h2 {
+        font-size: 28px;
+    }
+
+    .card-content h4 {
+        font-size: 14px;
+    }
+
+    .card-content p {
+        font-size: 12px;
+    }
+
+    .card-badge {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+
+}
+
+/* ==========================================================
+   SMALL MOBILE
+========================================================== */
+
+@media (max-width: 480px) {
+
+    .dashboard-cards {
+        gap: 16px;
+    }
+
+    .luxury-card {
+        padding: 18px;
+        border-radius: 18px;
+    }
+
+    .card-top {
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 18px;
+    }
+
+    .icon-box {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+    }
+
+    .icon-box svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .card-content h2 {
+        font-size: 24px;
+    }
+
+    .card-content h4 {
+        font-size: 13px;
+    }
+
+    .card-content p {
+        font-size: 11px;
+    }
+
+    .card-badge {
+        font-size: 10px;
+        padding: 5px 8px;
+    }
+
+}
+
+/* ==========================================================
+   ACCESSIBILITY
+========================================================== */
+
+.luxury-card:focus-within {
+
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+
+}
+
+/* ==========================================================
+   SMOOTH SCROLLING
+========================================================== */
+
+html {
+
+    scroll-behavior: smooth;
+
+}
+
+/* ==========================================================
+   PERFORMANCE
+========================================================== */
+
+.luxury-card,
+.icon-box,
+.card-glow {
+
+    will-change: transform;
+
 }

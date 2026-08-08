@@ -1,474 +1,1056 @@
-/* ========================================
-   COMMON PAGE
-======================================== */
+/* ==========================================================
+   PAYMENTS PAGE
+========================================================== */
 
-.customers-page,
-.bookings-page,
-.payments-page,
-.reports-page{
-    padding:30px;
-    min-height:100vh;
-    background:#08111f;
-    color:#fff;
+.payments-page {
+    min-height: 100vh;
+    padding: 24px;
+    background: #08111f;
+    color: #fff;
 }
 
-/* ========================================
+
+/* ==========================================================
    HEADER
-======================================== */
+========================================================== */
 
-.customers-header,
-.bookings-header,
-.payments-header,
-.reports-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:20px;
-    margin-bottom:30px;
-    flex-wrap:wrap;
+.payments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
 }
 
-.customers-header h1,
-.bookings-header h2,
-.payments-header h2,
-.reports-header h2{
-    font-size:30px;
-    font-weight:700;
+
+/* ==========================================================
+   TITLE SECTION
+========================================================== */
+
+.payments-title-section {
+    display: flex;
+    align-items: center;
+    gap: 18px;
 }
 
-.customer-count{
-    margin-top:8px;
-    color:#94a3b8;
+
+/* ==========================================================
+   BACK BUTTON
+========================================================== */
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    padding: 10px 16px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: #2563eb;
+    color: #ffffff;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: all 0.25s ease;
 }
 
-.header-actions{
-    display:flex;
-    gap:15px;
-    align-items:center;
-    flex-wrap:wrap;
+.back-btn:hover {
+    background: #1d4ed8;
+
+    transform: translateX(-3px);
+
+    box-shadow:
+        0 8px 18px rgba(37, 99, 235, 0.30);
 }
 
-/* ========================================
-   SEARCH
-======================================== */
-
-.search-box{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    background:#111827;
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:12px;
-    padding:0 15px;
-    height:48px;
+.back-btn:active {
+    transform: translateX(0);
 }
 
-.search-box input{
-    width:250px;
-    background:none;
-    border:none;
-    outline:none;
-    color:white;
-    font-size:15px;
+.back-btn svg {
+    flex-shrink: 0;
 }
 
-.search-box input::placeholder{
-    color:#94a3b8;
+
+/* ==========================================================
+   PAGE TITLE
+========================================================== */
+
+.payments-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
 }
 
-/* ========================================
-   BUTTONS
-======================================== */
-
-.export-btn,
-.add-btn,
-.view-btn{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-
-    border:none;
-    cursor:pointer;
-
-    padding:12px 18px;
-
-    border-radius:10px;
-
-    font-weight:600;
-
-    transition:.3s;
+.page-subtitle {
+    color: #94a3b8;
+    font-size: 14px;
 }
 
-.export-btn{
-    background:#2563eb;
-    color:white;
+
+/* ==========================================================
+   EXPORT BUTTON
+========================================================== */
+
+.export-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    padding: 12px 22px;
+
+    border: none;
+    border-radius: 14px;
+
+    cursor: pointer;
+
+    background: linear-gradient(
+        135deg,
+        #2563eb,
+        #1d4ed8
+    );
+
+    color: #fff;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    transition: 0.3s;
 }
 
-.export-btn:hover{
-    background:#1d4ed8;
+.export-btn:hover {
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 14px 28px rgba(37, 99, 235, 0.35);
 }
 
-.add-btn{
-    background:#16a34a;
-    color:white;
+
+/* ==========================================================
+   DASHBOARD CARDS
+========================================================== */
+
+.stats-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 18px;
+
+    margin-bottom: 24px;
 }
 
-.add-btn:hover{
-    background:#15803d;
+
+/* ==========================================================
+   STAT CARD
+========================================================== */
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    padding: 20px;
+
+    border-radius: 18px;
+
+    background: linear-gradient(
+        145deg,
+        #162235,
+        #111827
+    );
+
+    border: 1px solid rgba(255, 255, 255, 0.06);
+
+    transition: 0.35s;
+
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.20);
 }
 
-.view-btn{
-    background:#2563eb;
-    color:white;
-    padding:8px 14px;
+.stat-card:hover {
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 18px 35px rgba(37, 99, 235, 0.18);
 }
 
-.view-btn:hover{
-    background:#1d4ed8;
+
+/* ==========================================================
+   STAT ICON
+========================================================== */
+
+.stat-icon {
+    width: 56px;
+    height: 56px;
+
+    border-radius: 16px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: #fff;
+
+    flex-shrink: 0;
 }
 
-/* ========================================
+
+/* ==========================================================
+   STAT CONTENT
+========================================================== */
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-content span {
+    display: block;
+
+    color: #94a3b8;
+
+    font-size: 13px;
+
+    margin-bottom: 6px;
+}
+
+.stat-content h2 {
+    font-size: 26px;
+
+    font-weight: 700;
+
+    color: #fff;
+}
+
+
+/* ==========================================================
+   CARD COLORS
+========================================================== */
+
+.green .stat-icon {
+    background: #16a34a;
+}
+
+.blue .stat-icon {
+    background: #2563eb;
+}
+
+.orange .stat-icon {
+    background: #f59e0b;
+}
+
+.purple .stat-icon {
+    background: #7c3aed;
+}
+
+
+/* ==========================================================
+   TOOLBAR
+========================================================== */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    margin-bottom: 24px;
+
+    padding: 18px;
+
+    background: #111827;
+
+    border: 1px solid rgba(255, 255, 255, 0.06);
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+
+/* ==========================================================
+   SEARCH BOX
+========================================================== */
+
+.search-box {
+    flex: 1;
+    min-width: 260px;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    height: 50px;
+
+    padding: 0 16px;
+
+    background: #1e293b;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 14px;
+
+    transition: 0.3s;
+}
+
+.search-box:focus-within {
+    border-color: #3b82f6;
+
+    box-shadow:
+        0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.search-box svg {
+    color: #94a3b8;
+}
+
+.search-box input {
+    flex: 1;
+
+    background: transparent;
+
+    border: none;
+
+    outline: none;
+
+    color: #ffffff;
+
+    font-size: 14px;
+}
+
+.search-box input::placeholder {
+    color: #94a3b8;
+}
+
+
+/* ==========================================================
+   FILTERS
+========================================================== */
+
+.toolbar select,
+.toolbar input[type="date"] {
+    min-width: 180px;
+
+    height: 50px;
+
+    padding: 0 16px;
+
+    background: #1e293b;
+
+    color: #ffffff;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 14px;
+
+    outline: none;
+
+    cursor: pointer;
+
+    font-size: 14px;
+
+    transition: 0.3s;
+}
+
+.toolbar select:hover,
+.toolbar input[type="date"]:hover {
+    border-color: #3b82f6;
+}
+
+.toolbar select:focus,
+.toolbar input[type="date"]:focus {
+    border-color: #3b82f6;
+
+    box-shadow:
+        0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+
+/* ==========================================================
+   DATE PICKER
+========================================================== */
+
+.toolbar input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+
+    cursor: pointer;
+}
+
+
+/* ==========================================================
+   SCROLLBAR
+========================================================== */
+
+.toolbar::-webkit-scrollbar {
+    height: 6px;
+}
+
+.toolbar::-webkit-scrollbar-thumb {
+    background: #2563eb;
+
+    border-radius: 20px;
+}
+
+
+/* ==========================================================
+   TABLE CARD
+========================================================== */
+
+.table-card {
+    background:
+        linear-gradient(
+            145deg,
+            #162235,
+            #111827
+        );
+
+    border: 1px solid rgba(255, 255, 255, 0.06);
+
+    border-radius: 18px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.20);
+}
+
+.table-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+
+/* ==========================================================
    TABLE
-======================================== */
+========================================================== */
 
-.table-container{
-    width:100%;
-    overflow:auto;
-    border-radius:15px;
-    background:#111827;
-    border:1px solid rgba(255,255,255,.08);
+.payments-table {
+    width: 100%;
+
+    min-width: 1100px;
+
+    border-collapse: collapse;
 }
 
-table{
-    width:100%;
-    border-collapse:collapse;
+.payments-table thead {
+    background: #1e293b;
 }
 
-thead{
-    background:#1e293b;
+.payments-table thead th {
+    padding: 18px 20px;
+
+    color: #cbd5e1;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+
+    white-space: nowrap;
 }
 
-thead th{
+.payments-table tbody tr {
+    transition: 0.3s;
 
-    padding:16px;
-
-    text-align:left;
-
-    color:#e2e8f0;
-
-    font-size:14px;
-
-    font-weight:600;
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.05);
 }
 
-tbody td{
-
-    padding:16px;
-
-    border-top:1px solid rgba(255,255,255,.06);
-
-    color:#cbd5e1;
-
-    font-size:14px;
+.payments-table tbody tr:hover {
+    background:
+        rgba(37, 99, 235, 0.08);
 }
 
-tbody tr{
+.payments-table tbody td {
+    padding: 18px 20px;
 
-    transition:.3s;
+    color: #e2e8f0;
+
+    font-size: 14px;
+
+    vertical-align: middle;
+}
+
+
+/* ==========================================================
+   CUSTOMER
+========================================================== */
+
+.customer-info {
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+}
+
+.customer-avatar {
+    width: 46px;
+    height: 46px;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #3b82f6
+        );
+
+    color: #fff;
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+    flex-shrink: 0;
+}
+
+.customer-details h4 {
+    color: #fff;
+
+    font-size: 15px;
+
+    margin-bottom: 4px;
+}
+
+.customer-details span {
+    color: #94a3b8;
+
+    font-size: 12px;
+}
+
+
+/* ==========================================================
+   PLOT BADGE
+========================================================== */
+
+.plot-badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 8px 14px;
+
+    border-radius: 30px;
+
+    background:
+        rgba(37, 99, 235, 0.15);
+
+    color: #60a5fa;
+
+    font-size: 13px;
+
+    font-weight: 600;
+}
+
+
+/* ==========================================================
+   AMOUNT
+========================================================== */
+
+.amount-text {
+    color: #22c55e;
+
+    font-size: 15px;
+
+    font-weight: 700;
+}
+
+
+/* ==========================================================
+   PAYMENT MODE
+========================================================== */
+
+.payment-badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 8px 14px;
+
+    border-radius: 30px;
+
+    background:
+        rgba(59, 130, 246, 0.15);
+
+    color: #60a5fa;
+
+    font-size: 13px;
+
+    font-weight: 600;
+}
+
+.payment-badge svg {
+    width: 15px;
+
+    height: 15px;
+}
+
+
+/* ==========================================================
+   ACTION BUTTON
+========================================================== */
+
+.table-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+.view-btn {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 10px 16px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #1d4ed8
+        );
+
+    color: #fff;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    transition: 0.3s;
+
+    position: relative;
+
+    overflow: hidden;
+}
+
+.view-btn:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 20px rgba(37, 99, 235, 0.35);
+}
+
+
+/* ==========================================================
+   BUTTON SHINE EFFECT
+========================================================== */
+
+.view-btn::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+
+    left: -100%;
+
+    width: 100%;
+
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.25),
+            transparent
+        );
+
+    transition: 0.6s;
+}
+
+.view-btn:hover::before {
+    left: 100%;
+}
+
+
+/* ==========================================================
+   TABLE SCROLLBAR
+========================================================== */
+
+.table-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: #111827;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #2563eb;
+
+    border-radius: 20px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #3b82f6;
+}
+
+
+/* ==========================================================
+   EMPTY STATE
+========================================================== */
+
+.empty {
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    height: 250px;
+
+    color: #94a3b8;
+
+    font-size: 18px;
+
+    font-weight: 500;
+}
+
+
+/* ==========================================================
+   CARD ANIMATIONS
+========================================================== */
+
+.stat-card,
+.table-card,
+.toolbar {
+    transition:
+        transform 0.35s ease,
+        box-shadow 0.35s ease,
+        border-color 0.35s ease;
+}
+
+.stat-card:hover,
+.table-card:hover,
+.toolbar:hover {
+    transform: translateY(-4px);
+
+    box-shadow:
+        0 20px 40px rgba(37, 99, 235, 0.18);
+}
+
+
+/* ==========================================================
+   ICON ANIMATION
+========================================================== */
+
+.stat-icon,
+.customer-avatar {
+    transition: 0.35s ease;
+}
+
+.stat-card:hover .stat-icon {
+    transform:
+        rotate(-8deg)
+        scale(1.08);
+}
+
+.customer-info:hover .customer-avatar {
+    transform: scale(1.08);
+}
+
+
+/* ==========================================================
+   TABLE ROW ANIMATION
+========================================================== */
+
+.payments-table tbody tr {
+    transition: 0.3s;
+}
+
+.payments-table tbody tr:hover {
+    background:
+        rgba(37, 99, 235, 0.08);
+}
+
+.payments-table tbody tr:hover .plot-badge {
+    background: #2563eb;
+
+    color: #ffffff;
+}
+
+.payments-table tbody tr:hover .payment-badge {
+    background: #2563eb;
+
+    color: #ffffff;
+}
+
+
+/* ==========================================================
+   PAGE FADE
+========================================================== */
+
+.payments-page {
+    animation: pageFade 0.4s ease;
+}
+
+@keyframes pageFade {
+
+    from {
+        opacity: 0;
+
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform: translateY(0);
+    }
 
 }
 
-tbody tr:hover{
 
-    background:#1e293b;
+/* ==========================================================
+   RESPONSIVE - TABLET
+========================================================== */
 
-}
+@media (max-width: 1200px) {
 
-/* ========================================
-   ACTIONS
-======================================== */
-
-.actions{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:12px;
+    .stats-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
 
 }
 
-.actions a,
-.actions button{
 
-    display:flex;
+/* ==========================================================
+   RESPONSIVE - MOBILE
+========================================================== */
 
-    align-items:center;
+@media (max-width: 992px) {
 
-    justify-content:center;
+    .toolbar {
+        flex-direction: column;
 
-    width:36px;
+        align-items: stretch;
+    }
 
-    height:36px;
+    .search-box {
+        width: 100%;
+    }
 
-    border:none;
+    .toolbar select,
+    .toolbar input[type="date"] {
+        width: 100%;
+    }
 
-    border-radius:8px;
-
-    cursor:pointer;
-
-    transition:.3s;
-
-}
-
-.actions a{
-
-    background:#2563eb;
-
-    color:white;
+    .export-btn {
+        width: 100%;
+    }
 
 }
 
-.actions a:hover{
 
-    background:#1d4ed8;
+/* ==========================================================
+   MOBILE
+========================================================== */
 
-}
+@media (max-width: 768px) {
 
-.actions button{
+    .payments-page {
+        padding: 18px;
+    }
 
-    background:#ef4444;
 
-    color:white;
+    /* Header */
 
-}
+    .payments-header {
+        flex-direction: column;
 
-.actions button:hover{
+        align-items: flex-start;
 
-    background:#dc2626;
+        width: 100%;
+    }
 
-}
 
-/* ========================================
-   STATUS
-======================================== */
+    /* Title + Back */
 
-.status,
-.booking-status,
-.payment-mode{
+    .payments-title-section {
+        width: 100%;
 
-    display:inline-flex;
+        flex-direction: column;
 
-    align-items:center;
+        align-items: flex-start;
 
-    gap:6px;
+        gap: 12px;
+    }
 
-    padding:6px 12px;
 
-    border-radius:30px;
+    /* Back button */
 
-    font-size:13px;
+    .back-btn {
+        width: fit-content;
 
-    font-weight:600;
+        padding: 10px 15px;
 
-}
+        font-size: 13px;
+    }
 
-/* Customers */
 
-.status.available{
-    background:#064e3b;
-    color:#4ade80;
-}
+    /* Heading */
 
-.status.booked{
-    background:#78350f;
-    color:#fbbf24;
-}
+    .payments-header h1 {
+        font-size: 28px;
+    }
 
-.status.completed{
-    background:#1e3a8a;
-    color:#93c5fd;
-}
 
-/* Booking */
+    /* Export */
 
-.booking-status{
-    background:#064e3b;
-    color:#4ade80;
-}
+    .export-btn {
+        width: 100%;
+    }
 
-/* Payment */
 
-.payment-mode{
-    background:#1e293b;
-    color:#38bdf8;
-}
+    /* Toolbar */
 
-/* ========================================
-   EMPTY
-======================================== */
+    .toolbar {
+        flex-direction: column;
 
-.empty{
+        align-items: stretch;
+    }
 
-    display:flex;
+    .search-box,
+    .toolbar select,
+    .toolbar input[type="date"],
+    .export-btn {
+        width: 100%;
+    }
 
-    justify-content:center;
 
-    align-items:center;
+    /* Cards */
 
-    height:220px;
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
 
-    color:#94a3b8;
 
-    font-size:18px;
+    /* Table */
+
+    .payments-table {
+        min-width: 950px;
+    }
 
 }
 
-/* ========================================
-   REPORT CARDS
-======================================== */
 
-.report-cards{
+/* ==========================================================
+   SMALL MOBILE
+========================================================== */
 
-    display:grid;
+@media (max-width: 500px) {
 
-    grid-template-columns:repeat(4,1fr);
+    .payments-page {
+        padding: 14px;
+    }
 
-    gap:20px;
 
-    margin-bottom:30px;
+    .payments-header h1 {
+        font-size: 24px;
+    }
 
-}
 
-.report-card{
+    .page-subtitle {
+        font-size: 13px;
+    }
 
-    background:#111827;
 
-    border:1px solid rgba(255,255,255,.08);
+    .back-btn {
+        padding: 9px 14px;
 
-    border-radius:15px;
+        font-size: 13px;
+    }
 
-    padding:25px;
 
-    text-align:center;
+    .customer-avatar {
+        width: 40px;
 
-    transition:.3s;
+        height: 40px;
 
-}
+        font-size: 15px;
+    }
 
-.report-card:hover{
 
-    transform:translateY(-5px);
+    .customer-details h4 {
+        font-size: 14px;
+    }
 
-}
 
-.report-card svg{
+    .customer-details span {
+        font-size: 11px;
+    }
 
-    color:#3b82f6;
 
-    margin-bottom:15px;
+    .view-btn {
+        padding: 8px 12px;
 
-}
-
-.report-card h3{
-
-    font-size:24px;
-
-    margin-bottom:10px;
-
-}
-
-.report-card p{
-
-    color:#94a3b8;
+        font-size: 12px;
+    }
 
 }
 
-/* ========================================
-   RESPONSIVE
-======================================== */
 
-@media(max-width:1200px){
+/* ==========================================================
+   CUSTOM SCROLLBAR
+========================================================== */
 
-.report-cards{
+::-webkit-scrollbar {
+    width: 8px;
 
-grid-template-columns:repeat(2,1fr);
-
+    height: 8px;
 }
 
+::-webkit-scrollbar-track {
+    background: #111827;
 }
 
-@media(max-width:768px){
+::-webkit-scrollbar-thumb {
+    background: #2563eb;
 
-.customers-page,
-.bookings-page,
-.payments-page,
-.reports-page{
-
-padding:20px;
-
+    border-radius: 20px;
 }
 
-.customers-header,
-.bookings-header,
-.payments-header,
-.reports-header{
-
-flex-direction:column;
-
-align-items:flex-start;
-
-}
-
-.header-actions{
-
-width:100%;
-
-}
-
-.search-box{
-
-width:100%;
-
-}
-
-.search-box input{
-
-width:100%;
-
-}
-
-.export-btn,
-.add-btn{
-
-width:100%;
-
-}
-
-table{
-
-min-width:900px;
-
-}
-
-}
-
-@media(max-width:500px){
-
-.report-cards{
-
-grid-template-columns:1fr;
-
-}
-
-.customers-header h1,
-.bookings-header h2,
-.payments-header h2,
-.reports-header h2{
-
-font-size:24px;
-
-}
-
+::-webkit-scrollbar-thumb:hover {
+    background: #3b82f6;
 }

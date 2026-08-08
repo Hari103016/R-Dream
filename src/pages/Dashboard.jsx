@@ -5,11 +5,11 @@ import Topbar from "../components/Topbar";
 
 import DashboardCards from "../components/DashboardCards";
 import QuickActions from "../components/QuickActions";
-import DashboardAnalytics from "../components/DashboardAnalytics";
 import RevenueChart from "../components/RevenueChart";
 import RecentCustomers from "../components/RecentCustomers";
-import PaymentReminders from "../components/PaymentReminders";
 import RecentActivity from "../components/RecentActivity";
+import TodaysBookings from "../components/TodaysBookings";
+import PaymentReminders from "../components/PaymentReminders";
 
 import "./Dashboard.css";
 
@@ -18,34 +18,77 @@ function Dashboard() {
 
   return (
     <div className="dashboard">
+
+      {/* ==========================================
+          SIDEBAR
+      ========================================== */}
+
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
       />
 
+      {/* ==========================================
+          MAIN CONTENT
+      ========================================== */}
+
       <div className="main-content">
+
+        {/* ========================================
+            TOPBAR
+        ======================================== */}
+
         <Topbar
           setSidebarOpen={setSidebarOpen}
         />
 
+        {/* ========================================
+            DASHBOARD BODY
+        ======================================== */}
+
         <div className="dashboard-body">
 
-          {/* Dashboard Cards */}
+          {/* ======================================
+              DASHBOARD STATISTICS
+          ====================================== */}
+
           <DashboardCards />
 
-          {/* Quick Actions */}
-          <div className="dashboard-grid">
-            <QuickActions />
-          </div>
+          {/* ======================================
+              QUICK ACTIONS
+          ====================================== */}
 
-          
-         
+          <QuickActions />
 
-          {/* Revenue Chart */}
+          {/* ======================================
+              REVENUE ANALYTICS
+          ====================================== */}
+
           <RevenueChart />
 
-          {/* Recent Customers */}
-          <RecentCustomers />
+          {/* ======================================
+              RECENT CUSTOMERS + ACTIVITY
+          ====================================== */}
+
+          <div className="dashboard-grid">
+
+            <RecentCustomers />
+
+            <RecentActivity />
+
+          </div>
+
+          {/* ======================================
+              TODAY'S BOOKINGS + PAYMENT REMINDERS
+          ====================================== */}
+
+          <div className="dashboard-grid">
+
+            <TodaysBookings />
+
+            <PaymentReminders />
+
+          </div>
 
         </div>
       </div>

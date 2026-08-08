@@ -1,0 +1,32 @@
+:root{
+
+    --bg:#08111f;
+
+    --card:#111827;
+
+    --card-light:#162235;
+
+    --border:rgba(255,255,255,.06);
+
+    --text:#ffffff;
+
+    --muted:#94A3B8;
+
+    --blue:#2563EB;
+
+    --green:#10B981;
+
+    --orange:#F59E0B;
+
+    --red:#EF4444;
+
+    --purple:#8B5CF6;
+
+    --cyan:#06B6D4;
+
+    --radius:20px;
+
+    --shadow:
+        0 15px 35px rgba(0,0,0,.25);
+
+}

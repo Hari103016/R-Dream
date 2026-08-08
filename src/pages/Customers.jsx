@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
 import {
@@ -8,6 +8,12 @@ import {
   Search,
   Plus,
   Download,
+  RefreshCw,
+  Users,
+  UserCheck,
+  Wallet,
+  AlertCircle,
+  UserRound,
 } from "lucide-react";
 
 import * as XLSX from "xlsx";
@@ -26,13 +32,14 @@ import "./Customers.css";
 
 function Customers() {
   const [customers, setCustomers] = useState([]);
-  const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [search, setSearch] = useState("");
-
   const [loading, setLoading] = useState(true);
-
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
+
+  /* ==========================================================
+     FETCH CUSTOMERS
+  ========================================================== */
 
   useEffect(() => {
     fetchCustomers();
@@ -44,7 +51,9 @@ function Customers() {
     const { data, error } = await supabase
       .from("customers")
       .select("*")
-      .order("id", { ascending: false });
+      .order("id", {
+        ascending: false,
+      });
 
     if (error) {
       console.error(error);
@@ -54,43 +63,89 @@ function Customers() {
     }
 
     setCustomers(data || []);
-    setFilteredCustomers(data || []);
     setLoading(false);
   }
 
-  useEffect(() => {
-    const value = search.toLowerCase();
+  /* ==========================================================
+     SEARCH
+  ========================================================== */
 
-    const results = customers.filter((customer) => {
+  const filteredCustomers = useMemo(() => {
+    const value = search.trim().toLowerCase();
+
+    if (!value) {
+      return customers;
+    }
+
+    return customers.filter((customer) => {
       return (
         customer.name?.toLowerCase().includes(value) ||
-        customer.mobile?.toString().includes(value) ||
-        customer.plot_no?.toString().includes(value)
+        customer.mobile
+          ?.toString()
+          .toLowerCase()
+          .includes(value) ||
+        customer.plot_no
+          ?.toString()
+          .toLowerCase()
+          .includes(value)
       );
     });
+  }, [customers, search]);
 
-    setFilteredCustomers(results);
-  }, [search, customers]);
-    async function deleteCustomer(customer) {
+  /* ==========================================================
+     STATISTICS
+  ========================================================== */
+
+  const totalCustomers = filteredCustomers.length;
+
+  const bookedCustomers = filteredCustomers.filter(
+    (customer) =>
+      customer.status?.toLowerCase() === "booked"
+  ).length;
+
+  const totalCollected = filteredCustomers.reduce(
+    (sum, customer) =>
+      sum + Number(customer.amount_paid || 0),
+    0
+  );
+
+  const totalPending = filteredCustomers.reduce(
+    (sum, customer) =>
+      sum + Number(customer.balance || 0),
+    0
+  );
+
+  /* ==========================================================
+     DELETE CUSTOMER
+  ========================================================== */
+
+  async function deleteCustomer(customer) {
     const result = await Swal.fire({
       title: "Delete Customer?",
       text: `Delete ${customer.name}?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#3b82f6",
+      cancelButtonColor: "#2563eb",
       confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
     });
 
     if (!result.isConfirmed) return;
 
     try {
-      await supabase
+      /* Delete payments */
+      const { error: paymentError } = await supabase
         .from("payments")
         .delete()
         .eq("customer_id", customer.id);
 
-      await supabase
+      if (paymentError) {
+        console.error(paymentError);
+      }
+
+      /* Make plot available again */
+      const { error: plotError } = await supabase
         .from("plots")
         .update({
           status: "Available",
@@ -98,35 +153,56 @@ function Customers() {
         })
         .eq("plot_no", customer.plot_no);
 
+      if (plotError) {
+        console.error(plotError);
+      }
+
+      /* Delete customer */
       const { error } = await supabase
         .from("customers")
         .delete()
         .eq("id", customer.id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       toast.success("Customer deleted successfully");
 
       fetchCustomers();
-    } catch (err) {
-      console.error(err);
-
+    } catch (error) {
+      console.error(error);
       toast.error("Delete failed");
     }
   }
-    function exportExcel() {
+
+  /* ==========================================================
+     EXPORT EXCEL
+  ========================================================== */
+
+  function exportExcel() {
+    if (filteredCustomers.length === 0) {
+      toast.warning("No customers to export");
+      return;
+    }
+
     const rows = filteredCustomers.map((customer) => ({
       "Plot No": customer.plot_no,
       "Customer Name": customer.name,
       Mobile: customer.mobile,
       Status: customer.status,
-      "Total Amount": customer.total_amount,
-      "Amount Paid": customer.amount_paid,
-      Balance: customer.balance,
+      "Total Amount": Number(
+        customer.total_amount || 0
+      ),
+      "Amount Paid": Number(
+        customer.amount_paid || 0
+      ),
+      Balance: Number(customer.balance || 0),
       "Booking Date": customer.booking_date,
     }));
 
-    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const worksheet =
+      XLSX.utils.json_to_sheet(rows);
 
     const workbook = XLSX.utils.book_new();
 
@@ -142,206 +218,656 @@ function Customers() {
     });
 
     saveAs(
-      new Blob([excelBuffer]),
-      `Customers_${new Date().toLocaleDateString()}.xlsx`
+      new Blob([excelBuffer], {
+        type:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }),
+      `Customers_${new Date()
+        .toLocaleDateString("en-IN")
+        .replace(/\//g, "-")}.xlsx`
+    );
+
+    toast.success("Customers exported successfully");
+  }
+
+  /* ==========================================================
+     STATUS CLASS
+  ========================================================== */
+
+  function getStatusClass(status) {
+    const value = status?.toLowerCase();
+
+    if (value === "available") return "available";
+    if (value === "booked") return "booked";
+    if (value === "completed") return "completed";
+    if (value === "sold") return "sold";
+    if (value === "cancelled") return "cancelled";
+
+    return "default";
+  }
+
+  /* ==========================================================
+     FORMAT MONEY
+  ========================================================== */
+
+  function formatMoney(value) {
+    return Number(value || 0).toLocaleString(
+      "en-IN"
     );
   }
-    return (
-    <div className="dashboard">
+
+  /* ==========================================================
+     RENDER
+  ========================================================== */
+
+  return (
+    <>
+      {/* =====================================================
+          SIDEBAR
+      ===================================================== */}
+
       <Sidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
       />
 
+      {/* =====================================================
+          MAIN CONTENT
+      ===================================================== */}
+
       <div className="main-content">
-        <Topbar setSidebarOpen={setSidebarOpen} />
+        <Topbar
+          setSidebarOpen={setSidebarOpen}
+        />
 
         <div className="customers-page">
 
-          {/* Header */}
+          {/* =================================================
+              HEADER
+          ================================================= */}
 
           <div className="customers-header">
 
-            <div>
-              <h1>Customers</h1>
+            <div className="customers-heading">
 
-              <p className="customer-count">
-                Total Customers :
-                <strong> {filteredCustomers.length}</strong>
-              </p>
+              <div className="customers-heading-icon">
+                <Users size={24} />
+              </div>
+
+              <div>
+                <h1>Customers</h1>
+
+                <p>
+                  Manage your customers and payment
+                  details
+                </p>
+              </div>
+
             </div>
 
-            <div className="header-actions">
+            <div className="customers-header-actions">
 
-              {/* Search */}
+              {/* SEARCH */}
 
-              <div className="search-box">
-                <Search size={18} />
+              <div className="customer-search">
+
+                <Search size={17} />
 
                 <input
                   type="text"
-                  placeholder="Search by Name, Plot No or Mobile..."
+                  placeholder="Search Name, Plot or Mobile..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) =>
+                    setSearch(e.target.value)
+                  }
                 />
+
+                {search && (
+                  <button
+                    className="clear-search"
+                    onClick={() => setSearch("")}
+                    type="button"
+                  >
+                    ×
+                  </button>
+                )}
+
               </div>
 
-              {/* Export */}
+              {/* REFRESH */}
 
               <button
-                className="export-btn"
-                onClick={exportExcel}
+                className="customer-refresh-btn"
+                onClick={fetchCustomers}
+                title="Refresh"
+                type="button"
               >
-                <Download size={18} />
+                <RefreshCw size={16} />
+              </button>
+
+              {/* EXPORT */}
+
+              <button
+                className="customer-export-btn"
+                onClick={exportExcel}
+                type="button"
+              >
+                <Download size={16} />
                 Export Excel
               </button>
 
-              {/* Add Customer */}
+              {/* ADD */}
 
               <button
-                className="add-btn"
+                className="customer-add-btn"
                 onClick={() => setShowModal(true)}
+                type="button"
               >
-                <Plus size={18} />
+                <Plus size={17} />
                 Add Customer
               </button>
+
+            </div>
+          </div>
+
+          {/* =================================================
+              STATISTICS
+          ================================================= */}
+
+          <div className="customer-stats">
+
+            <div className="customer-stat-card">
+
+              <div className="customer-stat-icon blue">
+                <Users size={20} />
+              </div>
+
+              <div>
+                <span>Total Customers</span>
+                <strong>{totalCustomers}</strong>
+              </div>
+
+            </div>
+
+            <div className="customer-stat-card">
+
+              <div className="customer-stat-icon orange">
+                <UserCheck size={20} />
+              </div>
+
+              <div>
+                <span>Booked Customers</span>
+                <strong>{bookedCustomers}</strong>
+              </div>
+
+            </div>
+
+            <div className="customer-stat-card">
+
+              <div className="customer-stat-icon green">
+                <Wallet size={20} />
+              </div>
+
+              <div>
+                <span>Amount Collected</span>
+
+                <strong>
+                  ₹{formatMoney(totalCollected)}
+                </strong>
+              </div>
+
+            </div>
+
+            <div className="customer-stat-card">
+
+              <div className="customer-stat-icon red">
+                <AlertCircle size={20} />
+              </div>
+
+              <div>
+                <span>Pending Balance</span>
+
+                <strong>
+                  ₹{formatMoney(totalPending)}
+                </strong>
+              </div>
 
             </div>
 
           </div>
 
-          {/* Loading */}
+          {/* =================================================
+              RESULT INFO
+          ================================================= */}
+
+          <div className="customer-result-info">
+
+            <span>
+              Showing{" "}
+              <strong>
+                {filteredCustomers.length}
+              </strong>{" "}
+              of{" "}
+              <strong>
+                {customers.length}
+              </strong>{" "}
+              customers
+            </span>
+
+            {search && (
+              <span>
+                Search:{" "}
+                <strong>"{search}"</strong>
+              </span>
+            )}
+
+          </div>
+
+          {/* =================================================
+              LOADING
+          ================================================= */}
 
           {loading ? (
+            <div className="customer-empty">
 
-            <div className="empty">
-              Loading Customers...
+              <div className="customer-loading-spinner" />
+
+              <h3>Loading Customers...</h3>
+
+              <p>
+                Please wait while we load customer
+                information.
+              </p>
+
             </div>
+          ) : filteredCustomers.length === 0 ? (
 
+            /* ===============================================
+               EMPTY
+            =============================================== */
+
+            <div className="customer-empty">
+
+              <div className="customer-empty-icon">
+                <UserRound size={30} />
+              </div>
+
+              <h3>No Customers Found</h3>
+
+              <p>
+                {search
+                  ? "Try searching with another name, plot number or mobile number."
+                  : "No customers have been added yet."}
+              </p>
+
+              {!search && (
+                <button
+                  className="empty-add-btn"
+                  onClick={() =>
+                    setShowModal(true)
+                  }
+                  type="button"
+                >
+                  <Plus size={16} />
+                  Add Customer
+                </button>
+              )}
+
+            </div>
           ) : (
 
-            <div className="table-container">
+            <>
+              {/* =================================================
+                  DESKTOP TABLE
+              ================================================= */}
 
-              <table>
+              <div className="customers-table-container">
 
-                <thead>
+                <table className="customers-table">
 
-                  <tr>
-
-                    <th>Plot No</th>
-                    <th>Name</th>
-                    <th>Mobile</th>
-                    <th>Status</th>
-                    <th>Total</th>
-                    <th>Paid</th>
-                    <th>Balance</th>
-                    <th>Actions</th>
-
-                  </tr>
-
-                </thead>
-
-                <tbody>
-
-                  {filteredCustomers.length === 0 ? (
-
+                  <thead>
                     <tr>
-
-                      <td
-                        className="empty"
-                        colSpan="8"
-                      >
-                        No Customers Found
-                      </td>
-
+                      <th>Plot</th>
+                      <th>Customer</th>
+                      <th>Mobile</th>
+                      <th>Status</th>
+                      <th>Total</th>
+                      <th>Paid</th>
+                      <th>Balance</th>
+                      <th>Actions</th>
                     </tr>
+                  </thead>
 
-                  ) : (
+                  <tbody>
 
-                    filteredCustomers.map((customer) => (
+                    {filteredCustomers.map(
+                      (customer) => {
 
-                      <tr key={customer.id}>
+                        const balance =
+                          Number(
+                            customer.balance || 0
+                          );
 
-                        <td>{customer.plot_no}</td>
+                        return (
+                          <tr key={customer.id}>
 
-                        <td>{customer.name}</td>
+                            {/* PLOT */}
 
-                        <td>{customer.mobile}</td>
+                            <td>
+                              <span className="plot-number">
+                                #{customer.plot_no}
+                              </span>
+                            </td>
 
-                        <td>
+                            {/* CUSTOMER */}
+
+                            <td>
+                              <div className="customer-cell">
+
+                                <div className="customer-avatar">
+                                  {customer.name
+                                    ?.charAt(0)
+                                    ?.toUpperCase() ||
+                                    "C"}
+                                </div>
+
+                                <div>
+                                  <strong>
+                                    {customer.name ||
+                                      "Unknown"}
+                                  </strong>
+
+                                  <span>
+                                    Customer
+                                  </span>
+                                </div>
+
+                              </div>
+                            </td>
+
+                            {/* MOBILE */}
+
+                            <td>
+                              <span className="mobile-number">
+                                {customer.mobile ||
+                                  "-"}
+                              </span>
+                            </td>
+
+                            {/* STATUS */}
+
+                            <td>
+                              <span
+                                className={`customer-status ${getStatusClass(
+                                  customer.status
+                                )}`}
+                              >
+                                <span className="status-dot" />
+
+                                {customer.status ||
+                                  "Unknown"}
+                              </span>
+                            </td>
+
+                            {/* TOTAL */}
+
+                            <td>
+                              <span className="money total">
+                                ₹
+                                {formatMoney(
+                                  customer.total_amount
+                                )}
+                              </span>
+                            </td>
+
+                            {/* PAID */}
+
+                            <td>
+                              <span className="money paid">
+                                ₹
+                                {formatMoney(
+                                  customer.amount_paid
+                                )}
+                              </span>
+                            </td>
+
+                            {/* BALANCE */}
+
+                            <td>
+                              <span
+                                className={`money balance ${
+                                  balance > 0
+                                    ? "pending"
+                                    : "clear"
+                                }`}
+                              >
+                                ₹
+                                {formatMoney(
+                                  balance
+                                )}
+                              </span>
+                            </td>
+
+                            {/* ACTIONS */}
+
+                            <td>
+                              <div className="customer-actions">
+
+                                <Link
+                                  to={`/customer/${customer.id}`}
+                                  className="customer-action view"
+                                  title="View Customer"
+                                >
+                                  <Eye size={16} />
+                                </Link>
+
+                                <Link
+                                  to={`/edit-customer/${customer.id}`}
+                                  className="customer-action edit"
+                                  title="Edit Customer"
+                                >
+                                  <Pencil size={16} />
+                                </Link>
+
+                                <button
+                                  className="customer-action delete"
+                                  title="Delete Customer"
+                                  onClick={() =>
+                                    deleteCustomer(
+                                      customer
+                                    )
+                                  }
+                                  type="button"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+
+                              </div>
+                            </td>
+
+                          </tr>
+                        );
+                      }
+                    )}
+
+                  </tbody>
+
+                </table>
+
+              </div>
+
+              {/* =================================================
+                  MOBILE CUSTOMER CARDS
+              ================================================= */}
+
+              <div className="customers-mobile-list">
+
+                {filteredCustomers.map(
+                  (customer) => {
+
+                    const balance =
+                      Number(
+                        customer.balance || 0
+                      );
+
+                    return (
+                      <div
+                        className="customer-mobile-card"
+                        key={customer.id}
+                      >
+
+                        {/* TOP */}
+
+                        <div className="mobile-card-top">
+
+                          <div className="customer-cell">
+
+                            <div className="customer-avatar">
+                              {customer.name
+                                ?.charAt(0)
+                                ?.toUpperCase() ||
+                                "C"}
+                            </div>
+
+                            <div>
+                              <strong>
+                                {customer.name ||
+                                  "Unknown"}
+                              </strong>
+
+                              <span>
+                                Customer
+                              </span>
+                            </div>
+
+                          </div>
 
                           <span
-                            className={`status ${customer.status
-                              ?.toLowerCase()
-                              .replace(/\s+/g, "-")}`}
+                            className={`customer-status ${getStatusClass(
+                              customer.status
+                            )}`}
                           >
-                            {customer.status}
+                            <span className="status-dot" />
+
+                            {customer.status ||
+                              "Unknown"}
                           </span>
 
-                        </td>
+                        </div>
 
-                        <td>
-                          ₹
-                          {Number(
-                            customer.total_amount || 0
-                          ).toLocaleString("en-IN")}
-                        </td>
+                        {/* CONTACT */}
 
-                        <td>
-                          ₹
-                          {Number(
-                            customer.amount_paid || 0
-                          ).toLocaleString("en-IN")}
-                        </td>
+                        <div className="mobile-card-contact">
 
-                        <td>
-                          ₹
-                          {Number(
-                            customer.balance || 0
-                          ).toLocaleString("en-IN")}
-                        </td>
+                          <div>
+                            <span>Plot No</span>
+                            <strong>
+                              #{customer.plot_no}
+                            </strong>
+                          </div>
 
-                        <td className="actions">
+                          <div>
+                            <span>Mobile</span>
+                            <strong>
+                              {customer.mobile ||
+                                "-"}
+                            </strong>
+                          </div>
+
+                        </div>
+
+                        {/* MONEY */}
+
+                        <div className="mobile-money-grid">
+
+                          <div>
+                            <span>Total</span>
+
+                            <strong className="total-text">
+                              ₹
+                              {formatMoney(
+                                customer.total_amount
+                              )}
+                            </strong>
+                          </div>
+
+                          <div>
+                            <span>Paid</span>
+
+                            <strong className="paid-text">
+                              ₹
+                              {formatMoney(
+                                customer.amount_paid
+                              )}
+                            </strong>
+                          </div>
+
+                          <div>
+                            <span>Balance</span>
+
+                            <strong
+                              className={
+                                balance > 0
+                                  ? "balance-text"
+                                  : "clear-text"
+                              }
+                            >
+                              ₹
+                              {formatMoney(
+                                balance
+                              )}
+                            </strong>
+                          </div>
+
+                        </div>
+
+                        {/* ACTIONS */}
+
+                        <div className="mobile-card-actions">
 
                           <Link
                             to={`/customer/${customer.id}`}
-                            title="View"
+                            className="mobile-view-btn"
                           >
-                            <Eye size={18} />
+                            <Eye size={15} />
+                            View
                           </Link>
 
                           <Link
                             to={`/edit-customer/${customer.id}`}
-                            title="Edit"
+                            className="mobile-edit-btn"
                           >
-                            <Pencil size={18} />
+                            <Pencil size={15} />
+                            Edit
                           </Link>
 
                           <button
-                            title="Delete"
+                            className="mobile-delete-btn"
                             onClick={() =>
-                              deleteCustomer(customer)
+                              deleteCustomer(
+                                customer
+                              )
                             }
+                            title="Delete"
+                            type="button"
                           >
-                            <Trash2 size={18} />
+                            <Trash2 size={16} />
                           </button>
 
-                        </td>
+                        </div>
 
-                      </tr>
+                      </div>
+                    );
+                  }
+                )}
 
-                    ))
-
-                  )}
-
-                </tbody>
-
-              </table>
-
-            </div>
-
+              </div>
+            </>
           )}
-                    {/* Add Customer Modal */}
+
+          {/* =================================================
+              ADD CUSTOMER MODAL
+          ================================================= */}
 
           {showModal && (
             <AddCustomerModal
@@ -354,7 +880,7 @@ function Customers() {
 
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

@@ -16,25 +16,20 @@ import Bookings from "./pages/Bookings";
 import Payments from "./pages/Payments";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
-
-import AdminProfile from "./pages/AdminProfile"; // NEW
+import AdminProfile from "./pages/AdminProfile";
 
 function App() {
-
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
 
   useEffect(() => {
-
     async function checkSession() {
-
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
       setSession(session);
       setLoading(false);
-
     }
 
     checkSession();
@@ -47,8 +42,9 @@ function App() {
       }
     );
 
-    return () => subscription.unsubscribe();
-
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (loading) {
@@ -67,164 +63,221 @@ function App() {
   }
 
   return (
-
     <Routes>
 
-      {/* Login */}
+      {/* ==============================
+          LOGIN
+      ============================== */}
 
       <Route
         path="/"
         element={
-          session
-            ? <Navigate to="/dashboard" replace />
-            : <Login />
+          session ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Login />
+          )
         }
       />
 
-      {/* Dashboard */}
+      {/* ==============================
+          DASHBOARD
+      ============================== */}
 
       <Route
         path="/dashboard"
         element={
-          session
-            ? <Dashboard />
-            : <Navigate to="/" replace />
+          session ? (
+            <Dashboard />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
 
-      {/* Customers */}
+      {/* ==============================
+          CUSTOMERS
+      ============================== */}
 
       <Route
         path="/customers"
         element={
-          session
-            ? <Customers />
-            : <Navigate to="/" replace />
+          session ? (
+            <Customers />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
 
-      {/* Customer Details */}
+      {/* ==============================
+          CUSTOMER DETAILS
+      ============================== */}
 
       <Route
         path="/customer/:id"
         element={
-          session
-            ? <CustomerDetails />
-            : <Navigate to="/" replace />
+          session ? (
+            <CustomerDetails />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
 
-      {/* Edit Customer */}
+      {/* ==============================
+          EDIT CUSTOMER
+      ============================== */}
 
       <Route
         path="/edit-customer/:id"
         element={
-          session
-            ? <EditCustomer />
-            : <Navigate to="/" replace />
+          session ? (
+            <EditCustomer />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
 
-      {/* Add Payment */}
+      {/* ==============================
+          ADD PAYMENT
+      ============================== */}
 
       <Route
         path="/add-payment/:id"
         element={
-          session
-            ? <AddPayment />
-            : <Navigate to="/" replace />
+          session ? (
+            <AddPayment />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
 
-      {/* Receipt */}
+      {/* ==============================
+          RECEIPT
+      ============================== */}
 
       <Route
         path="/receipt"
         element={
-          session
-            ? <ReceiptPage />
-            : <Navigate to="/" replace />
+          session ? (
+            <ReceiptPage />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
 
-      {/* Plots */}
+      {/* ==============================
+          PLOTS
+      ============================== */}
 
       <Route
         path="/plots"
         element={
-          session
-            ? <Plots />
-            : <Navigate to="/" replace />
+          session ? (
+            <Plots />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
 
-      {/* Book Plot */}
+      {/* ==============================
+          BOOK PLOT
+      ============================== */}
 
       <Route
         path="/book/:id"
         element={
-          session
-            ? <BookPlot />
-            : <Navigate to="/" replace />
+          session ? (
+            <BookPlot />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
 
-      {/* Bookings */}
+      {/* ==============================
+          BOOKINGS
+      ============================== */}
 
       <Route
         path="/bookings"
         element={
-          session
-            ? <Bookings />
-            : <Navigate to="/" replace />
+          session ? (
+            <Bookings />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
 
-      {/* Payments */}
+      {/* ==============================
+          PAYMENTS
+      ============================== */}
 
       <Route
         path="/payments"
         element={
-          session
-            ? <Payments />
-            : <Navigate to="/" replace />
+          session ? (
+            <Payments />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
 
-      {/* Reports */}
+      {/* ==============================
+          REPORTS
+      ============================== */}
 
       <Route
         path="/reports"
         element={
-          session
-            ? <Reports />
-            : <Navigate to="/" replace />
+          session ? (
+            <Reports />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
 
-      {/* Settings */}
+      {/* ==============================
+          SETTINGS
+      ============================== */}
 
       <Route
         path="/settings"
         element={
-          session
-            ? <Settings />
-            : <Navigate to="/" replace />
+          session ? (
+            <Settings />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
 
-      {/* Admin Profile */}
+      {/* ==============================
+          ADMIN PROFILE
+      ============================== */}
 
       <Route
         path="/admin-profile"
         element={
-          session
-            ? <AdminProfile />
-            : <Navigate to="/" replace />
+          session ? (
+            <AdminProfile />
+          ) : (
+            <Navigate to="/" replace />
+          )
         }
       />
 
-      {/* Unknown Route */}
+      {/* ==============================
+          UNKNOWN ROUTE
+      ============================== */}
 
       <Route
         path="*"
@@ -235,10 +288,8 @@ function App() {
           />
         }
       />
-     
 
     </Routes>
-
   );
 }
 

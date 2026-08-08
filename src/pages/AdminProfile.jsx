@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import {
   Camera,
   Save,
@@ -43,6 +44,10 @@ function AdminProfile() {
     loadProfile();
   }, []);
 
+  /* =========================================
+     LOAD PROFILE
+  ========================================= */
+
   async function loadProfile() {
     try {
       setLoading(true);
@@ -74,7 +79,8 @@ function AdminProfile() {
         throw error;
       }
 
-      // Create profile automatically if it doesn't exist.
+      /* Create profile if it doesn't exist */
+
       if (!data) {
         const newProfile = {
           id: user.id,
@@ -88,12 +94,14 @@ function AdminProfile() {
           avatar_url: "",
         };
 
-        const { data: insertedProfile, error: insertError } =
-          await supabase
-            .from("admin_profiles")
-            .insert(newProfile)
-            .select()
-            .single();
+        const {
+          data: insertedProfile,
+          error: insertError,
+        } = await supabase
+          .from("admin_profiles")
+          .insert(newProfile)
+          .select()
+          .single();
 
         if (insertError) {
           throw insertError;
@@ -101,10 +109,16 @@ function AdminProfile() {
 
         setProfile({
           full_name: insertedProfile.full_name || "",
-          email: insertedProfile.email || user.email || "",
+          email:
+            insertedProfile.email ||
+            user.email ||
+            "",
           phone: insertedProfile.phone || "",
-          role: insertedProfile.role || "Administrator",
-          avatar_url: insertedProfile.avatar_url || "",
+          role:
+            insertedProfile.role ||
+            "Administrator",
+          avatar_url:
+            insertedProfile.avatar_url || "",
         });
 
         return;
@@ -118,13 +132,25 @@ function AdminProfile() {
         avatar_url: data.avatar_url || "",
       });
     } catch (error) {
-      console.error("Profile loading error:", error);
-      toast.error(error.message || "Unable to load profile.");
+      console.error(
+        "Profile loading error:",
+        error
+      );
+
+      toast.error(
+        error.message ||
+          "Unable to load profile."
+      );
     } finally {
       setLoading(false);
     }
   }
-    async function uploadPhoto(event) {
+
+  /* =========================================
+     UPLOAD PHOTO
+  ========================================= */
+
+  async function uploadPhoto(event) {
     const file = event.target.files?.[0];
 
     if (!file) {
@@ -132,7 +158,10 @@ function AdminProfile() {
     }
 
     if (!userId) {
-      toast.error("User information is not available.");
+      toast.error(
+        "User information is not available."
+      );
+
       return;
     }
 
@@ -147,15 +176,21 @@ function AdminProfile() {
       toast.error(
         "Please upload a JPG, JPEG, PNG, or WEBP image."
       );
+
       event.target.value = "";
+
       return;
     }
 
     const maxSize = 5 * 1024 * 1024;
 
     if (file.size > maxSize) {
-      toast.error("Profile photo must be smaller than 5 MB.");
+      toast.error(
+        "Profile photo must be smaller than 5 MB."
+      );
+
       event.target.value = "";
+
       return;
     }
 
@@ -163,29 +198,39 @@ function AdminProfile() {
       setUploading(true);
 
       const extension =
-        file.name.split(".").pop()?.toLowerCase() || "jpg";
+        file.name
+          .split(".")
+          .pop()
+          ?.toLowerCase() || "jpg";
 
       const filePath =
         `${userId}/avatar-${Date.now()}.${extension}`;
 
-      const { error: uploadError } =
-        await supabase.storage
-          .from("avatars")
-          .upload(filePath, file, {
+      const {
+        error: uploadError,
+      } = await supabase.storage
+        .from("avatars")
+        .upload(
+          filePath,
+          file,
+          {
             cacheControl: "3600",
             upsert: true,
-          });
+          }
+        );
 
       if (uploadError) {
         throw uploadError;
       }
 
-      const { data: publicUrlData } =
-        supabase.storage
-          .from("avatars")
-          .getPublicUrl(filePath);
+      const {
+        data: publicUrlData,
+      } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
 
-      const publicUrl = publicUrlData?.publicUrl;
+      const publicUrl =
+        publicUrlData?.publicUrl;
 
       if (!publicUrl) {
         throw new Error(
@@ -193,39 +238,56 @@ function AdminProfile() {
         );
       }
 
-      const { error: updateError } =
-        await supabase
-          .from("admin_profiles")
-          .update({
-            avatar_url: publicUrl,
-          })
-          .eq("id", userId);
+      const {
+        error: updateError,
+      } = await supabase
+        .from("admin_profiles")
+        .update({
+          avatar_url: publicUrl,
+        })
+        .eq("id", userId);
 
       if (updateError) {
         throw updateError;
       }
 
-      setProfile((previousProfile) => ({
-        ...previousProfile,
-        avatar_url: publicUrl,
-      }));
+      setProfile(
+        (previousProfile) => ({
+          ...previousProfile,
+          avatar_url: publicUrl,
+        })
+      );
 
-      toast.success("Profile photo updated successfully.");
+      toast.success(
+        "Profile photo updated successfully."
+      );
     } catch (error) {
-      console.error("Photo upload error:", error);
+      console.error(
+        "Photo upload error:",
+        error
+      );
 
       toast.error(
-        error.message || "Unable to upload profile photo."
+        error.message ||
+          "Unable to upload profile photo."
       );
     } finally {
       setUploading(false);
+
       event.target.value = "";
     }
   }
 
+  /* =========================================
+     REMOVE PHOTO
+  ========================================= */
+
   async function removePhoto() {
     if (!profile.avatar_url) {
-      toast.info("No profile photo to remove.");
+      toast.info(
+        "No profile photo to remove."
+      );
+
       return;
     }
 
@@ -243,34 +305,58 @@ function AdminProfile() {
         throw error;
       }
 
-      setProfile((previousProfile) => ({
-        ...previousProfile,
-        avatar_url: "",
-      }));
+      setProfile(
+        (previousProfile) => ({
+          ...previousProfile,
+          avatar_url: "",
+        })
+      );
 
-      toast.success("Profile photo removed.");
+      toast.success(
+        "Profile photo removed."
+      );
     } catch (error) {
-      console.error("Remove photo error:", error);
+      console.error(
+        "Remove photo error:",
+        error
+      );
 
       toast.error(
-        error.message || "Unable to remove profile photo."
+        error.message ||
+          "Unable to remove profile photo."
       );
     } finally {
       setRemoving(false);
     }
   }
-    async function saveProfile() {
-    const fullName = profile.full_name.trim();
-    const email = profile.email.trim();
-    const phone = profile.phone.trim();
+
+  /* =========================================
+     SAVE PROFILE
+  ========================================= */
+
+  async function saveProfile() {
+    const fullName =
+      profile.full_name.trim();
+
+    const email =
+      profile.email.trim();
+
+    const phone =
+      profile.phone.trim();
 
     if (!fullName) {
-      toast.error("Please enter the administrator name.");
+      toast.error(
+        "Please enter the administrator name."
+      );
+
       return;
     }
 
     if (!email) {
-      toast.error("Please enter an email address.");
+      toast.error(
+        "Please enter an email address."
+      );
+
       return;
     }
 
@@ -281,6 +367,7 @@ function AdminProfile() {
       toast.error(
         "Password must contain at least 6 characters."
       );
+
       return;
     }
 
@@ -288,36 +375,44 @@ function AdminProfile() {
       newPassword.trim() !== "" &&
       newPassword !== confirmPassword
     ) {
-      toast.error("Passwords do not match.");
+      toast.error(
+        "Passwords do not match."
+      );
+
       return;
     }
 
     try {
       setSaving(true);
 
-      const { error: profileError } =
-        await supabase
-          .from("admin_profiles")
-          .update({
-            full_name: fullName,
-            email,
-            phone,
-          })
-          .eq("id", userId);
+      /* Update profile table */
+
+      const {
+        error: profileError,
+      } = await supabase
+        .from("admin_profiles")
+        .update({
+          full_name: fullName,
+          email,
+          phone,
+        })
+        .eq("id", userId);
 
       if (profileError) {
         throw profileError;
       }
 
-      // Update Supabase Auth email only if changed.
+      /* Update Supabase Auth email */
+
       if (
         email.toLowerCase() !==
         authEmail.toLowerCase()
       ) {
-        const { error: emailError } =
-          await supabase.auth.updateUser({
-            email,
-          });
+        const {
+          error: emailError,
+        } = await supabase.auth.updateUser({
+          email,
+        });
 
         if (emailError) {
           throw emailError;
@@ -330,27 +425,32 @@ function AdminProfile() {
         );
       }
 
-      // Update password only when supplied.
+      /* Update password */
+
       if (newPassword.trim() !== "") {
-        const { error: passwordError } =
-          await supabase.auth.updateUser({
-            password: newPassword,
-          });
+        const {
+          error: passwordError,
+        } = await supabase.auth.updateUser({
+          password: newPassword,
+        });
 
         if (passwordError) {
           throw passwordError;
         }
       }
 
-      // Keep auth metadata in sync.
-      const { error: metadataError } =
-        await supabase.auth.updateUser({
-          data: {
-            full_name: fullName,
-            phone,
-            avatar_url: profile.avatar_url,
-          },
-        });
+      /* Keep Auth metadata updated */
+
+      const {
+        error: metadataError,
+      } = await supabase.auth.updateUser({
+        data: {
+          full_name: fullName,
+          phone,
+          avatar_url:
+            profile.avatar_url,
+        },
+      });
 
       if (metadataError) {
         console.error(
@@ -359,27 +459,39 @@ function AdminProfile() {
         );
       }
 
-      setProfile((previousProfile) => ({
-        ...previousProfile,
-        full_name: fullName,
-        email,
-        phone,
-      }));
+      setProfile(
+        (previousProfile) => ({
+          ...previousProfile,
+          full_name: fullName,
+          email,
+          phone,
+        })
+      );
 
       setNewPassword("");
       setConfirmPassword("");
 
-      toast.success("Profile updated successfully.");
+      toast.success(
+        "Profile updated successfully."
+      );
     } catch (error) {
-      console.error("Save profile error:", error);
+      console.error(
+        "Save profile error:",
+        error
+      );
 
       toast.error(
-        error.message || "Unable to update profile."
+        error.message ||
+          "Unable to update profile."
       );
     } finally {
       setSaving(false);
     }
   }
+
+  /* =========================================
+     LOADING
+  ========================================= */
 
   if (loading) {
     return (
@@ -388,227 +500,336 @@ function AdminProfile() {
       </div>
     );
   }
-    return (
-        <div className="dashboard">
 
-            <Sidebar
-                sidebarOpen={sidebarOpen}
-                setSidebarOpen={setSidebarOpen}
-            />
+  /* =========================================
+     UI
+  ========================================= */
 
-            <div className="main-content">
+  return (
+    <div className="dashboard">
 
-            <Topbar
-                setSidebarOpen={setSidebarOpen}
-            />
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      />
 
-            <div className="dashboard-body">
+      <div className="main-content">
 
-                <div className="admin-profile-page">
+        <Topbar
+          setSidebarOpen={setSidebarOpen}
+        />
 
-                    <div className="profile-card">
+        <div className="dashboard-body">
 
-                        {/* LEFT */}
+          <div className="admin-profile-page">
 
-                        <div className="avatar-section">
+            <div className="profile-card">
 
-                        <div className="avatar-box">
+              {/* =================================
+                  LEFT SIDE
+              ================================= */}
 
-                            {profile.avatar_url ? (
+              <div className="avatar-section">
 
-                                <img
-                                    src={profile.avatar_url}
-                                    alt="Admin"
-                                    className="avatar-image"
-                                />
+                <div className="avatar-box">
 
-                            ) : (
+                  {profile.avatar_url ? (
 
-                                <User size={90} color="#fff" />
+                    <img
+                      src={profile.avatar_url}
+                      alt="Admin Profile"
+                      className="avatar-image"
+                    />
 
-                            )}
+                  ) : (
 
-                            </div>
+                    <User
+                      size={90}
+                      color="#ffffff"
+                    />
 
-                            <label className="upload-photo">
-
-                                <Camera size={18} />
-
-                                {uploading
-                                    ? "Uploading..."
-                                    : "Upload Photo"}
-
-                                <input
-                                    type="file"
-                                    hidden
-                                    accept="image/*"
-                                    onChange={uploadPhoto}
-                                />
-
-                            </label>
-
-                        </div>
-
-                        {/* RIGHT */}
-
-                        <div className="profile-form">
-
-                            <div className="form-group">
-
-                                <label>
-
-                                    <User size={18} />
-
-                                    Full Name
-
-                                </label>
-
-                                <input
-                                    type="text"
-                                    value={profile.full_name}
-                                    onChange={(e)=>
-                                        setProfile({
-                                            ...profile,
-                                            full_name:e.target.value,
-                                        })
-                                     }
-                                />
-
-                            </div>
-
-                            <div className="form-group">
-
-                                <label>
-
-                                    <Mail size={18} />
-
-                                    Email
-
-                                </label>
-
-                                <input
-                                    type="email"
-                                    value={profile.email}
-                                    onChange={(e)=>
-                                        setProfile({
-                                            ...profile,
-                                            email:e.target.value,
-                                        })
-                                    }
-                                />
-
-                            </div>
-
-                            <div className="form-group">
-
-                                <label>
-
-                                    <Phone size={18} />
-
-                                    Phone Number
-
-                                </label>
-
-                                <input
-                                    type="text"
-                                    value={profile.phone}
-                                    onChange={(e)=>
-                                        setProfile({
-                                            ...profile,
-                                            phone:e.target.value,
-                                        })
-                                    }
-                                />
-
-                            </div>
-
-                            <div className="form-group">
-
-                                <label>
-
-                                    <User size={18} />
-
-                                    Role
-
-                                </label>
-
-                                <input
-                                    value={profile.role}
-                                    disabled
-                                />
-
-                            </div>
-
-                            <div className="form-group">
-
-                                <label>
-
-                                    <Lock size={18} />
-
-                                    New Password
-
-                                </label>
-
-                                <input
-                                    type="password"
-                                    placeholder="Enter New Password"
-                                    value={newPassword}
-                                    onChange={(e)=>
-                                        setNewPassword(e.target.value)
-                                    }
-                                />
-
-                            </div>
-
-                            <div className="form-group">
-
-                                <label>
-
-                                    <Lock size={18} />
-
-                                    Confirm Password
-
-                                </label>
-
-                                <input
-                                    type="password"
-                                    placeholder="Confirm Password"
-                                    value={confirmPassword}
-                                    onChange={(e)=>
-                                        setConfirmPassword(
-                                            e.target.value
-                                        )
-                                    }
-                                />
-
-                            </div>
-
-                            <button
-                                className="save-profile-btn"
-                                onClick={saveProfile}
-                                disabled={saving}
-                            >
-
-                                <Save size={20} />
-
-                                {saving
-                                    ? "Saving..."
-                                : "Save Changes"}
-
-                            </button>
-
-                        </div>
-
-                    </div>
+                  )}
 
                 </div>
 
+                {/* PHOTO BUTTONS */}
+
+                <div className="photo-actions">
+
+                  {/* Upload */}
+
+                  <label
+                    className="upload-photo"
+                    style={{
+                      opacity:
+                        uploading ||
+                        removing
+                          ? 0.6
+                          : 1,
+
+                      cursor:
+                        uploading ||
+                        removing
+                          ? "not-allowed"
+                          : "pointer",
+                    }}
+                  >
+
+                    <Camera size={18} />
+
+                    {uploading
+                      ? "Uploading..."
+                      : "Upload Photo"}
+
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={
+                        uploadPhoto
+                      }
+                      disabled={
+                        uploading ||
+                        removing
+                      }
+                    />
+
+                  </label>
+
+                  {/* Delete Photo */}
+
+                  {profile.avatar_url && (
+
+                    <button
+                      type="button"
+                      className="delete-photo-btn"
+                      onClick={
+                        removePhoto
+                      }
+                      disabled={
+                        removing ||
+                        uploading
+                      }
+                    >
+
+                      <Trash2
+                        size={18}
+                      />
+
+                      {removing
+                        ? "Removing..."
+                        : "Delete Photo"}
+
+                    </button>
+
+                  )}
+
+                </div>
+
+              </div>
+
+
+              {/* =================================
+                  RIGHT SIDE
+              ================================= */}
+
+              <div className="profile-form">
+
+                {/* Full Name */}
+
+                <div className="form-group">
+
+                  <label>
+
+                    <User size={18} />
+
+                    Full Name
+
+                  </label>
+
+                  <input
+                    type="text"
+                    value={
+                      profile.full_name
+                    }
+                    onChange={(e) =>
+                      setProfile({
+                        ...profile,
+                        full_name:
+                          e.target.value,
+                      })
+                    }
+                  />
+
+                </div>
+
+
+                {/* Email */}
+
+                <div className="form-group">
+
+                  <label>
+
+                    <Mail size={18} />
+
+                    Email
+
+                  </label>
+
+                  <input
+                    type="email"
+                    value={
+                      profile.email
+                    }
+                    onChange={(e) =>
+                      setProfile({
+                        ...profile,
+                        email:
+                          e.target.value,
+                      })
+                    }
+                  />
+
+                </div>
+
+
+                {/* Phone */}
+
+                <div className="form-group">
+
+                  <label>
+
+                    <Phone size={18} />
+
+                    Phone Number
+
+                  </label>
+
+                  <input
+                    type="text"
+                    value={
+                      profile.phone
+                    }
+                    onChange={(e) =>
+                      setProfile({
+                        ...profile,
+                        phone:
+                          e.target.value,
+                      })
+                    }
+                  />
+
+                </div>
+
+
+                {/* Role */}
+
+                <div className="form-group">
+
+                  <label>
+
+                    <User size={18} />
+
+                    Role
+
+                  </label>
+
+                  <input
+                    value={
+                      profile.role
+                    }
+                    disabled
+                  />
+
+                </div>
+
+
+                {/* New Password */}
+
+                <div className="form-group">
+
+                  <label>
+
+                    <Lock size={18} />
+
+                    New Password
+
+                  </label>
+
+                  <input
+                    type="password"
+                    placeholder="Enter New Password"
+                    value={
+                      newPassword
+                    }
+                    onChange={(e) =>
+                      setNewPassword(
+                        e.target.value
+                      )
+                    }
+                  />
+
+                </div>
+
+
+                {/* Confirm Password */}
+
+                <div className="form-group">
+
+                  <label>
+
+                    <Lock size={18} />
+
+                    Confirm Password
+
+                  </label>
+
+                  <input
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={
+                      confirmPassword
+                    }
+                    onChange={(e) =>
+                      setConfirmPassword(
+                        e.target.value
+                      )
+                    }
+                  />
+
+                </div>
+
+
+                {/* Save */}
+
+                <button
+                  className="save-profile-btn"
+                  onClick={
+                    saveProfile
+                  }
+                  disabled={saving}
+                >
+
+                  <Save size={20} />
+
+                  {saving
+                    ? "Saving..."
+                    : "Save Changes"}
+
+                </button>
+
+              </div>
+
             </div>
+
+          </div>
 
         </div>
 
+      </div>
+
     </div>
-    );
+  );
 }
 
 export default AdminProfile;

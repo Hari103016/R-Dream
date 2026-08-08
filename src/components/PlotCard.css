@@ -1,113 +1,24 @@
-/* ===========================
+/* =====================================================
    PLOT CARD
-=========================== */
+===================================================== */
 
 .plot-card{
-    background:#182235;
-    border-radius:18px;
-    border:1px solid #293548;
-    padding:24px;
-    transition:.3s;
-    display:flex;
-    flex-direction:column;
-    gap:22px;
-    box-shadow:0 8px 20px rgba(0,0,0,.20);
-}
 
-.plot-card:hover{
-    transform:translateY(-6px);
-    box-shadow:0 20px 40px rgba(0,0,0,.35);
-}
+    position:relative;
 
+    overflow:hidden;
 
-/* ===========================
-   HEADER
-=========================== */
+    background:linear-gradient(
+        145deg,
+        #1B2435,
+        #111827
+    );
 
-.plot-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
+    border:1px solid rgba(255,255,255,.06);
 
+    border-radius:22px;
 
-.plot-header h3{
-    font-size:26px;
-    font-weight:800;
-    color:#fff;
-    margin:0;
-}
-
-
-/* ===========================
-   CHECKBOX
-=========================== */
-
-.plot-checkbox{
-
-    width:24px;
-    height:24px;
-
-    cursor:pointer;
-
-    accent-color:#2563eb;
-
-    margin-right:10px;
-
-}
-
-
-
-/* ===========================
-   STATUS
-=========================== */
-
-.status{
-
-    padding:8px 16px;
-
-    border-radius:30px;
-
-    font-size:15px;
-
-    font-weight:700;
-
-}
-
-
-.available{
-
-    background:#059669;
-
-    color:#fff;
-
-}
-
-
-.booked{
-
-    background:#f59e0b;
-
-    color:#fff;
-
-}
-
-
-.sold{
-
-    background:#ef4444;
-
-    color:#fff;
-
-}
-
-
-
-/* ===========================
-   BODY
-=========================== */
-
-.plot-body{
+    padding:18px;
 
     display:flex;
 
@@ -115,79 +26,384 @@
 
     gap:16px;
 
+    transition:.35s;
+
+    box-shadow:
+        0 10px 25px rgba(0,0,0,.25);
+
 }
 
+.plot-card:hover{
 
+    transform:translateY(-6px);
 
-/* ===========================
-   DETAILS BOX
-=========================== */
+    border-color:#3B82F6;
 
+    box-shadow:
+        0 18px 40px rgba(59,130,246,.22);
 
-.plot-row{
+}
 
-    display:grid;
+.plot-card::before{
 
-    grid-template-columns:120px 1fr;
+    content:"";
+
+    position:absolute;
+
+    left:0;
+    top:0;
+
+    width:100%;
+    height:4px;
+
+    background:linear-gradient(
+        90deg,
+        #3B82F6,
+        #8B5CF6,
+        #06B6D4
+    );
+
+}
+
+/* =====================================================
+   SHINE EFFECT
+===================================================== */
+
+.shine{
+
+    position:absolute;
+
+    top:-120%;
+
+    left:-60%;
+
+    width:70px;
+
+    height:250%;
+
+    background:rgba(255,255,255,.05);
+
+    transform:rotate(25deg);
+
+    transition:.8s;
+
+}
+
+.plot-card:hover .shine{
+
+    left:130%;
+
+}
+
+/* =====================================================
+   HEADER
+===================================================== */
+
+.plot-header{
+
+    display:flex;
+
+    justify-content:space-between;
 
     align-items:center;
 
-    min-height:70px;
+}
 
-    padding:18px 20px;
+.plot-title{
 
-    background:#202d44;
+    display:flex;
 
-    border-radius:12px;
+    align-items:center;
+
+    gap:10px;
+
+}
+
+.plot-title h3{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    color:#fff;
+
+    font-size:24px;
+
+    font-weight:800;
+
+    margin:0;
+
+}
+
+.plot-title svg{
+
+    color:#60A5FA;
+
+}
+
+.plot-checkbox{
+
+    width:20px;
+
+    height:20px;
+
+    accent-color:#2563EB;
+
+}
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+.status{
+
+    padding:7px 14px;
+
+    border-radius:30px;
+
+    color:#fff;
+
+    font-size:12px;
+
+    font-weight:700;
+
+}
+
+.available{
+
+    background:#16A34A;
+
+}
+
+.booked{
+
+    background:#F59E0B;
+
+}
+
+.sold{
+
+    background:#EF4444;
+
+}
+
+/* =====================================================
+   BADGES
+===================================================== */
+
+.plot-badges{
+
+    display:flex;
+
+    gap:10px;
+
+}
+
+.premium-badge{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:6px;
+
+    padding:6px 12px;
+
+    border-radius:30px;
+
+    background:#FFD700;
+
+    color:#000;
+
+    font-size:12px;
+
+    font-weight:700;
+
+}
+
+.dtcp-badge{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:6px;
+
+    padding:6px 12px;
+
+    border-radius:30px;
+
+    background:#10B981;
+
+    color:#fff;
+
+    font-size:12px;
+
+    font-weight:700;
+
+}
+/* =====================================================
+   DETAILS
+===================================================== */
+
+.plot-details{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:10px;
+
+}
+
+.detail-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:12px 14px;
+
+    background:#202C40;
 
     border:1px solid rgba(255,255,255,.05);
 
-}
+    border-radius:12px;
 
-
-
-/* ===========================
-   LABEL
-=========================== */
-
-
-.plot-card .plot-body .label{
-
-    color:#cbd5e1 !important;
-
-    font-size:15px !important;
-
-    font-weight:700 !important;
-
-    text-align:left;
+    transition:.3s;
 
 }
 
+.detail-row:hover{
 
+    background:#273549;
 
-/* ===========================
-   VALUE
-=========================== */
-
-
-.plot-card .plot-body .value{
-
-    color:#ffffff !important;
-
-    font-size:15px !important;
-
-    font-weight:800 !important;
-
-    text-align:right;
+    transform:translateX(3px);
 
 }
 
+.detail-label{
 
+    display:flex;
 
-/* ===========================
+    align-items:center;
+
+    gap:8px;
+
+    color:#94A3B8;
+
+    font-size:14px;
+
+    font-weight:600;
+
+}
+
+.detail-label svg{
+
+    color:#60A5FA;
+
+}
+
+.detail-value{
+
+    color:#FFFFFF;
+
+    font-size:16px;
+
+    font-weight:700;
+
+}
+
+/* =====================================================
+   PRICE CARD
+===================================================== */
+
+.price-card{
+
+    margin-top:4px;
+
+    padding:16px;
+
+    border-radius:16px;
+
+    background:linear-gradient(
+        135deg,
+        #2563EB,
+        #1D4ED8
+    );
+
+    text-align:center;
+
+    color:white;
+
+    box-shadow:
+        0 10px 25px rgba(37,99,235,.35);
+
+    transition:.35s;
+
+}
+
+.price-card:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:
+        0 16px 30px rgba(37,99,235,.45);
+
+}
+
+.price-title{
+
+    display:block;
+
+    font-size:13px;
+
+    color:#DBEAFE;
+
+    margin-bottom:8px;
+
+}
+
+.price-card h2{
+
+    margin:0;
+
+    font-size:30px;
+
+    font-weight:800;
+
+}
+
+.price-growth{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:6px;
+
+    margin-top:10px;
+
+    padding:6px 14px;
+
+    background:#16A34A;
+
+    border-radius:30px;
+
+    font-size:12px;
+
+    font-weight:700;
+
+    color:white;
+
+}
+/* =====================================================
    FOOTER
-=========================== */
-
+===================================================== */
 
 .plot-footer{
 
@@ -195,32 +411,26 @@
 
     align-items:center;
 
-    gap:12px;
+    gap:10px;
 
-    margin-top:18px;
+    margin-top:auto;
 
 }
 
+/* =====================================================
+   ICON BUTTONS
+===================================================== */
 
+.edit-btn,
+.delete-btn{
 
-/* ===========================
-   EDIT BUTTON
-=========================== */
+    width:44px;
 
-
-.edit-btn{
-
-    width:50px;
-
-    height:50px;
+    height:44px;
 
     border:none;
 
     border-radius:12px;
-
-    background:#f59e0b;
-
-    color:white;
 
     display:flex;
 
@@ -230,181 +440,331 @@
 
     cursor:pointer;
 
+    transition:.3s;
+
     flex-shrink:0;
 
 }
 
+.edit-btn{
 
-.edit-btn:hover{
+    background:linear-gradient(
+        135deg,
+        #F59E0B,
+        #D97706
+    );
 
-    background:#d97706;
-
-    transform:scale(1.05);
+    color:white;
 
 }
 
+.edit-btn:hover{
 
+    transform:translateY(-3px);
 
-/* ===========================
-   BOOK / VIEW BUTTON
-=========================== */
+    box-shadow:
+        0 10px 20px rgba(245,158,11,.35);
 
+}
+
+.delete-btn{
+
+    background:linear-gradient(
+        135deg,
+        #EF4444,
+        #DC2626
+    );
+
+    color:white;
+
+}
+
+.delete-btn:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:
+        0 10px 20px rgba(239,68,68,.35);
+
+}
+
+/* =====================================================
+   MAIN BUTTONS
+===================================================== */
 
 .book-btn,
 .view-btn{
 
     flex:1;
 
-    height:50px;
+    height:44px;
 
     border:none;
 
     border-radius:12px;
 
-    cursor:pointer;
-
-    font-size:16px;
-
-    font-weight:700;
-
     display:flex;
 
-    align-items:center;
-
     justify-content:center;
+
+    align-items:center;
 
     gap:8px;
 
-}
+    cursor:pointer;
 
+    font-size:14px;
+
+    font-weight:700;
+
+    color:white;
+
+    transition:.3s;
+
+}
 
 .book-btn{
 
-    background:#2563eb;
-
-    color:white;
+    background:linear-gradient(
+        135deg,
+        #2563EB,
+        #1D4ED8
+    );
 
 }
-
 
 .book-btn:hover{
 
-    background:#1d4ed8;
+    transform:translateY(-3px);
+
+    box-shadow:
+        0 10px 25px rgba(37,99,235,.35);
 
 }
-
-
 
 .view-btn{
 
-    background:#10b981;
-
-    color:white;
+    background:linear-gradient(
+        135deg,
+        #10B981,
+        #059669
+    );
 
 }
-
 
 .view-btn:hover{
 
-    background:#059669;
+    transform:translateY(-3px);
+
+    box-shadow:
+        0 10px 25px rgba(16,185,129,.35);
 
 }
 
+/* =====================================================
+   ICON ANIMATION
+===================================================== */
 
+.book-btn svg,
+.view-btn svg,
+.edit-btn svg,
+.delete-btn svg{
 
-/* ===========================
-   DELETE BUTTON
-=========================== */
-
-
-.delete-btn{
-
-    width:50px;
-
-    height:50px;
-
-    border:none;
-
-    border-radius:12px;
-
-    background:#ef4444;
-
-    color:white;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    cursor:pointer;
-
-    flex-shrink:0;
+    transition:.3s;
 
 }
 
+.book-btn:hover svg,
+.view-btn:hover svg,
+.edit-btn:hover svg,
+.delete-btn:hover svg{
 
-.delete-btn:hover{
-
-    background:#dc2626;
-
-    transform:scale(1.05);
+    transform:scale(1.12);
 
 }
 
+/* =====================================================
+   CARD ANIMATION
+===================================================== */
 
+.plot-card{
 
-/* ===========================
+    animation:fadeUp .45s ease;
+
+}
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(15px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* ==========================================================
    RESPONSIVE
-=========================== */
+========================================================== */
 
+@media (max-width:1200px){
 
-@media(max-width:768px){
+    .chart-stats{
+        grid-template-columns:repeat(3,1fr);
+        gap:16px;
+    }
 
-    .plot-card{
+    .chart-box{
+        height:380px;
+    }
 
-        padding:18px;
+}
+
+@media (max-width:992px){
+
+    .chart-stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .chart-box{
+        height:350px;
+    }
+
+}
+
+@media (max-width:768px){
+
+    .revenue-chart{
+
+        padding:20px;
+        margin-top:20px;
 
     }
 
+    .chart-header{
 
-    .plot-header h3{
-
-        font-size:22px;
+        flex-direction:column;
+        align-items:flex-start;
+        gap:12px;
 
     }
 
+    .chart-header h2{
 
-    .plot-row{
+        font-size:24px;
 
-        grid-template-columns:90px 1fr;
+    }
 
-        min-height:60px;
+    .chart-header p{
+
+        font-size:13px;
+
+    }
+
+    .chart-stats{
+
+        grid-template-columns:1fr;
+        gap:15px;
+
+    }
+
+    .mini-card{
+
+        padding:16px;
+
+    }
+
+    .mini-icon{
+
+        width:50px;
+        height:50px;
+
+    }
+
+    .mini-card h3{
+
+        font-size:20px;
+
+    }
+
+    .chart-box{
+
+        height:320px;
+        padding:15px;
+
+    }
+
+}
+
+@media (max-width:480px){
+
+    .revenue-chart{
 
         padding:15px;
 
     }
 
+    .chart-header h2{
 
-    .plot-card .plot-body .label{
-
-        font-size:14px !important;
-
-    }
-
-
-    .plot-card .plot-body .value{
-
-        font-size:14px !important;
+        font-size:20px;
 
     }
 
+    .chart-header p{
 
-    .plot-checkbox{
+        font-size:12px;
 
-        width:20px;
+    }
 
-        height:20px;
+    .mini-card{
+
+        gap:12px;
+        padding:14px;
+
+    }
+
+    .mini-icon{
+
+        width:44px;
+        height:44px;
+
+        border-radius:12px;
+
+    }
+
+    .mini-icon svg{
+
+        width:18px;
+        height:18px;
+
+    }
+
+    .mini-card h3{
+
+        font-size:18px;
+
+    }
+
+    .mini-card span{
+
+        font-size:11px;
+
+    }
+
+    .chart-box{
+
+        height:260px;
+        padding:10px;
 
     }
 
