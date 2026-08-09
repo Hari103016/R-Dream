@@ -25,9 +25,7 @@ function PlotCard({
   onEdit,
   onDelete,
 }) {
-
   return (
-
     <div className="plot-card">
 
       <div className="shine"></div>
@@ -40,22 +38,17 @@ function PlotCard({
 
           {selectionMode &&
             plot.status === "Available" && (
-
-            <input
-              type="checkbox"
-              className="plot-checkbox"
-              checked={checked}
-              onChange={onCheck}
-            />
-
-          )}
+              <input
+                type="checkbox"
+                className="plot-checkbox"
+                checked={checked}
+                onChange={onCheck}
+              />
+            )}
 
           <h3>
-
-            <MapPinned size={20}/>
-
+            <MapPinned size={20} />
             Plot-{plot.plot_no}
-
           </h3>
 
         </div>
@@ -74,148 +67,124 @@ function PlotCard({
 
       </div>
 
+
       {/* ================= BADGES ================= */}
 
       <div className="plot-badges">
 
         {plot.premium && (
-
           <span className="premium-badge">
-
-            <Star size={14}/>
-
+            <Star size={14} />
             Premium
-
           </span>
-
         )}
 
         {plot.dtcp && (
-
           <span className="dtcp-badge">
-
-            <BadgeCheck size={14}/>
-
+            <BadgeCheck size={14} />
             DTCP
-
           </span>
-
         )}
 
       </div>
+
 
       {/* ================= DETAILS ================= */}
 
       <div className="plot-details">
 
+        {/* SIZE */}
+
         <div className="detail-row">
 
           <span className="detail-label">
-
-            <Ruler size={16}/>
-
+            <Ruler size={16} />
             Size
-
           </span>
 
           <span className="detail-value">
-
             {plot.plot_size} Sq.Yds
-
           </span>
 
         </div>
 
+
+        {/* FACING */}
+
         <div className="detail-row">
 
           <span className="detail-label">
-
-            <Compass size={16}/>
-
+            <Compass size={16} />
             Facing
-
           </span>
 
           <span className="detail-value">
-
             {plot.facing}
-
           </span>
 
         </div>
 
+
+        {/* ROAD */}
+
         <div className="detail-row">
 
           <span className="detail-label">
-
-            <Route size={16}/>
-
+            <Route size={16} />
             Road
-
           </span>
 
           <span className="detail-value">
-
             {plot.road_width || "24 Ft"}
-
           </span>
 
         </div>
-                <div className="detail-row">
 
-          <span className="detail-label">
 
-            📍 Corner
+        {/* ============================
+            CORNER ROW REMOVED
+        ============================ */}
 
-          </span>
 
-          <span className="detail-value">
-
-            {plot.corner_plot ? "Yes" : "No"}
-
-          </span>
-
-        </div>
+        {/* RATE */}
 
         <div className="detail-row">
 
           <span className="detail-label">
-
-            <IndianRupee size={16}/>
-
+            <IndianRupee size={16} />
             Rate
-
           </span>
 
           <span className="detail-value">
-
-            ₹{Number(plot.rate).toLocaleString("en-IN")}
-
+            ₹
+            {Number(
+              plot.rate || 0
+            ).toLocaleString("en-IN")}
           </span>
 
         </div>
 
       </div>
+
 
       {/* ================= PRICE ================= */}
 
       <div className="price-card">
 
         <span className="price-title">
-
           Current Price
-
         </span>
 
         <h2>
-
-          ₹{Number(plot.price).toLocaleString("en-IN")}
-
+          ₹
+          {Number(
+            plot.price || 0
+          ).toLocaleString("en-IN")}
         </h2>
 
         <div className="price-growth">
 
-          <ArrowUpRight size={15}/>
+          <ArrowUpRight size={15} />
 
           +8% Appreciation
 
@@ -223,74 +192,61 @@ function PlotCard({
 
       </div>
 
+
       {/* ================= FOOTER ================= */}
 
       <div className="plot-footer">
 
+        {/* EDIT */}
+
         <button
-
           className="edit-btn"
-
           onClick={() => onEdit(plot)}
-
+          title="Edit Plot"
         >
-
-          <Pencil size={18}/>
-
+          <Pencil size={18} />
         </button>
+
+
+        {/* BOOK / VIEW */}
 
         {plot.status === "Available" ? (
 
           <button
-
             className="book-btn"
-
             onClick={() => onBook(plot)}
-
           >
-
-            <Calendar size={18}/>
-
+            <Calendar size={18} />
             Book Plot
-
           </button>
 
         ) : (
 
           <button
-
             className="view-btn"
-
             onClick={() => onView(plot)}
-
           >
-
-            <Eye size={18}/>
-
+            <Eye size={18} />
             View Details
-
           </button>
 
         )}
 
+
+        {/* DELETE */}
+
         <button
-
           className="delete-btn"
-
           onClick={() => onDelete(plot)}
-
+          title="Delete Plot"
         >
-
-          <Trash2 size={18}/>
-
+          <Trash2 size={18} />
         </button>
 
       </div>
 
     </div>
-
   );
-
 }
 
 export default PlotCard;

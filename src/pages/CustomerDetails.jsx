@@ -24,7 +24,7 @@ function CustomerDetails() {
 
   const [customer, setCustomer] = useState(null);
   const [payments, setPayments] = useState([]);
-  const [plots,setPlots] = useState([]);
+  const [plots, setPlots] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [showEdit, setShowEdit] = useState(false);
@@ -51,6 +51,9 @@ function CustomerDetails() {
     setLoading(true);
 
     try {
+      // -----------------------------------------
+      // GET CUSTOMER
+      // -----------------------------------------
       const { data, error } = await supabase
         .from("customers")
         .select("*")
@@ -60,34 +63,56 @@ function CustomerDetails() {
       if (error) throw error;
 
       setCustomer(data);
+
+      // -----------------------------------------
+      // GET CUSTOMER PLOT NUMBERS
+      // -----------------------------------------
       const plotNumbers = data.plot_no
         ? data.plot_no
-          .split(",")
-          .map((p)=>Number(p.trim()))
-          .filter(Boolean)
+            .split(",")
+            .map((p) => Number(p.trim()))
+            .filter(Boolean)
         : [];
-      if(plotNumbers.length > 0){
-        const {data:plotData,error:plotError} = await supabase
+
+      // -----------------------------------------
+      // GET PLOTS
+      // -----------------------------------------
+      if (plotNumbers.length > 0) {
+        const {
+          data: plotData,
+          error: plotError,
+        } = await supabase
           .from("plots")
           .select("*")
-          .in("plot_no",plotNumbers);
-        if(plotError) throw plotError;
+          .in("plot_no", plotNumbers);
+
+        if (plotError) throw plotError;
+
         setPlots(plotData || []);
-      }
-      else{
+      } else {
         setPlots([]);
       }
 
-      const { data: paymentData } = await supabase
-        .from("payments")
-        .select("*")
-        .eq("customer_id", data.id)
-        .order("payment_date", { ascending: false });
+      // -----------------------------------------
+      // GET PAYMENTS
+      // -----------------------------------------
+      const { data: paymentData, error: paymentError } =
+        await supabase
+          .from("payments")
+          .select("*")
+          .eq("customer_id", data.id)
+          .order("payment_date", {
+            ascending: false,
+          });
+
+      if (paymentError) throw paymentError;
 
       setPayments(paymentData || []);
     } catch (err) {
       console.error(err);
+
       toast.error("Customer not found.");
+
       navigate("/customers");
       return;
     }
@@ -95,13 +120,31 @@ function CustomerDetails() {
     setLoading(false);
   }
 
+  // ============================================
+  // OPEN EDIT
+  // ============================================
+
   function openEdit() {
     setFormData({
-      ...customer,
+      name: customer.name || "",
+      mobile: customer.mobile || "",
+      plot_no: customer.plot_no || "",
+      plot_size: customer.plot_size || "",
+      facing: customer.facing || "",
+      status: customer.status || "",
+      total_amount: customer.total_amount || "",
+      amount_paid: customer.amount_paid || "",
+      balance: customer.balance || "",
+      booking_date: customer.booking_date || "",
     });
 
     setShowEdit(true);
   }
+
+  // ============================================
+  // REMOVE PLOT
+  // ============================================
+
   async function handleRemovePlot(plot) {
     const result = await Swal.fire({
       title: "Remove Plot?",
@@ -112,47 +155,192 @@ function CustomerDetails() {
       cancelButtonText: "Cancel",
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#2563eb",
-      reverseButtons: true
-
+      reverseButtons: true,
     });
-    if (!result.isConfirmed) {
-      return;
-    }
+
+    if (!result.isConfirmed) return;
+
     try {
-      const { error } = await supabase
+      // -----------------------------------------
+      // 1. MAKE SELECTED PLOT AVAILABLE
+      // -----------------------------------------
+
+      const { error: plotError } = await supabase
         .from("plots")
         .update({
           status: "Available",
-          customer_id: null
+          customer_id: null,
         })
         .eq("id", plot.id);
-      if (error) {
-         throw error;
+
+      if (plotError) {
+        throw plotError;
       }
+
+      // -----------------------------------------
+      // 2. REMOVE PLOT FROM CURRENT LIST
+      // -----------------------------------------
+
       const updatedPlots = plots.filter(
-        item => item.id !== plot.id
+        (item) => item.id !== plot.id
       );
+
+      // -----------------------------------------
+      // 3. REMAINING PLOT NUMBERS
+      // -----------------------------------------
+
+      const plotNumbers = updatedPlots
+        .map((item) => item.plot_no)
+        .join(",");
+
+      // -----------------------------------------
+      // 4. REMAINING PLOT SIZES
+      // -----------------------------------------
+
+      const plotSizes = updatedPlots
+        .map((item) => item.plot_size)
+        .join(",");
+
+      // -----------------------------------------
+      // 5. REMAINING FACINGS
+      // -----------------------------------------
+
+      const facings = updatedPlots
+        .map((item) => item.facing)
+        .filter(Boolean)
+        .join(",");
+
+      // -----------------------------------------
+      // 6. CALCULATE NEW TOTAL
+      // -----------------------------------------
+
+      const totalAmount = updatedPlots.reduce(
+        (sum, item) =>
+          sum + Number(item.price || 0),
+        0
+      );
+
+      // -----------------------------------------
+      // 7. KEEP AMOUNT PAID
+      // -----------------------------------------
+
+      const amountPaid = Number(
+        customer.amount_paid || 0
+      );
+
+      // -----------------------------------------
+      // 8. CALCULATE NEW BALANCE
+      // -----------------------------------------
+
+      const balance = Math.max(
+        0,
+        totalAmount - amountPaid
+      );
+
+      // -----------------------------------------
+      // 9. UPDATE CUSTOMER
+      // -----------------------------------------
+
+      const {
+        data: updatedCustomer,
+        error: customerError,
+      } = await supabase
+        .from("customers")
+        .update({
+          plot_no: plotNumbers,
+          plot_size: plotSizes,
+          facing: facings,
+          total_amount: totalAmount,
+          amount_paid: amountPaid,
+          balance: balance,
+
+          status:
+            updatedPlots.length === 0
+              ? "Available"
+              : customer.status,
+        })
+        .eq("id", customer.id)
+        .select()
+        .single();
+
+      if (customerError) {
+        throw customerError;
+      }
+
+      // -----------------------------------------
+      // 10. UPDATE SCREEN IMMEDIATELY
+      // -----------------------------------------
+
       setPlots(updatedPlots);
+
+      setCustomer(updatedCustomer);
+
+      // -----------------------------------------
+      // 11. UPDATE EDIT FORM
+      // -----------------------------------------
+
+      setFormData((prev) => ({
+        ...prev,
+
+        plot_no: plotNumbers,
+        plot_size: plotSizes,
+        facing: facings,
+
+        total_amount: totalAmount,
+        amount_paid: amountPaid,
+        balance: balance,
+
+        status:
+          updatedPlots.length === 0
+            ? "Available"
+            : customer.status,
+      }));
+
+      // -----------------------------------------
+      // SUCCESS
+      // -----------------------------------------
+
       await Swal.fire({
         title: "Removed!",
         text: `Plot ${plot.plot_no} removed successfully.`,
         icon: "success",
-        confirmButtonColor: "#2563eb"
+        confirmButtonColor: "#2563eb",
       });
-      fetchCustomer();
-    } catch(error) {
+    } catch (error) {
+      console.error(
+        "Remove plot error:",
+        error
+      );
+
       Swal.fire({
-        title:"Error",
-        text:error.message,
-        icon:"error",
-        confirmButtonColor:"#2563eb"
-
+        title: "Error",
+        text:
+          error.message ||
+          "Unable to remove plot.",
+        icon: "error",
+        confirmButtonColor: "#2563eb",
       });
-
-
     }
   }
+
+  // ============================================
+  // SAVE CUSTOMER
+  // ============================================
+
   async function saveCustomer() {
+    const totalAmount = Number(
+      formData.total_amount || 0
+    );
+
+    const amountPaid = Number(
+      formData.amount_paid || 0
+    );
+
+    const balance = Math.max(
+      0,
+      totalAmount - amountPaid
+    );
+
     const { error } = await supabase
       .from("customers")
       .update({
@@ -162,32 +350,42 @@ function CustomerDetails() {
         plot_size: formData.plot_size,
         facing: formData.facing,
         status: formData.status,
-        total_amount: Number(formData.total_amount),
-        amount_paid: Number(formData.amount_paid),
-        balance: Number(formData.balance),
+        total_amount: totalAmount,
+        amount_paid: amountPaid,
+        balance: balance,
         booking_date: formData.booking_date,
       })
       .eq("id", customer.id);
 
     if (error) {
-      toast.error(error.message || "Something went wrong");
+      toast.error(
+        error.message ||
+          "Something went wrong"
+      );
       return;
     }
 
     setShowEdit(false);
 
     Swal.fire({
-      title:"Customer Updated Successfully!",
-      text:"Customer details have been saved.",
-      icon:"success",
-      confirmButtonText:"OK",
-      confirmButtonColor:"#2563eb"
-    }).then(()=>{
+      title: "Customer Updated Successfully!",
+      text: "Customer details have been saved.",
+      icon: "success",
+      confirmButtonText: "OK",
+      confirmButtonColor: "#2563eb",
+    }).then(() => {
       fetchCustomer();
     });
-    toast.success("Customer Updated Successfully");
+
+    toast.success(
+      "Customer Updated Successfully"
+    );
   }
-    async function deleteCustomer() {
+    // ============================================
+  // DELETE CUSTOMER
+  // ============================================
+
+  async function deleteCustomer() {
     const result = await Swal.fire({
       title: "Delete Customer?",
       text: "This action cannot be undone.",
@@ -202,32 +400,54 @@ function CustomerDetails() {
     if (!result.isConfirmed) return;
 
     try {
-      // Delete payment history
-      const { error: paymentError } = await supabase
-        .from("payments")
-        .delete()
-        .eq("customer_id", customer.id);
+      // -----------------------------------------
+      // DELETE PAYMENT HISTORY
+      // -----------------------------------------
 
-      if (paymentError) throw paymentError;
+      const { error: paymentError } =
+        await supabase
+          .from("payments")
+          .delete()
+          .eq("customer_id", customer.id);
 
-      // Make plot available again
-      const { error: plotError } = await supabase
-        .from("plots")
-        .update({
-          status: "Available",
-          customer_id: null,
-        })
-        .eq("customer_id", customer.id);
+      if (paymentError) {
+        throw paymentError;
+      }
 
-      if (plotError) throw plotError;
+      // -----------------------------------------
+      // MAKE CUSTOMER'S PLOTS AVAILABLE
+      // -----------------------------------------
 
-      // Delete customer
-      const { error: customerError } = await supabase
-        .from("customers")
-        .delete()
-        .eq("id", customer.id);
+      const { error: plotError } =
+        await supabase
+          .from("plots")
+          .update({
+            status: "Available",
+            customer_id: null,
+          })
+          .eq("customer_id", customer.id);
 
-      if (customerError) throw customerError;
+      if (plotError) {
+        throw plotError;
+      }
+
+      // -----------------------------------------
+      // DELETE CUSTOMER
+      // -----------------------------------------
+
+      const { error: customerError } =
+        await supabase
+          .from("customers")
+          .delete()
+          .eq("id", customer.id);
+
+      if (customerError) {
+        throw customerError;
+      }
+
+      // -----------------------------------------
+      // SUCCESS
+      // -----------------------------------------
 
       await Swal.fire({
         title: "Deleted!",
@@ -237,21 +457,35 @@ function CustomerDetails() {
         showConfirmButton: false,
       });
 
-      navigate("/plots", { replace: true });
-
+      navigate("/plots", {
+        replace: true,
+      });
     } catch (err) {
       console.error(err);
-      toast.error(err.message || "Something went wrong");
+
+      toast.error(
+        err.message ||
+          "Something went wrong"
+      );
     }
   }
 
+  // ============================================
+  // WHATSAPP
+  // ============================================
+
   function sendWhatsApp() {
     if (!customer?.mobile) {
-      toast.error("Customer mobile number not found.");
+      toast.error(
+        "Customer mobile number not found."
+      );
       return;
     }
 
-    const phone = customer.mobile.replace(/\D/g, "");
+    const phone = customer.mobile.replace(
+      /\D/g,
+      ""
+    );
 
     const message = `🏡 *R DREAM INFRA DEVELOPERS*
 
@@ -263,19 +497,33 @@ Your Plot Details
 📐 Plot Size : ${customer.plot_size} Sq.Yds
 🧭 Facing : ${customer.facing}
 
-💰 Total Amount : ₹${Number(customer.total_amount).toLocaleString("en-IN")}
-💵 Amount Paid : ₹${Number(customer.amount_paid).toLocaleString("en-IN")}
-💳 Balance : ₹${Number(customer.balance).toLocaleString("en-IN")}
+💰 Total Amount : ₹${Number(
+      customer.total_amount || 0
+    ).toLocaleString("en-IN")}
+
+💵 Amount Paid : ₹${Number(
+      customer.amount_paid || 0
+    ).toLocaleString("en-IN")}
+
+💳 Balance : ₹${Number(
+      customer.balance || 0
+    ).toLocaleString("en-IN")}
 
 Thank you for choosing R Dream Infra Developers.
 
 📞 Contact us for any assistance.`;
 
     window.open(
-      `https://wa.me/91${phone}?text=${encodeURIComponent(message)}`,
+      `https://wa.me/91${phone}?text=${encodeURIComponent(
+        message
+      )}`,
       "_blank"
     );
   }
+
+  // ============================================
+  // LOADING
+  // ============================================
 
   if (loading) {
     return (
@@ -285,274 +533,502 @@ Thank you for choosing R Dream Infra Developers.
     );
   }
 
-  const total = Number(customer.total_amount || 0);
-  const paid = Number(customer.amount_paid || 0);
-  const balance = Number(customer.balance || 0);
+  // ============================================
+  // CALCULATE CUSTOMER AMOUNTS
+  // ============================================
+
+  const total = Number(
+    customer?.total_amount || 0
+  );
+
+  const paid = Number(
+    customer?.amount_paid || 0
+  );
+
+  // Always calculate balance from
+  // Total Amount - Amount Paid
+  const balance = Math.max(
+    0,
+    total - paid
+  );
 
   const percent =
     total === 0
       ? 0
-      : Math.round((paid / total) * 100);
+      : Math.min(
+          100,
+          Math.round(
+            (paid / total) * 100
+          )
+        );
+
+  // ============================================
+  // MAIN PAGE
+  // ============================================
 
   return (
     <div className="customer-page">
 
-      {/* ============================
-          Header
-      ============================= */}
+      {/* ======================================
+          HEADER
+      ====================================== */}
 
       <div className="customer-header">
 
         <button
           className="back-btn"
-          onClick={() => navigate("/customers")}
+          onClick={() =>
+            navigate("/customers")
+          }
         >
           <ArrowLeft size={18} />
           Back
         </button>
 
-        <h1>Customer Profile</h1>
+        <h1>
+          Customer Profile
+        </h1>
 
       </div>
 
-      {/* ============================
-          Profile Card
-      ============================= */}
+      {/* ======================================
+          PROFILE CARD
+      ====================================== */}
 
       <div className="profile-card">
 
         <div className="profile-top">
 
           <div className="avatar">
-            {customer.name
-              ? customer.name.charAt(0).toUpperCase()
+            {customer?.name
+              ? customer.name
+                  .charAt(0)
+                  .toUpperCase()
               : "C"}
           </div>
 
           <div className="profile-details">
 
-            <h2>{customer.name}</h2>
+            <h2>
+              {customer?.name}
+            </h2>
 
             <p>
               Customer ID :
-              <strong> #{customer.id}</strong>
+              <strong>
+                {" "}
+                #{customer?.id}
+              </strong>
             </p>
 
             <p>
-              📱 {customer.mobile}
+              📱 {customer?.mobile}
             </p>
 
             <p>
               🏡 Plot No :
-              <strong> {customer.plot_no}</strong>
+              <strong>
+                {" "}
+                {customer?.plot_no || "-"}
+              </strong>
             </p>
 
             <p>
-              📅 {customer.booking_date}
+              📅 {customer?.booking_date}
             </p>
 
             <span
-              className={`status-badge ${customer.status
-                .toLowerCase()
-                .replace(/\s+/g, "-")}`}
+              className={`status-badge ${
+                customer?.status
+                  ?.toLowerCase()
+                  .replace(
+                    /\s+/g,
+                    "-"
+                  ) || ""
+              }`}
             >
-              {customer.status}
+              {customer?.status}
             </span>
 
           </div>
 
         </div>
-              {/* ============================
-          Summary Cards
-      ============================= */}
 
-      <div className="summary-grid">
+        {/* ==================================
+            SUMMARY CARDS
+        ================================== */}
 
-        <div className="summary-card">
-          <IndianRupee size={30} />
-          <h4>Total Amount</h4>
-          <h2>₹{total.toLocaleString()}</h2>
-        </div>
+        <div className="summary-grid">
 
-        <div className="summary-card paid">
-          <Wallet size={30} />
-          <h4>Amount Paid</h4>
-          <h2>₹{paid.toLocaleString()}</h2>
-        </div>
+          {/* TOTAL */}
 
-        <div className="summary-card balance">
-          <CreditCard size={30} />
-          <h4>Balance</h4>
-          <h2>₹{balance.toLocaleString()}</h2>
-        </div>
+          <div className="summary-card">
 
-        <div className="summary-card">
-          <Receipt size={30} />
-          <h4>Total Payments</h4>
-          <h2>{payments.length}</h2>
-        </div>
+            <IndianRupee size={30} />
 
-      </div>
+            <h4>
+              Total Amount
+            </h4>
 
-      {/* ============================
-          Payment Progress
-      ============================= */}
+            <h2>
+              ₹
+              {total.toLocaleString(
+                "en-IN"
+              )}
+            </h2>
 
-      <div className="progress-section">
-
-        <div className="progress-header">
-          <span>Payment Progress</span>
-          <span>{percent}%</span>
-        </div>
-
-        <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{ width: `${percent}%` }}
-          />
-        </div>
-
-      </div>
-
-    </div>
-
-    {/* ============================
-        Customer Information
-    ============================= */}
-
-    <div className="cd-info-grid">
-
-      <div className="cd-info-card">
-        <User className="card-icon" />
-        <div className="card-content">
-          <h4>Customer Name</h4>
-          <p>{customer.name}</p>
-        </div>
-      </div>
-
-      <div className="cd-info-card">
-        <Phone className="card-icon" />
-        <div className="card-content">
-          <h4>Mobile Number</h4>
-          <p>{customer.mobile}</p>
-        </div>
-      </div>
-
-      <div className="cd-info-card">
-        <MapPinned className="card-icon" />
-        <div className="card-content">
-          <h4>Facing</h4>
-          <p>{customer.facing}</p>
-        </div>
-      </div>
-
-      <div className="cd-info-card plots-card">
-        <MapPinned className="card-icon"/>
-        <div className="card-content">
-          <h4>
-            Plot No & Size
-          </h4>
-          <div className="plot-scroll">
-            {plots.map((plot)=>(
-              <div
-                className="plot-row"
-                key={plot.id}
-              >
-                <div>
-                  <p>
-                    Plot #{plot.plot_no}
-                  </p>
-                  <span>
-                      {plot.plot_size} Sq.Yds
-                  </span>
-
-                </div>
-                <button
-                  className="remove-plot-btn"
-                  onClick={() => handleRemovePlot(plot)}
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
           </div>
+
+          {/* PAID */}
+
+          <div className="summary-card paid">
+
+            <Wallet size={30} />
+
+            <h4>
+              Amount Paid
+            </h4>
+
+            <h2>
+              ₹
+              {paid.toLocaleString(
+                "en-IN"
+              )}
+            </h2>
+
+          </div>
+
+          {/* BALANCE */}
+
+          <div className="summary-card balance">
+
+            <CreditCard size={30} />
+
+            <h4>
+              Balance
+            </h4>
+
+            <h2>
+              ₹
+              {balance.toLocaleString(
+                "en-IN"
+              )}
+            </h2>
+
+          </div>
+
+          {/* PAYMENTS */}
+
+          <div className="summary-card">
+
+            <Receipt size={30} />
+
+            <h4>
+              Total Payments
+            </h4>
+
+            <h2>
+              {payments.length}
+            </h2>
+
+          </div>
+
         </div>
+
+        {/* ==================================
+            PAYMENT PROGRESS
+        ================================== */}
+
+        <div className="progress-section">
+
+          <div className="progress-header">
+
+            <span>
+              Payment Progress
+            </span>
+
+            <span>
+              {percent}%
+            </span>
+
+          </div>
+
+          <div className="progress-bar">
+
+            <div
+              className="progress-fill"
+              style={{
+                width: `${percent}%`,
+              }}
+            />
+
+          </div>
+
+        </div>
+
       </div>
 
-      <div className="cd-info-card">
-        <Calendar className="card-icon" />
-        <div className="card-content">
-          <h4>Booking Date</h4>
-          <p>{customer.booking_date}</p>
+      {/* ======================================
+          CUSTOMER INFORMATION
+      ====================================== */}
+
+      <div className="cd-info-grid">
+
+        {/* CUSTOMER NAME */}
+
+        <div className="cd-info-card">
+
+          <User className="card-icon" />
+
+          <div className="card-content">
+
+            <h4>
+              Customer Name
+            </h4>
+
+            <p>
+              {customer?.name}
+            </p>
+
+          </div>
+
         </div>
+
+        {/* MOBILE */}
+
+        <div className="cd-info-card">
+
+          <Phone className="card-icon" />
+
+          <div className="card-content">
+
+            <h4>
+              Mobile Number
+            </h4>
+
+            <p>
+              {customer?.mobile}
+            </p>
+
+          </div>
+
+        </div>
+
+        {/* FACING */}
+
+        <div className="cd-info-card">
+
+          <MapPinned className="card-icon" />
+
+          <div className="card-content">
+
+            <h4>
+              Facing
+            </h4>
+
+            <p>
+              {customer?.facing || "-"}
+            </p>
+
+          </div>
+
+        </div>
+
+        {/* ==================================
+            PLOTS
+        ================================== */}
+
+        <div className="cd-info-card plots-card">
+
+          <MapPinned className="card-icon" />
+
+          <div className="card-content">
+
+            <h4>
+              Plot No & Size
+            </h4>
+
+            <div className="plot-scroll">
+
+              {plots.length === 0 ? (
+
+                <p>
+                  No plots assigned
+                </p>
+
+              ) : (
+
+                plots.map((plot) => (
+
+                  <div
+                    className="plot-row"
+                    key={plot.id}
+                  >
+
+                    <div>
+
+                      <p>
+                        Plot #
+                        {plot.plot_no}
+                      </p>
+
+                      <span>
+                        {plot.plot_size}{" "}
+                        Sq.Yds
+                      </span>
+
+                    </div>
+
+                    <button
+                      type="button"
+                      className="remove-plot-btn"
+                      onClick={() =>
+                        handleRemovePlot(
+                          plot
+                        )
+                      }
+                    >
+                      Remove
+                    </button>
+
+                  </div>
+
+                ))
+
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* BOOKING DATE */}
+
+        <div className="cd-info-card">
+
+          <Calendar className="card-icon" />
+
+          <div className="card-content">
+
+            <h4>
+              Booking Date
+            </h4>
+
+            <p>
+              {customer?.booking_date}
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+            {/* ======================================
+          ACTION BUTTONS
+      ====================================== */}
+
+      <div className="action-buttons">
+
+        {/* EDIT CUSTOMER */}
+
+        <button
+          type="button"
+          className="edit-btn"
+          onClick={openEdit}
+        >
+          ✏ Edit Customer
+        </button>
+
+        {/* ADD PAYMENT */}
+
+        <button
+          type="button"
+          className="payment-btn"
+          onClick={() =>
+            setShowPayment(true)
+          }
+        >
+          💰 Add Payment
+        </button>
+
+        {/* WHATSAPP */}
+
+        <button
+          type="button"
+          className="whatsapp-btn"
+          onClick={sendWhatsApp}
+        >
+          💬 WhatsApp
+        </button>
+
+        {/* PRINT RECEIPT */}
+
+        <button
+          type="button"
+          className="receipt-btn"
+          onClick={() =>
+            navigate("/receipt", {
+              state: {
+                customer,
+                payments,
+              },
+            })
+          }
+        >
+          🖨 Print Receipt
+        </button>
+
+        {/* DELETE CUSTOMER */}
+
+        <button
+          type="button"
+          className="delete-btn"
+          onClick={deleteCustomer}
+        >
+          🗑 Delete Customer
+        </button>
+
       </div>
 
-    </div>
-
-    {/* ============================
-        Action Buttons
-    ============================= */}
-
-    <div className="action-buttons">
-
-      <button
-        className="edit-btn"
-        onClick={openEdit}
-      >
-        ✏ Edit Customer
-      </button>
-
-      <button
-        className="payment-btn"
-        onClick={() => setShowPayment(true)}
-      >
-        💰 Add Payment
-      </button>
-
-      {/* NEW WHATSAPP BUTTON */}
-
-      
-
-      <button
-        className="receipt-btn"
-        onClick={() =>
-          navigate("/receipt", {
-            state: {
-              customer,
-              payments,
-            },
-          })
-        }
-      >
-        🖨 Print Receipt
-      </button>
-
-      <button
-        className="delete-btn"
-        onClick={deleteCustomer}
-      >
-        🗑 Delete Customer
-      </button>
-
-    </div>
-          {/* ============================
-          Payment History
-      ============================= */}
+      {/* ======================================
+          PAYMENT HISTORY
+      ====================================== */}
 
       <div className="payment-history">
 
-        <h2>Payment History</h2>
+        <h2>
+          Payment History
+        </h2>
 
         <table className="payment-table">
 
           <thead>
+
             <tr>
-              <th>Date</th>
-              <th>Receipt No</th>
-              <th>Amount</th>
-              <th>Mode</th>
-              <th>Remarks</th>
+
+              <th>
+                Date
+              </th>
+
+              <th>
+                Receipt No
+              </th>
+
+              <th>
+                Amount
+              </th>
+
+              <th>
+                Mode
+              </th>
+
+              <th>
+                Remarks
+              </th>
+
             </tr>
+
           </thead>
 
           <tbody>
@@ -560,43 +1036,73 @@ Thank you for choosing R Dream Infra Developers.
             {payments.length === 0 ? (
 
               <tr>
+
                 <td colSpan="5">
                   No Payments Found
                 </td>
+
               </tr>
 
             ) : (
 
-              payments.map((payment, index) => (
+              payments.map(
+                (payment, index) => (
 
-                <tr key={payment.id}>
+                  <tr
+                    key={payment.id}
+                  >
 
-                  <td>
-                    {new Date(
-                      payment.payment_date
-                    ).toLocaleDateString("en-IN")}
-                  </td>
+                    {/* DATE */}
 
-                  <td>
-                    RCPT-
-                    {String(index + 1).padStart(4, "0")}
-                  </td>
+                    <td>
+                      {new Date(
+                        payment.payment_date
+                      ).toLocaleDateString(
+                        "en-IN"
+                      )}
+                    </td>
 
-                  <td>
-                    ₹{Number(payment.amount).toLocaleString()}
-                  </td>
+                    {/* RECEIPT */}
 
-                  <td>
-                    {payment.payment_mode}
-                  </td>
+                    <td>
+                      RCPT-
+                      {String(
+                        index + 1
+                      ).padStart(
+                        4,
+                        "0"
+                      )}
+                    </td>
 
-                  <td>
-                    {payment.remarks || "-"}
-                  </td>
+                    {/* AMOUNT */}
 
-                </tr>
+                    <td>
+                      ₹
+                      {Number(
+                        payment.amount || 0
+                      ).toLocaleString(
+                        "en-IN"
+                      )}
+                    </td>
 
-              ))
+                    {/* MODE */}
+
+                    <td>
+                      {payment.payment_mode ||
+                        "-"}
+                    </td>
+
+                    {/* REMARKS */}
+
+                    <td>
+                      {payment.remarks ||
+                        "-"}
+                    </td>
+
+                  </tr>
+
+                )
+              )
 
             )}
 
@@ -606,17 +1112,21 @@ Thank you for choosing R Dream Infra Developers.
 
       </div>
 
-      {/* ============================
-          Booking Timeline
-      ============================= */}
+      {/* ======================================
+          BOOKING TIMELINE
+      ====================================== */}
 
       <div className="timeline-section">
 
-        <h2>Booking Timeline</h2>
+        <h2>
+          Booking Timeline
+        </h2>
 
         <div className="timeline">
 
-          {/* Booking */}
+          {/* ==================================
+              BOOKING
+          ================================== */}
 
           <div className="timeline-item">
 
@@ -625,13 +1135,22 @@ Thank you for choosing R Dream Infra Developers.
             </div>
 
             <div className="timeline-content">
-              <h4>Plot Booked</h4>
-              <p>{customer.booking_date}</p>
+
+              <h4>
+                Plot Booked
+              </h4>
+
+              <p>
+                {customer?.booking_date}
+              </p>
+
             </div>
 
           </div>
 
-          {/* Advance Payment */}
+          {/* ==================================
+              ADVANCE PAYMENT
+          ================================== */}
 
           <div className="timeline-item">
 
@@ -640,17 +1159,27 @@ Thank you for choosing R Dream Infra Developers.
             </div>
 
             <div className="timeline-content">
-              <h4>Advance Paid</h4>
+
+              <h4>
+                Advance Paid
+              </h4>
+
               <p>
-                ₹{Number(customer.amount_paid).toLocaleString()}
+                ₹
+                {paid.toLocaleString(
+                  "en-IN"
+                )}
               </p>
+
             </div>
 
           </div>
 
-          {/* Pending */}
+          {/* ==================================
+              BALANCE PENDING
+          ================================== */}
 
-          {Number(customer.balance) > 0 && (
+          {balance > 0 && (
 
             <div className="timeline-item">
 
@@ -659,19 +1188,29 @@ Thank you for choosing R Dream Infra Developers.
               </div>
 
               <div className="timeline-content">
-                <h4>Balance Pending</h4>
+
+                <h4>
+                  Balance Pending
+                </h4>
+
                 <p>
-                  ₹{Number(customer.balance).toLocaleString()}
+                  ₹
+                  {balance.toLocaleString(
+                    "en-IN"
+                  )}
                 </p>
+
               </div>
 
             </div>
 
           )}
 
-          {/* Completed */}
+          {/* ==================================
+              PAYMENT COMPLETED
+          ================================== */}
 
-          {Number(customer.balance) === 0 && (
+          {balance === 0 && (
 
             <div className="timeline-item">
 
@@ -680,10 +1219,16 @@ Thank you for choosing R Dream Infra Developers.
               </div>
 
               <div className="timeline-content">
-                <h4>Payment Completed</h4>
+
+                <h4>
+                  Payment Completed
+                </h4>
+
                 <p>
-                  Customer has cleared all dues.
+                  Customer has cleared
+                  all dues.
                 </p>
+
               </div>
 
             </div>
@@ -693,23 +1238,31 @@ Thank you for choosing R Dream Infra Developers.
         </div>
 
       </div>
-            {/* ============================
-          Edit Customer Modal
-      ============================= */}
+
+      {/* ======================================
+          EDIT CUSTOMER MODAL
+      ====================================== */}
 
       {showEdit && (
+
         <div className="modal-overlay">
 
           <div className="modal">
 
-            <h2>Edit Customer</h2>
+            <h2>
+              Edit Customer
+            </h2>
 
             <div className="form-grid">
+
+              {/* CUSTOMER NAME */}
 
               <input
                 type="text"
                 placeholder="Customer Name"
-                value={formData.name}
+                value={
+                  formData.name
+                }
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -718,127 +1271,176 @@ Thank you for choosing R Dream Infra Developers.
                 }
               />
 
+              {/* MOBILE */}
+
               <input
                 type="text"
                 placeholder="Mobile Number"
-                value={formData.mobile}
+                value={
+                  formData.mobile
+                }
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    mobile: e.target.value,
+                    mobile:
+                      e.target.value,
                   })
                 }
               />
+
+              {/* PLOT NUMBER */}
 
               <input
                 type="text"
                 placeholder="Plot Number"
-                value={formData.plot_no}
+                value={
+                  formData.plot_no
+                }
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    plot_no: e.target.value,
+                    plot_no:
+                      e.target.value,
                   })
                 }
               />
+
+              {/* PLOT SIZE */}
 
               <input
                 type="text"
                 placeholder="Plot Size"
-                value={formData.plot_size}
+                value={
+                  formData.plot_size
+                }
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    plot_size: e.target.value,
+                    plot_size:
+                      e.target.value,
                   })
                 }
               />
+
+              {/* FACING */}
 
               <input
                 type="text"
                 placeholder="Facing"
-                value={formData.facing}
+                value={
+                  formData.facing
+                }
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    facing: e.target.value,
+                    facing:
+                      e.target.value,
                   })
                 }
               />
+
+              {/* STATUS */}
 
               <input
                 type="text"
                 placeholder="Status"
-                value={formData.status}
+                value={
+                  formData.status
+                }
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    status: e.target.value,
+                    status:
+                      e.target.value,
                   })
                 }
               />
+
+              {/* TOTAL AMOUNT */}
 
               <input
                 type="number"
                 placeholder="Total Amount"
-                value={formData.total_amount}
+                value={
+                  formData.total_amount
+                }
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    total_amount: e.target.value,
+                    total_amount:
+                      e.target.value,
                   })
                 }
               />
+
+              {/* AMOUNT PAID */}
 
               <input
                 type="number"
                 placeholder="Amount Paid"
-                value={formData.amount_paid}
+                value={
+                  formData.amount_paid
+                }
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    amount_paid: e.target.value,
+                    amount_paid:
+                      e.target.value,
                   })
                 }
               />
+
+              {/* BALANCE */}
 
               <input
                 type="number"
                 placeholder="Balance"
-                value={formData.balance}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    balance: e.target.value,
-                  })
+                value={
+                  formData.balance
                 }
+                readOnly
               />
+
+              {/* BOOKING DATE */}
 
               <input
                 type="date"
-                value={formData.booking_date}
+                value={
+                  formData.booking_date
+                }
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    booking_date: e.target.value,
+                    booking_date:
+                      e.target.value,
                   })
                 }
               />
 
             </div>
 
+            {/* ==================================
+                MODAL BUTTONS
+            ================================== */}
+
             <div className="modal-buttons">
 
               <button
+                type="button"
                 className="save-btn"
-                onClick={saveCustomer}
+                onClick={
+                  saveCustomer
+                }
               >
                 Save Changes
               </button>
 
               <button
+                type="button"
                 className="cancel-btn"
-                onClick={() => setShowEdit(false)}
+                onClick={() =>
+                  setShowEdit(false)
+                }
               >
                 Cancel
               </button>
@@ -848,11 +1450,11 @@ Thank you for choosing R Dream Infra Developers.
           </div>
 
         </div>
-      )}
 
-      {/* ============================
-          Add Payment Modal
-      ============================= */}
+      )}
+            {/* ======================================
+          ADD PAYMENT MODAL
+      ====================================== */}
 
       {showPayment && (
         <AddPaymentModal
