@@ -26,6 +26,172 @@ import {
 
 import "./Settings.css";
 
+function UsersTab({ users, setUsers }) {
+  const [newUser, setNewUser] = useState({
+    name: "",
+    username: "",
+    role: "Staff",
+  });
+
+  function addUser() {
+    if (!newUser.name.trim()) {
+      toast.error("Enter user name");
+      return;
+    }
+
+    if (!newUser.username.trim()) {
+      toast.error("Enter username");
+      return;
+    }
+
+    const user = {
+      id: Date.now(),
+      name: newUser.name.trim(),
+      username: newUser.username.trim(),
+      role: newUser.role,
+      status: "Active",
+    };
+
+    const updatedUsers = [...users, user];
+
+    setUsers(updatedUsers);
+    localStorage.setItem("adminUsers", JSON.stringify(updatedUsers));
+
+    setNewUser({
+      name: "",
+      username: "",
+      role: "Staff",
+    });
+
+    toast.success("User added successfully");
+  }
+
+  function deleteUser(id) {
+    if (users.length === 1) {
+      toast.error("At least one administrator must remain");
+      return;
+    }
+
+    const updatedUsers = users.filter((user) => user.id !== id);
+
+    setUsers(updatedUsers);
+    localStorage.setItem("adminUsers", JSON.stringify(updatedUsers));
+
+    toast.success("User deleted");
+  }
+
+  return (
+    <>
+      <div className="settings-card">
+        <h2>Add User</h2>
+
+        <div className="settings-grid">
+          <div className="form-group">
+            <label>Name</label>
+
+            <input
+              type="text"
+              value={newUser.name}
+              placeholder="User name"
+              onChange={(e) =>
+                setNewUser((prev) => ({
+                  ...prev,
+                  name: e.target.value,
+                }))
+              }
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Username</label>
+
+            <input
+              type="text"
+              value={newUser.username}
+              placeholder="Username"
+              onChange={(e) =>
+                setNewUser((prev) => ({
+                  ...prev,
+                  username: e.target.value,
+                }))
+              }
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Role</label>
+
+            <select
+              value={newUser.role}
+              onChange={(e) =>
+                setNewUser((prev) => ({
+                  ...prev,
+                  role: e.target.value,
+                }))
+              }
+            >
+              <option value="Staff">Staff</option>
+              <option value="Manager">Manager</option>
+              <option value="Administrator">Administrator</option>
+            </select>
+          </div>
+        </div>
+
+        <button
+          className="save-settings-btn"
+          onClick={addUser}
+        >
+          <Users size={17} />
+          Add User
+        </button>
+      </div>
+
+      <div className="settings-card">
+        <h2>Users</h2>
+
+        <div className="users-table-wrapper">
+          <table className="users-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.name}</td>
+                  <td>{user.username}</td>
+                  <td>{user.role}</td>
+                  <td>
+                    <span className="status-active">
+                      <CheckCircle size={14} />
+                      {user.status}
+                    </span>
+                  </td>
+                  <td>
+                    <button
+                      className="delete-user-btn"
+                      onClick={() => deleteUser(user.id)}
+                    >
+                      <Trash2 size={15} />
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function Settings() {
   const navigate = useNavigate();
 
@@ -108,12 +274,6 @@ function Settings() {
       status: "Active",
     },
   ]);
-
-  const [newUser, setNewUser] = useState({
-    name: "",
-    username: "",
-    role: "Staff",
-  });
 
   /* =========================
      SECURITY
@@ -330,61 +490,6 @@ function Settings() {
     localStorage.removeItem("companyLogo");
 
     toast.success("Logo removed");
-  }
-
-  /* =========================
-     ADD USER
-  ========================= */
-
-  function addUser() {
-    if (!newUser.name.trim()) {
-      toast.error("Enter user name");
-      return;
-    }
-
-    if (!newUser.username.trim()) {
-      toast.error("Enter username");
-      return;
-    }
-
-    const user = {
-      id: Date.now(),
-      name: newUser.name,
-      username: newUser.username,
-      role: newUser.role,
-      status: "Active",
-    };
-
-    const updatedUsers = [...users, user];
-
-    setUsers(updatedUsers);
-    localStorage.setItem("adminUsers", JSON.stringify(updatedUsers));
-
-    setNewUser({
-      name: "",
-      username: "",
-      role: "Staff",
-    });
-
-    toast.success("User added successfully");
-  }
-
-  /* =========================
-     DELETE USER
-  ========================= */
-
-  function deleteUser(id) {
-    if (users.length === 1) {
-      toast.error("At least one administrator must remain");
-      return;
-    }
-
-    const updatedUsers = users.filter((user) => user.id !== id);
-
-    setUsers(updatedUsers);
-    localStorage.setItem("adminUsers", JSON.stringify(updatedUsers));
-
-    toast.success("User deleted");
   }
 
   /* =========================
@@ -1221,125 +1326,6 @@ function Settings() {
   }
 
   /* =========================
-     USERS TAB
-  ========================= */
-
-  function UsersTab() {
-    return (
-      <>
-        <div className="settings-card">
-          <h2>Add User</h2>
-
-          <div className="settings-grid">
-            <div className="form-group">
-              <label>Name</label>
-
-              <input
-                value={newUser.name}
-                placeholder="User name"
-                onChange={(e) =>
-                  setNewUser({
-                    ...newUser,
-                    name: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Username</label>
-
-              <input
-                value={newUser.username}
-                placeholder="Username"
-                onChange={(e) =>
-                  setNewUser({
-                    ...newUser,
-                    username: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Role</label>
-
-              <select
-                value={newUser.role}
-                onChange={(e) =>
-                  setNewUser({
-                    ...newUser,
-                    role: e.target.value,
-                  })
-                }
-              >
-                <option value="Staff">Staff</option>
-                <option value="Manager">Manager</option>
-                <option value="Administrator">
-                  Administrator
-                </option>
-              </select>
-            </div>
-          </div>
-
-          <button
-            className="save-settings-btn"
-            onClick={addUser}
-          >
-            <Users size={17} />
-            Add User
-          </button>
-        </div>
-
-        <div className="settings-card">
-          <h2>Users</h2>
-
-          <div className="users-table-wrapper">
-            <table className="users-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Username</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id}>
-                    <td>{user.name}</td>
-                    <td>{user.username}</td>
-                    <td>{user.role}</td>
-
-                    <td>
-                      <span className="status-active">
-                        <CheckCircle size={14} />
-                        {user.status}
-                      </span>
-                    </td>
-
-                    <td>
-                      <button
-                        className="delete-user-btn"
-                        onClick={() => deleteUser(user.id)}
-                      >
-                        <Trash2 size={15} />
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  /* =========================
      SECURITY TAB
   ========================= */
 
@@ -1750,7 +1736,12 @@ function Settings() {
         return <EmailTab />;
 
       case "users":
-        return <UsersTab />;
+        return (
+          <UsersTab
+            users={users}
+            setUsers={setUsers}
+          />
+        );
 
       case "security":
         return <SecurityTab />;
