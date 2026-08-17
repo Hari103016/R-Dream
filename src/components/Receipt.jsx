@@ -1,137 +1,197 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
 import "./Receipt.css";
-import downloadReceipt from "../utils/downloadReceipt";
 
+import {
+  downloadReceipt,
+  shareReceipt,
+} from "../utils/downloadReceipt";
 
 export default function Receipt() {
-
-  const receiptRef = useRef();
+  const receiptRef = useRef(null);
 
   const { state } = useLocation();
 
   const customer = state?.customer;
-
   const payments = state?.payments || [];
 
+  const [sharing, setSharing] = useState(false);
+
+  /* =====================================================
+     NO CUSTOMER
+  ===================================================== */
 
   if (!customer) {
-
-    return <h2>No Receipt Found</h2>;
-
+    return (
+      <h2
+        style={{
+          textAlign: "center",
+          marginTop: "50px",
+        }}
+      >
+        No Receipt Found
+      </h2>
+    );
   }
 
+  /* =====================================================
+     RECEIPT NUMBER
+  ===================================================== */
 
   const receiptNo = `RD-${customer.id}`;
 
+  /* =====================================================
+     DATE
+  ===================================================== */
+
   const today = new Date().toLocaleDateString("en-IN");
 
+  /* =====================================================
+     PAID AMOUNT
+  ===================================================== */
 
+  const paidAmount = payments.reduce(
+    (total, payment) =>
+      total + Number(payment.amount || 0),
+    0
+  );
 
-  // ==========================
-  // DOWNLOAD PDF
-  // ==========================
+  /* =====================================================
+     DOWNLOAD PDF
+  ===================================================== */
 
-  function downloadPDF(){
+  async function downloadPDF() {
+    try {
+      await downloadReceipt(
+        receiptRef,
+        `Payment_Receipt_${receiptNo}.pdf`
+      );
+    } catch (error) {
+      console.error(
+        "PDF download failed:",
+        error
+      );
 
-    downloadReceipt(receiptRef);
-
+      alert(
+        error?.message ||
+          "Unable to generate the PDF receipt."
+      );
+    }
   }
 
+  /* =====================================================
+     SHARE RECEIPT VIA WHATSAPP
+  ===================================================== */
 
+  async function shareWhatsApp() {
+    if (sharing) {
+      return;
+    }
 
-  // ==========================
-  // SHARE WHATSAPP
-  // ==========================
+    try {
+      if (!receiptRef?.current) {
+        alert("Receipt not found.");
+        return;
+      }
 
-  function shareWhatsApp(){
+      if (!customer.mobile) {
+        alert(
+          "Customer mobile number is not available."
+        );
+        return;
+      }
 
-    const pdfLink =
-    
-    "https://rdream-admin.vercel.app/receipts/receipt.pdf";
+      setSharing(true);
 
+      const result = await shareReceipt(
+        receiptRef,
+        customer.mobile,
+        customer.name || "Customer",
+        receiptNo,
+        {
+          plotNo: customer.plot_no,
 
-    const paidAmount =
-    payments
-    .reduce(
-        (total,payment)=> 
-        total + Number(payment.amount || 0),
-        0
-    )
-    .toLocaleString("en-IN");
+          plotSize: customer.plot_size,
 
+          facing: customer.facing,
 
-    const message =
-`🏡 R DREAM INFRA DEVELOPERS
+          totalAmount:
+            customer.total_amount,
 
-Payment Receipt Details
+          paidAmount: paidAmount,
 
-Customer Name : ${customer.name}
+          balanceAmount:
+            customer.balance,
+        }
+      );
 
-Mobile : ${customer.mobile}
+      if (result?.success) {
+        console.log(
+          "Receipt shared successfully:",
+          result
+        );
+      }
+    } catch (error) {
+      console.error(
+        "WhatsApp receipt sharing failed:",
+        error
+      );
 
-Plot No : ${customer.plot_no}
+      alert(
+        error?.message ||
+          "Unable to send receipt via WhatsApp."
+      );
+    } finally {
+      setSharing(false);
+    }
+  }
 
-Plot Size : ${customer.plot_size} Sq.Yds
+  /* =====================================================
+     RETURN
+  ===================================================== */
 
-Facing : ${customer.facing}
-
-Total Amount : ₹${Number(customer.total_amount)
-.toLocaleString("en-IN")}
-
-Paid Amount : ₹${paidAmount}
-
-Balance Amount : ₹${Number(customer.balance)
-.toLocaleString("en-IN")}
-
-
-📄 Receipt PDF:
-
-${pdfLink}
-
-
-Thank you for choosing
-
-R DREAM INFRA DEVELOPERS`;
-
-
-    const whatsappURL =
-    
-    `https://api.whatsapp.com/send?phone=91${customer.mobile}&text=${encodeURIComponent(message)}`;
-
-
-    window.open(
-        whatsappURL,
-        "_blank"
-    );
-
-}
   return (
     <div className="receipt-page">
 
-      <div className="receipt-actions">
-        <button 
-          className="download-btn"
-          onClick={downloadPDF}
-        >
-          Download PDF
-        </button>
+      {/* =================================================
+          ACTION BUTTONS
+      ================================================= */}
 
+      <div className="receipt-actions">
 
         <button
-          className="whatsapp-share-btn"
-          onClick={shareWhatsApp}
+          type="button"
+          className="download-btn"
+          onClick={downloadPDF}
+          disabled={sharing}
         >
-          💬 Share via WhatsApp
+          📄 Download PDF
         </button>
 
-    </div>
+        <button
+          type="button"
+          className="whatsapp-share-btn"
+          onClick={shareWhatsApp}
+          disabled={sharing}
+        >
+          {sharing
+            ? "⏳ Preparing Receipt..."
+            : "💬 Send Receipt via WhatsApp"}
+        </button>
+
+      </div>
+
+      {/* =================================================
+          RECEIPT
+      ================================================= */}
 
       <div
         className="luxury-receipt"
         ref={receiptRef}
       >
+
+        {/* WATERMARK */}
 
         <img
           src={logo}
@@ -139,16 +199,21 @@ R DREAM INFRA DEVELOPERS`;
           alt="Dream Infra"
         />
 
-
-        {/* ================= HEADER ================= */}
+        {/* =================================================
+            HEADER
+        ================================================= */}
 
         <div className="top-header">
 
           <div className="title-section">
 
-            <h1>R DREAM INFRA DEVELOPERS</h1>
+            <h1>
+              R DREAM INFRA DEVELOPERS
+            </h1>
 
-            <p>Premium Residential Open Plots</p>
+            <p>
+              Premium Residential Open Plots
+            </p>
 
             <div className="venture-tag">
               GUDIMETTLA VENTURE
@@ -156,32 +221,55 @@ R DREAM INFRA DEVELOPERS`;
 
           </div>
 
-         
-
         </div>
 
-        {/* ================= RECEIPT TITLE ================= */}
+        {/* =================================================
+            RECEIPT TITLE
+        ================================================= */}
 
         <div className="receipt-title">
-          <h2>PAYMENT RECEIPT</h2>
+
+          <h2>
+            PAYMENT RECEIPT
+          </h2>
+
         </div>
 
-        {/* ================= RECEIPT INFO ================= */}
+        {/* =================================================
+            RECEIPT INFO
+        ================================================= */}
 
         <div className="receipt-info">
 
           <div>
-            <small>Receipt Number</small>
-            <h3>{receiptNo}</h3>
+
+            <small>
+              Receipt Number
+            </small>
+
+            <h3>
+              {receiptNo}
+            </h3>
+
           </div>
 
           <div>
-            <small>Receipt Date</small>
-            <h3>{today}</h3>
+
+            <small>
+              Receipt Date
+            </small>
+
+            <h3>
+              {today}
+            </h3>
+
           </div>
 
         </div>
-                {/* ================= CUSTOMER & PLOT INFORMATION ================= */}
+
+        {/* =================================================
+            CUSTOMER & PLOT INFORMATION
+        ================================================= */}
 
         <div className="info-grid">
 
@@ -196,36 +284,64 @@ R DREAM INFRA DEVELOPERS`;
             <div className="card-body">
 
               <div className="row">
-                <span>Name</span>
-                <strong>{customer.name || "-"}</strong>
+
+                <span>
+                  Name
+                </span>
+
+                <strong>
+                  {customer.name || "-"}
+                </strong>
+
               </div>
 
               <div className="row">
-                <span>Mobile</span>
-                <strong>{customer.mobile || "-"}</strong>
+
+                <span>
+                  Mobile
+                </span>
+
+                <strong>
+                  {customer.mobile || "-"}
+                </strong>
+
               </div>
 
               <div className="row">
-                <span>Booking Date</span>
+
+                <span>
+                  Booking Date
+                </span>
+
                 <strong>
                   {customer.booking_date
-                    ? new Date(customer.booking_date).toLocaleDateString("en-IN")
+                    ? new Date(
+                        customer.booking_date
+                      ).toLocaleDateString(
+                        "en-IN"
+                      )
                     : "-"}
                 </strong>
+
               </div>
 
               <div className="row">
-                <span>Status</span>
-                <strong>{customer.status || "-"}</strong>
-              </div>
 
-              
+                <span>
+                  Status
+                </span>
+
+                <strong>
+                  {customer.status || "-"}
+                </strong>
+
+              </div>
 
             </div>
 
           </div>
 
-          {/* PLOT INFORMATION */}
+          {/* PLOT */}
 
           <div className="info-card">
 
@@ -236,30 +352,54 @@ R DREAM INFRA DEVELOPERS`;
             <div className="card-body">
 
               <div className="row">
-                <span>Plot Number</span>
-                <strong>{customer.plot_no || "-"}</strong>
+
+                <span>
+                  Plot Number
+                </span>
+
+                <strong>
+                  {customer.plot_no || "-"}
+                </strong>
+
               </div>
 
               <div className="row">
-                <span>Plot Size</span>
+
+                <span>
+                  Plot Size
+                </span>
+
                 <strong>
                   {customer.plot_size
                     ? `${customer.plot_size} Sq.Yds`
                     : "-"}
                 </strong>
+
               </div>
 
               <div className="row">
-                <span>Facing</span>
-                <strong>{customer.facing || "-"}</strong>
+
+                <span>
+                  Facing
+                </span>
+
+                <strong>
+                  {customer.facing || "-"}
+                </strong>
+
               </div>
 
-              
-
               <div className="row">
-                <span>Receipt Status</span>
 
-                <strong style={{ color: "#2e7d32" }}>
+                <span>
+                  Receipt Status
+                </span>
+
+                <strong
+                  style={{
+                    color: "#2e7d32",
+                  }}
+                >
                   Payment Received
                 </strong>
 
@@ -270,7 +410,10 @@ R DREAM INFRA DEVELOPERS`;
           </div>
 
         </div>
-             {/* ================= PAYMENT DETAILS ================= */}
+
+        {/* =================================================
+            PAYMENT DETAILS
+        ================================================= */}
 
         <div className="payment-card">
 
@@ -280,80 +423,114 @@ R DREAM INFRA DEVELOPERS`;
 
           {payments.length === 0 ? (
 
-            <div
-              style={{
-                padding: "30px",
-                textAlign: "center",
-                fontWeight: "600",
-              }}
-            >
+            <div className="no-payment">
               No Payments Found
             </div>
 
           ) : (
 
-            payments.map((payment, index) => (
+            payments.map(
+              (payment, index) => (
 
-              <div
-                key={payment.id}
-                style={{
-                  margin: "25px",
-                  border: "1px solid #ddd",
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                }}
-              >
+                <div
+                  key={
+                    payment.id || index
+                  }
+                  className="payment-row-wrapper"
+                >
 
-                <table className="payment-table">
+                  <table className="payment-table">
 
-                  <thead>
+                    <thead>
 
-                    <tr>
-                      <th>S.No</th>
-                      <th>Date</th>
-                      <th>Payment Mode</th>
-                      <th>Remarks</th>
-                      <th>Amount</th>
-                    </tr>
+                      <tr>
 
-                  </thead>
+                        <th>
+                          S.No
+                        </th>
 
-                  <tbody>
+                        <th>
+                          Date
+                        </th>
 
-                    <tr>
+                        <th>
+                          Payment Mode
+                        </th>
 
-                      <td>{index + 1}</td>
+                        <th>
+                          Remarks
+                        </th>
 
-                      <td>
-                        {new Date(payment.payment_date).toLocaleDateString("en-IN")}
-                      </td>
+                        <th>
+                          Amount
+                        </th>
 
-                      <td>{payment.payment_mode}</td>
+                      </tr>
 
-                      <td>{payment.remarks || "-"}</td>
+                    </thead>
 
-                      <td className="amount-cell">
-                        ₹ {Number(payment.amount).toLocaleString("en-IN")}
-                      </td>
+                    <tbody>
 
-                    </tr>
+                      <tr>
 
-                  </tbody>
+                        <td>
+                          {index + 1}
+                        </td>
 
-                </table>
+                        <td>
+                          {payment.payment_date
+                            ? new Date(
+                                payment.payment_date
+                              ).toLocaleDateString(
+                                "en-IN"
+                              )
+                            : "-"}
+                        </td>
 
-              </div>
+                        <td>
+                          {payment.payment_mode ||
+                            "-"}
+                        </td>
 
-            ))
+                        <td>
+                          {payment.remarks ||
+                            "-"}
+                        </td>
+
+                        <td className="amount-cell">
+
+                          ₹{" "}
+
+                          {Number(
+                            payment.amount || 0
+                          ).toLocaleString(
+                            "en-IN"
+                          )}
+
+                        </td>
+
+                      </tr>
+
+                    </tbody>
+
+                  </table>
+
+                </div>
+
+              )
+            )
 
           )}
 
         </div>
-                {/* ================= AMOUNT SUMMARY ================= */}
+
+        {/* =================================================
+            AMOUNT SUMMARY
+        ================================================= */}
 
         <div className="summary-section">
 
-          {/* TOTAL AMOUNT */}
+          {/* TOTAL */}
 
           <div className="summary-card">
 
@@ -362,19 +539,29 @@ R DREAM INFRA DEVELOPERS`;
             </div>
 
             <div className="summary-text">
-              <small>Total Amount</small>
+
+              <small>
+                Total Amount
+              </small>
+
             </div>
 
             <div className="summary-value">
+
               <h2>
                 ₹{" "}
-                {Number(customer.total_amount || 0).toLocaleString("en-IN")}
+                {Number(
+                  customer.total_amount || 0
+                ).toLocaleString(
+                  "en-IN"
+                )}
               </h2>
+
             </div>
 
           </div>
 
-          {/* PAID AMOUNT */}
+          {/* PAID */}
 
           <div className="summary-card">
 
@@ -383,19 +570,22 @@ R DREAM INFRA DEVELOPERS`;
             </div>
 
             <div className="summary-text">
-              <small>Paid Amount</small>
+
+              <small>
+                Paid Amount
+              </small>
+
             </div>
 
             <div className="summary-value">
+
               <h2>
                 ₹{" "}
-                {payments
-                  .reduce(
-                    (total, payment) => total + Number(payment.amount || 0),
-                    0
-                  )
-                  .toLocaleString("en-IN")}
+                {paidAmount.toLocaleString(
+                  "en-IN"
+                )}
               </h2>
+
             </div>
 
           </div>
@@ -409,21 +599,33 @@ R DREAM INFRA DEVELOPERS`;
             </div>
 
             <div className="summary-text">
-              <small>Balance Amount</small>
+
+              <small>
+                Balance Amount
+              </small>
+
             </div>
 
             <div className="summary-value">
+
               <h2>
                 ₹{" "}
-                {Number(customer.balance || 0).toLocaleString("en-IN")}
+                {Number(
+                  customer.balance || 0
+                ).toLocaleString(
+                  "en-IN"
+                )}
               </h2>
+
             </div>
 
           </div>
 
         </div>
 
-        {/* ================= DECLARATION ================= */}
+        {/* =================================================
+            DECLARATION
+        ================================================= */}
 
         <div className="declaration-box">
 
@@ -432,90 +634,122 @@ R DREAM INFRA DEVELOPERS`;
           </div>
 
           <p>
-            This receipt certifies that the payment has been successfully
-            received by <strong>R DREAM INFRA DEVELOPERS</strong> towards the
-            purchase of the above-mentioned plot.
+            This receipt certifies that the
+            payment has been successfully
+            received by{" "}
+            <strong>
+              R DREAM INFRA DEVELOPERS
+            </strong>{" "}
+            towards the purchase of the
+            above-mentioned plot.
           </p>
 
-          <br />
-
           <p>
-            This receipt has been generated electronically from our official
-            management system and is valid without a handwritten signature.
+            This receipt has been generated
+            electronically from our official
+            management system and is valid
+            without a handwritten signature.
           </p>
 
-          <br />
-
           <p>
-            Kindly preserve this receipt for future reference. It may be
-            required during plot registration and other documentation.
+            Kindly preserve this receipt for
+            future reference. It may be
+            required during plot registration
+            and other documentation.
           </p>
 
         </div>
 
-        {/* ================= SIGNATURE ================= */}
+        {/* =================================================
+            SIGNATURE
+        ================================================= */}
 
         <div className="signature-area">
 
           <div className="company-seal">
+
             COMPANY
             <br />
             SEAL
+
           </div>
 
           <div className="signature-box">
 
             <div className="signature-line"></div>
 
-            <h4>Authorized Signatory</h4>
+            <h4>
+              Authorized Signatory
+            </h4>
 
-            <p>R DREAM INFRA DEVELOPERS</p>
+            <p>
+              R DREAM INFRA DEVELOPERS
+            </p>
 
           </div>
 
         </div>
 
-        {/* ================= NOTE ================= */}
+        {/* NOTE */}
 
         <div className="signature-section">
 
           <p className="receipt-note">
-            This is a computer-generated receipt and does not require a
+            This is a computer-generated
+            receipt and does not require a
             physical signature.
           </p>
 
         </div>
 
-        {/* ================= FOOTER ================= */}
+        {/* =================================================
+            FOOTER
+        ================================================= */}
 
         <div className="receipt-footer">
 
-          <h3>THANK YOU FOR CHOOSING</h3>
+          <h3>
+            THANK YOU FOR CHOOSING
+          </h3>
 
-          <h2>R DREAM INFRA DEVELOPERS</h2>
+          <h2>
+            R DREAM INFRA DEVELOPERS
+          </h2>
 
           <p>
-            Panchayat Approved Layout • Clear Title • Ready for Registration
+            Panchayat Approved Layout •
+            Clear Title • Ready for Registration
           </p>
 
           <div className="footer-contact">
 
-            <span>📞 +91 9876543210</span>
+            <span>
+              📞 +91 9876543210
+            </span>
 
-            <span>✉ info@rdreaminfra.com</span>
+            <span>
+              ✉ info@rdreaminfra.com
+            </span>
 
-            <span>🌐 www.rdreaminfra.com</span>
+            <span>
+              🌐 www.rdreaminfra.com
+            </span>
 
           </div>
 
         </div>
 
-        {/* ================= BOTTOM BAR ================= */}
+        {/* =================================================
+            BOTTOM BAR
+        ================================================= */}
 
         <div className="bottom-bar">
 
           <span>
-            Generated : {new Date().toLocaleString("en-IN")}
+            Generated :{" "}
+            {new Date().toLocaleString(
+              "en-IN"
+            )}
           </span>
 
           <span>
@@ -529,4 +763,3 @@ R DREAM INFRA DEVELOPERS`;
     </div>
   );
 }
-

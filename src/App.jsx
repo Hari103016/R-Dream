@@ -18,9 +18,20 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import AdminProfile from "./pages/AdminProfile";
 
+// ==========================================
+// NEW: LAYOUT MAP
+// ==========================================
+import LayoutMap from "./pages/LayoutMap";
+
+
 function App() {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
+
+
+  // ==========================================
+  // CHECK LOGIN SESSION
+  // ==========================================
 
   useEffect(() => {
     async function checkSession() {
@@ -34,6 +45,11 @@ function App() {
 
     checkSession();
 
+
+    // ==========================================
+    // AUTH STATE LISTENER
+    // ==========================================
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(
@@ -42,10 +58,16 @@ function App() {
       }
     );
 
+
     return () => {
       subscription.unsubscribe();
     };
   }, []);
+
+
+  // ==========================================
+  // LOADING
+  // ==========================================
 
   if (loading) {
     return (
@@ -62,27 +84,32 @@ function App() {
     );
   }
 
+
   return (
     <Routes>
 
-      {/* ==============================
+      {/* ==========================================
           LOGIN
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="/"
         element={
           session ? (
-            <Navigate to="/dashboard" replace />
+            <Navigate
+              to="/dashboard"
+              replace
+            />
           ) : (
             <Login />
           )
         }
       />
 
-      {/* ==============================
+
+      {/* ==========================================
           DASHBOARD
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="/dashboard"
@@ -90,14 +117,18 @@ function App() {
           session ? (
             <Dashboard />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate
+              to="/"
+              replace
+            />
           )
         }
       />
 
-      {/* ==============================
+
+      {/* ==========================================
           CUSTOMERS
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="/customers"
@@ -105,14 +136,18 @@ function App() {
           session ? (
             <Customers />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate
+              to="/"
+              replace
+            />
           )
         }
       />
 
-      {/* ==============================
+
+      {/* ==========================================
           CUSTOMER DETAILS
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="/customer/:id"
@@ -120,14 +155,18 @@ function App() {
           session ? (
             <CustomerDetails />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate
+              to="/"
+              replace
+            />
           )
         }
       />
 
-      {/* ==============================
+
+      {/* ==========================================
           EDIT CUSTOMER
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="/edit-customer/:id"
@@ -135,14 +174,18 @@ function App() {
           session ? (
             <EditCustomer />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate
+              to="/"
+              replace
+            />
           )
         }
       />
 
-      {/* ==============================
+
+      {/* ==========================================
           ADD PAYMENT
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="/add-payment/:id"
@@ -150,14 +193,18 @@ function App() {
           session ? (
             <AddPayment />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate
+              to="/"
+              replace
+            />
           )
         }
       />
 
-      {/* ==============================
+
+      {/* ==========================================
           RECEIPT
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="/receipt"
@@ -165,14 +212,18 @@ function App() {
           session ? (
             <ReceiptPage />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate
+              to="/"
+              replace
+            />
           )
         }
       />
 
-      {/* ==============================
+
+      {/* ==========================================
           PLOTS
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="/plots"
@@ -180,14 +231,37 @@ function App() {
           session ? (
             <Plots />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate
+              to="/"
+              replace
+            />
           )
         }
       />
 
-      {/* ==============================
+
+      {/* ==========================================
+          LAYOUT MAP
+      ========================================== */}
+
+      <Route
+        path="/layout-map"
+        element={
+          session ? (
+            <LayoutMap />
+          ) : (
+            <Navigate
+              to="/"
+              replace
+            />
+          )
+        }
+      />
+
+
+      {/* ==========================================
           BOOK PLOT
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="/book/:id"
@@ -195,14 +269,18 @@ function App() {
           session ? (
             <BookPlot />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate
+              to="/"
+              replace
+            />
           )
         }
       />
 
-      {/* ==============================
+
+      {/* ==========================================
           BOOKINGS
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="/bookings"
@@ -210,14 +288,18 @@ function App() {
           session ? (
             <Bookings />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate
+              to="/"
+              replace
+            />
           )
         }
       />
 
-      {/* ==============================
+
+      {/* ==========================================
           PAYMENTS
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="/payments"
@@ -225,14 +307,18 @@ function App() {
           session ? (
             <Payments />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate
+              to="/"
+              replace
+            />
           )
         }
       />
 
-      {/* ==============================
+
+      {/* ==========================================
           REPORTS
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="/reports"
@@ -240,14 +326,18 @@ function App() {
           session ? (
             <Reports />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate
+              to="/"
+              replace
+            />
           )
         }
       />
 
-      {/* ==============================
+
+      {/* ==========================================
           SETTINGS
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="/settings"
@@ -255,14 +345,18 @@ function App() {
           session ? (
             <Settings />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate
+              to="/"
+              replace
+            />
           )
         }
       />
 
-      {/* ==============================
+
+      {/* ==========================================
           ADMIN PROFILE
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="/admin-profile"
@@ -270,20 +364,28 @@ function App() {
           session ? (
             <AdminProfile />
           ) : (
-            <Navigate to="/" replace />
+            <Navigate
+              to="/"
+              replace
+            />
           )
         }
       />
 
-      {/* ==============================
+
+      {/* ==========================================
           UNKNOWN ROUTE
-      ============================== */}
+      ========================================== */}
 
       <Route
         path="*"
         element={
           <Navigate
-            to={session ? "/dashboard" : "/"}
+            to={
+              session
+                ? "/dashboard"
+                : "/"
+            }
             replace
           />
         }
@@ -292,5 +394,6 @@ function App() {
     </Routes>
   );
 }
+
 
 export default App;

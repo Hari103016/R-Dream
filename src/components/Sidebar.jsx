@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "./Sidebar.css";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabase";
@@ -16,245 +15,174 @@ import {
   X,
 } from "lucide-react";
 
-
 function Sidebar({ sidebarOpen, setSidebarOpen }) {
-
   const location = useLocation();
   const navigate = useNavigate();
-
 
   const closeSidebar = () => {
     setSidebarOpen(false);
   };
 
-
   async function logout() {
-
     const { error } = await supabase.auth.signOut();
 
-
-    if(error){
-
+    if (error) {
       alert(error.message);
       return;
-
     }
 
-
     navigate("/", {
-      replace:true,
+      replace: true,
     });
-
   }
 
-
-
   const menuItems = [
-
     {
-      name:"Dashboard",
-      icon:LayoutDashboard,
-      path:"/dashboard",
+      name: "Dashboard",
+      icon: LayoutDashboard,
+      path: "/dashboard",
     },
 
-
     {
-      name:"Customers",
-      icon:Users,
-      path:"/customers",
+      name: "Customers",
+      icon: Users,
+      path: "/customers",
     },
 
-
     {
-      name:"Plots",
-      icon:MapPinned,
-      path:"/plots",
+      name: "Plots",
+      icon: MapPinned,
+      path: "/plots",
     },
 
-
+    // NEW LAYOUT MAP
     {
-      name:"Bookings",
-      icon:CalendarDays,
-      path:"/bookings",
+      name: "Layout Map",
+      icon: MapPinned,
+      path: "/layout-map",
     },
 
-
     {
-      name:"Payments",
-      icon:CreditCard,
-      path:"/payments",
+      name: "Bookings",
+      icon: CalendarDays,
+      path: "/bookings",
     },
 
-
     {
-      name:"Reports",
-      icon:BarChart3,
-      path:"/reports",
+      name: "Payments",
+      icon: CreditCard,
+      path: "/payments",
     },
 
-
     {
-      name:"Admin Profile",
-      icon:Users,
-      path:"/admin-profile",
+      name: "Reports",
+      icon: BarChart3,
+      path: "/reports",
     },
 
-
     {
-      name:"Settings",
-      icon:Settings,
-      path:"/settings",
+      name: "Admin Profile",
+      icon: Users,
+      path: "/admin-profile",
     },
 
-
+    {
+      name: "Settings",
+      icon: Settings,
+      path: "/settings",
+    },
   ];
 
-
-
   return (
-
     <>
+      {/* ==========================================
+          MOBILE OVERLAY
+      ========================================== */}
 
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={closeSidebar}
+        />
+      )}
 
-      {
-        sidebarOpen && (
-
-          <div
-            className="sidebar-overlay"
-            onClick={closeSidebar}
-          />
-
-        )
-      }
-
-
+      {/* ==========================================
+          SIDEBAR
+      ========================================== */}
 
       <aside
         className={`sidebar ${
           sidebarOpen ? "open" : ""
         }`}
       >
-
-
+        {/* CLOSE BUTTON */}
 
         <button
           className="close-btn"
           onClick={closeSidebar}
         >
-
-          <X size={24}/>
-
+          <X size={24} />
         </button>
 
-
-
-
-        {/* LOGO */}
+        {/* ==========================================
+            LOGO
+        ========================================== */}
 
         <div className="logo">
-
           <img
             src={logo}
             alt="Company Logo"
             className="company-logo"
           />
-
         </div>
 
-
-
-
-
-        {/* MENU */}
+        {/* ==========================================
+            MENU
+        ========================================== */}
 
         <nav>
+          {menuItems.map((item) => {
+            const Icon = item.icon;
 
+            const isActive =
+              location.pathname === item.path;
 
-          {
-            menuItems.map((item)=>{
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={
+                  isActive ? "active" : ""
+                }
+                onClick={closeSidebar}
+              >
+                <Icon size={20} />
 
-
-              const Icon = item.icon;
-
-
-              return (
-
-                <Link
-
-                  key={item.path}
-
-                  to={item.path}
-
-                  className={
-                    location.pathname === item.path
-                    ? "active"
-                    :""
-                  }
-
-                  onClick={closeSidebar}
-
-                >
-
-
-                  <Icon size={20}/>
-
-                  <span>
-                    {item.name}
-                  </span>
-
-
-                </Link>
-
-
-              );
-
-
-            })
-          }
-
-
+                <span>
+                  {item.name}
+                </span>
+              </Link>
+            );
+          })}
         </nav>
 
-
-
-
-
-
-        {/* LOGOUT ONLY */}
+        {/* ==========================================
+            LOGOUT
+        ========================================== */}
 
         <div className="sidebar-bottom">
-
-
           <button
-
             className="logout"
-
             onClick={logout}
-
           >
-
-            <LogOut size={18}/>
+            <LogOut size={18} />
 
             Logout
-
-
           </button>
-
-
-
         </div>
-
-
-
-
       </aside>
-
-
     </>
-
   );
-
 }
-
 
 export default Sidebar;
