@@ -2,770 +2,759 @@
    PLOT CARD
 ===================================================== */
 
-.plot-card{
+.plot-card {
+    position: relative !important;
 
-    position:relative;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
 
-    overflow:hidden;
+    height: 100% !important;
+    min-height: 430px;
 
-    background:linear-gradient(
+    overflow: hidden !important;
+
+    box-sizing: border-box !important;
+
+    background: linear-gradient(
         145deg,
-        #1B2435,
+        #1b2435,
         #111827
-    );
+    ) !important;
 
-    border:1px solid rgba(255,255,255,.06);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
 
-    border-radius:22px;
+    border-radius: 18px !important;
 
-    padding:18px;
+    padding: 16px !important;
 
-    display:flex;
+    display: flex !important;
+    flex-direction: column !important;
 
-    flex-direction:column;
+    gap: 14px !important;
 
-    gap:16px;
-
-    transition:.35s;
-
-    box-shadow:
-        0 10px 25px rgba(0,0,0,.25);
-
-}
-
-.plot-card:hover{
-
-    transform:translateY(-6px);
-
-    border-color:#3B82F6;
+    transition:
+        transform 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease !important;
 
     box-shadow:
-        0 18px 40px rgba(59,130,246,.22);
-
+        0 10px 25px rgba(0, 0, 0, 0.25) !important;
 }
 
-.plot-card::before{
 
-    content:"";
+.plot-card:hover {
+    transform: translateY(-4px);
 
-    position:absolute;
+    border-color: #3b82f6 !important;
 
-    left:0;
-    top:0;
-
-    width:100%;
-    height:4px;
-
-    background:linear-gradient(
-        90deg,
-        #3B82F6,
-        #8B5CF6,
-        #06B6D4
-    );
-
+    box-shadow:
+        0 18px 40px rgba(59, 130, 246, 0.22) !important;
 }
+
 
 /* =====================================================
-   SHINE EFFECT
+   TOP LINE
 ===================================================== */
 
-.shine{
+.plot-card::before {
+    content: "";
 
-    position:absolute;
+    position: absolute;
 
-    top:-120%;
+    top: 0;
+    left: 0;
 
-    left:-60%;
+    width: 100%;
+    height: 4px;
 
-    width:70px;
+    background: linear-gradient(
+        90deg,
+        #3b82f6,
+        #8b5cf6,
+        #06b6d4
+    );
 
-    height:250%;
+    pointer-events: none;
 
-    background:rgba(255,255,255,.05);
-
-    transform:rotate(25deg);
-
-    transition:.8s;
-
+    z-index: 2;
 }
 
-.plot-card:hover .shine{
 
-    left:130%;
+/* =====================================================
+   SHINE
+===================================================== */
 
+.plot-card .shine {
+    position: absolute;
+
+    top: -120%;
+    left: -60%;
+
+    width: 70px;
+    height: 250%;
+
+    background: rgba(255, 255, 255, 0.05);
+
+    transform: rotate(25deg);
+
+    transition: 0.8s;
+
+    pointer-events: none;
+
+    z-index: 0;
 }
+
+
+.plot-card:hover .shine {
+    left: 130%;
+}
+
 
 /* =====================================================
    HEADER
 ===================================================== */
 
-.plot-header{
+.plot-card .plot-header {
+    position: relative;
 
-    display:flex;
+    width: 100% !important;
 
-    justify-content:space-between;
+    min-width: 0 !important;
 
-    align-items:center;
+    display: flex !important;
 
+    justify-content: space-between !important;
+
+    align-items: center !important;
+
+    gap: 10px;
+
+    box-sizing: border-box;
+
+    z-index: 5;
 }
 
-.plot-title{
 
-    display:flex;
+.plot-card .plot-title {
+    min-width: 0;
 
-    align-items:center;
+    display: flex;
 
-    gap:10px;
+    align-items: center;
 
+    gap: 8px;
 }
 
-.plot-title h3{
 
-    display:flex;
+.plot-card .plot-title h3 {
+    margin: 0 !important;
 
-    align-items:center;
+    padding: 0 !important;
 
-    gap:8px;
+    display: flex !important;
 
-    color:#fff;
+    align-items: center !important;
 
-    font-size:24px;
+    gap: 7px;
 
-    font-weight:800;
+    color: #ffffff !important;
 
-    margin:0;
+    font-size: 21px !important;
 
+    line-height: 1.2;
+
+    font-weight: 800 !important;
+
+    white-space: nowrap;
 }
 
-.plot-title svg{
 
-    color:#60A5FA;
+.plot-card .plot-title h3 svg {
+    flex-shrink: 0;
 
+    color: #60a5fa !important;
 }
 
-.plot-checkbox{
 
-    width:20px;
+.plot-card .plot-checkbox {
+    width: 18px !important;
+    height: 18px !important;
 
-    height:20px;
+    margin: 0;
 
-    accent-color:#2563EB;
+    flex-shrink: 0;
 
+    accent-color: #2563eb;
+
+    cursor: pointer;
 }
+
 
 /* =====================================================
    STATUS
 ===================================================== */
 
-.status{
+.plot-card .status {
+    position: relative;
 
-    padding:7px 14px;
+    flex-shrink: 0;
 
-    border-radius:30px;
+    display: inline-flex !important;
 
-    color:#fff;
+    align-items: center;
 
-    font-size:12px;
+    justify-content: center;
 
-    font-weight:700;
+    padding: 6px 12px !important;
 
+    border-radius: 30px !important;
+
+    color: #ffffff !important;
+
+    font-size: 11px !important;
+
+    line-height: 1;
+
+    font-weight: 700 !important;
+
+    white-space: nowrap;
+
+    z-index: 10 !important;
 }
 
-.available{
 
-    background:#16A34A;
-
+.plot-card .status.available {
+    background: #16a34a !important;
 }
 
-.booked{
 
-    background:#F59E0B;
-
+.plot-card .status.booked {
+    background: #f59e0b !important;
 }
 
-.sold{
 
-    background:#EF4444;
-
+.plot-card .status.sold {
+    background: #ef4444 !important;
 }
+
 
 /* =====================================================
    BADGES
 ===================================================== */
 
-.plot-badges{
+.plot-card .plot-badges {
+    position: relative;
 
-    display:flex;
+    width: 100%;
 
-    gap:10px;
+    display: flex;
 
+    align-items: center;
+
+    gap: 8px;
+
+    z-index: 5;
 }
 
-.premium-badge{
 
-    display:flex;
+.plot-card .premium-badge,
+.plot-card .dtcp-badge {
+    display: inline-flex;
 
-    align-items:center;
+    align-items: center;
 
-    gap:6px;
+    gap: 5px;
 
-    padding:6px 12px;
+    padding: 5px 10px;
 
-    border-radius:30px;
+    border-radius: 30px;
 
-    background:#FFD700;
+    font-size: 11px;
 
-    color:#000;
-
-    font-size:12px;
-
-    font-weight:700;
-
+    font-weight: 700;
 }
 
-.dtcp-badge{
 
-    display:flex;
+.plot-card .premium-badge {
+    background: #ffd700;
 
-    align-items:center;
-
-    gap:6px;
-
-    padding:6px 12px;
-
-    border-radius:30px;
-
-    background:#10B981;
-
-    color:#fff;
-
-    font-size:12px;
-
-    font-weight:700;
-
-}
-/* =====================================================
-   DETAILS
-===================================================== */
-
-.plot-details{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:10px;
-
+    color: #000000;
 }
 
-.detail-row{
 
-    display:flex;
+.plot-card .dtcp-badge {
+    background: #10b981;
 
-    justify-content:space-between;
-
-    align-items:center;
-
-    padding:12px 14px;
-
-    background:#202C40;
-
-    border:1px solid rgba(255,255,255,.05);
-
-    border-radius:12px;
-
-    transition:.3s;
-
+    color: #ffffff;
 }
 
-.detail-row:hover{
-
-    background:#273549;
-
-    transform:translateX(3px);
-
-}
-
-.detail-label{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:8px;
-
-    color:#94A3B8;
-
-    font-size:14px;
-
-    font-weight:600;
-
-}
-
-.detail-label svg{
-
-    color:#60A5FA;
-
-}
-
-.detail-value{
-
-    color:#FFFFFF;
-
-    font-size:16px;
-
-    font-weight:700;
-
-}
 
 /* =====================================================
-   PRICE CARD
+   IMPORTANT: DETAILS CONTAINER
 ===================================================== */
 
-.price-card{
+/*
+   These rules are intentionally strong.
 
-    margin-top:4px;
+   They prevent an old/global CSS rule from making
+   .plot-details into the white floating box shown
+   in your screenshot.
+*/
 
-    padding:16px;
+.plot-card .plot-details {
+    position: relative !important;
 
-    border-radius:16px;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
 
-    background:linear-gradient(
+    width: 100% !important;
+
+    height: auto !important;
+    min-height: 0 !important;
+
+    margin: 0 !important;
+
+    padding: 0 !important;
+
+    background: transparent !important;
+
+    border: none !important;
+
+    border-radius: 0 !important;
+
+    box-shadow: none !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    gap: 9px !important;
+
+    overflow: visible !important;
+
+    transform: none !important;
+
+    box-sizing: border-box !important;
+
+    z-index: 3 !important;
+}
+
+
+/* =====================================================
+   DETAIL ROW
+===================================================== */
+
+.plot-card .detail-row {
+    position: relative !important;
+
+    width: 100% !important;
+
+    height: 42px !important;
+
+    min-height: 42px !important;
+
+    max-height: 42px !important;
+
+    margin: 0 !important;
+
+    padding: 0 12px !important;
+
+    box-sizing: border-box !important;
+
+    display: flex !important;
+
+    flex-direction: row !important;
+
+    justify-content: space-between !important;
+
+    align-items: center !important;
+
+    gap: 10px;
+
+    background: #202c40 !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+
+    border-radius: 10px !important;
+
+    box-shadow: none !important;
+
+    transform: none;
+
+    overflow: hidden !important;
+
+    transition:
+        background 0.25s ease,
+        transform 0.25s ease !important;
+}
+
+
+.plot-card .detail-row:hover {
+    background: #273549 !important;
+
+    transform: translateX(2px) !important;
+}
+
+
+/* =====================================================
+   DETAIL LABEL
+===================================================== */
+
+.plot-card .detail-label {
+    position: relative;
+
+    min-width: 0;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    gap: 7px;
+
+    color: #94a3b8 !important;
+
+    font-size: 12px !important;
+
+    font-weight: 600 !important;
+
+    white-space: nowrap;
+}
+
+
+.plot-card .detail-label svg {
+    flex-shrink: 0;
+
+    color: #60a5fa !important;
+}
+
+
+/* =====================================================
+   DETAIL VALUE
+===================================================== */
+
+.plot-card .detail-value {
+    position: relative;
+
+    min-width: 0;
+
+    margin-left: auto;
+
+    color: #ffffff !important;
+
+    font-size: 13px !important;
+
+    font-weight: 700 !important;
+
+    text-align: right;
+
+    white-space: nowrap;
+}
+
+
+/* =====================================================
+   PRICE
+===================================================== */
+
+.plot-card .price-card {
+    position: relative;
+
+    width: 100% !important;
+
+    min-width: 0;
+
+    margin: 0 !important;
+
+    padding: 14px !important;
+
+    box-sizing: border-box;
+
+    border-radius: 15px !important;
+
+    background: linear-gradient(
         135deg,
-        #2563EB,
-        #1D4ED8
-    );
+        #2563eb,
+        #1d4ed8
+    ) !important;
 
-    text-align:center;
+    text-align: center;
 
-    color:white;
-
-    box-shadow:
-        0 10px 25px rgba(37,99,235,.35);
-
-    transition:.35s;
-
-}
-
-.price-card:hover{
-
-    transform:translateY(-3px);
+    color: #ffffff;
 
     box-shadow:
-        0 16px 30px rgba(37,99,235,.45);
+        0 10px 25px rgba(37, 99, 235, 0.35) !important;
 
+    z-index: 3;
+
+    transition: 0.3s;
 }
 
-.price-title{
 
-    display:block;
-
-    font-size:13px;
-
-    color:#DBEAFE;
-
-    margin-bottom:8px;
-
+.plot-card .price-card:hover {
+    transform: translateY(-2px);
 }
 
-.price-card h2{
 
-    margin:0;
+.plot-card .price-title {
+    display: block;
 
-    font-size:30px;
+    margin: 0 0 6px 0;
 
-    font-weight:800;
+    color: #dbeafe !important;
 
+    font-size: 12px !important;
+
+    line-height: 1.2;
 }
 
-.price-growth{
 
-    display:inline-flex;
+.plot-card .price-card h2 {
+    margin: 0 !important;
 
-    align-items:center;
+    padding: 0 !important;
 
-    gap:6px;
+    color: #ffffff !important;
 
-    margin-top:10px;
+    font-size: 28px !important;
 
-    padding:6px 14px;
+    line-height: 1.2;
 
-    background:#16A34A;
+    font-weight: 800 !important;
 
-    border-radius:30px;
-
-    font-size:12px;
-
-    font-weight:700;
-
-    color:white;
-
+    white-space: nowrap;
 }
+
+
+.plot-card .price-growth {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 5px;
+
+    margin-top: 8px;
+
+    padding: 5px 12px;
+
+    background: #16a34a !important;
+
+    border-radius: 30px;
+
+    color: #ffffff !important;
+
+    font-size: 11px !important;
+
+    font-weight: 700;
+}
+
+
 /* =====================================================
    FOOTER
 ===================================================== */
 
-.plot-footer{
+.plot-card .plot-footer {
+    position: relative;
 
-    display:flex;
+    width: 100% !important;
 
-    align-items:center;
+    min-width: 0;
 
-    gap:10px;
+    margin-top: auto !important;
 
-    margin-top:auto;
+    padding: 0 !important;
 
+    display: flex !important;
+
+    flex-direction: row !important;
+
+    align-items: center !important;
+
+    gap: 8px !important;
+
+    background: transparent !important;
+
+    border: none !important;
+
+    box-shadow: none !important;
+
+    z-index: 5;
 }
+
 
 /* =====================================================
-   ICON BUTTONS
+   EDIT / DELETE
 ===================================================== */
 
-.edit-btn,
-.delete-btn{
+.plot-card .edit-btn,
+.plot-card .delete-btn {
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
 
-    width:44px;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
 
-    height:44px;
+    padding: 0 !important;
+    margin: 0 !important;
 
-    border:none;
+    border: none !important;
 
-    border-radius:12px;
+    border-radius: 10px !important;
 
-    display:flex;
+    display: flex !important;
 
-    justify-content:center;
+    justify-content: center !important;
+    align-items: center !important;
 
-    align-items:center;
+    flex-shrink: 0;
 
-    cursor:pointer;
+    cursor: pointer;
 
-    transition:.3s;
-
-    flex-shrink:0;
-
+    color: #ffffff !important;
 }
 
-.edit-btn{
 
-    background:linear-gradient(
+.plot-card .edit-btn {
+    background: linear-gradient(
         135deg,
-        #F59E0B,
-        #D97706
-    );
-
-    color:white;
-
+        #f59e0b,
+        #d97706
+    ) !important;
 }
 
-.edit-btn:hover{
 
-    transform:translateY(-3px);
-
-    box-shadow:
-        0 10px 20px rgba(245,158,11,.35);
-
-}
-
-.delete-btn{
-
-    background:linear-gradient(
+.plot-card .delete-btn {
+    background: linear-gradient(
         135deg,
-        #EF4444,
-        #DC2626
-    );
-
-    color:white;
-
+        #ef4444,
+        #dc2626
+    ) !important;
 }
 
-.delete-btn:hover{
-
-    transform:translateY(-3px);
-
-    box-shadow:
-        0 10px 20px rgba(239,68,68,.35);
-
-}
 
 /* =====================================================
-   MAIN BUTTONS
+   BOOK / VIEW
 ===================================================== */
 
-.book-btn,
-.view-btn{
+.plot-card .book-btn,
+.plot-card .view-btn {
+    flex: 1 1 auto !important;
 
-    flex:1;
+    width: auto !important;
+    min-width: 0 !important;
 
-    height:44px;
+    height: 36px !important;
 
-    border:none;
+    padding: 0 10px !important;
+    margin: 0 !important;
 
-    border-radius:12px;
+    border: none !important;
 
-    display:flex;
+    border-radius: 10px !important;
 
-    justify-content:center;
+    display: flex !important;
 
-    align-items:center;
+    align-items: center !important;
+    justify-content: center !important;
 
-    gap:8px;
+    gap: 6px;
 
-    cursor:pointer;
+    color: #ffffff !important;
 
-    font-size:14px;
+    font-size: 12px !important;
 
-    font-weight:700;
+    font-weight: 700 !important;
 
-    color:white;
+    white-space: nowrap;
 
-    transition:.3s;
-
+    cursor: pointer;
 }
 
-.book-btn{
 
-    background:linear-gradient(
+.plot-card .book-btn {
+    background: linear-gradient(
         135deg,
-        #2563EB,
-        #1D4ED8
-    );
-
+        #2563eb,
+        #1d4ed8
+    ) !important;
 }
 
-.book-btn:hover{
 
-    transform:translateY(-3px);
-
-    box-shadow:
-        0 10px 25px rgba(37,99,235,.35);
-
-}
-
-.view-btn{
-
-    background:linear-gradient(
+.plot-card .view-btn {
+    background: linear-gradient(
         135deg,
-        #10B981,
+        #10b981,
         #059669
-    );
-
+    ) !important;
 }
 
-.view-btn:hover{
-
-    transform:translateY(-3px);
-
-    box-shadow:
-        0 10px 25px rgba(16,185,129,.35);
-
-}
 
 /* =====================================================
-   ICON ANIMATION
+   BUTTON ICONS
 ===================================================== */
 
-.book-btn svg,
-.view-btn svg,
-.edit-btn svg,
-.delete-btn svg{
-
-    transition:.3s;
-
+.plot-card .book-btn svg,
+.plot-card .view-btn svg,
+.plot-card .edit-btn svg,
+.plot-card .delete-btn svg {
+    flex-shrink: 0;
 }
 
-.book-btn:hover svg,
-.view-btn:hover svg,
-.edit-btn:hover svg,
-.delete-btn:hover svg{
-
-    transform:scale(1.12);
-
-}
 
 /* =====================================================
-   CARD ANIMATION
+   ANIMATION
 ===================================================== */
 
-.plot-card{
+@keyframes plotFadeUp {
 
-    animation:fadeUp .45s ease;
-
-}
-
-@keyframes fadeUp{
-
-    from{
-
-        opacity:0;
-
-        transform:translateY(15px);
-
+    from {
+        opacity: 0;
+        transform: translateY(10px);
     }
 
-    to{
-
-        opacity:1;
-
-        transform:translateY(0);
-
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 
 }
 
-/* ==========================================================
-   RESPONSIVE
-========================================================== */
 
-@media (max-width:1200px){
+.plot-card {
+    animation: plotFadeUp 0.35s ease;
+}
 
-    .chart-stats{
-        grid-template-columns:repeat(3,1fr);
-        gap:16px;
-    }
 
-    .chart-box{
-        height:380px;
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 768px) {
+
+    .plot-card {
+        min-height: 430px;
     }
 
 }
 
-@media (max-width:992px){
 
-    .chart-stats{
-        grid-template-columns:repeat(2,1fr);
+@media (max-width: 480px) {
+
+    .plot-card {
+        padding: 14px !important;
     }
 
-    .chart-box{
-        height:350px;
+    .plot-card .plot-title h3 {
+        font-size: 19px !important;
     }
 
-}
-
-@media (max-width:768px){
-
-    .revenue-chart{
-
-        padding:20px;
-        margin-top:20px;
-
-    }
-
-    .chart-header{
-
-        flex-direction:column;
-        align-items:flex-start;
-        gap:12px;
-
-    }
-
-    .chart-header h2{
-
-        font-size:24px;
-
-    }
-
-    .chart-header p{
-
-        font-size:13px;
-
-    }
-
-    .chart-stats{
-
-        grid-template-columns:1fr;
-        gap:15px;
-
-    }
-
-    .mini-card{
-
-        padding:16px;
-
-    }
-
-    .mini-icon{
-
-        width:50px;
-        height:50px;
-
-    }
-
-    .mini-card h3{
-
-        font-size:20px;
-
-    }
-
-    .chart-box{
-
-        height:320px;
-        padding:15px;
-
-    }
-
-}
-
-@media (max-width:480px){
-
-    .revenue-chart{
-
-        padding:15px;
-
-    }
-
-    .chart-header h2{
-
-        font-size:20px;
-
-    }
-
-    .chart-header p{
-
-        font-size:12px;
-
-    }
-
-    .mini-card{
-
-        gap:12px;
-        padding:14px;
-
-    }
-
-    .mini-icon{
-
-        width:44px;
-        height:44px;
-
-        border-radius:12px;
-
-    }
-
-    .mini-icon svg{
-
-        width:18px;
-        height:18px;
-
-    }
-
-    .mini-card h3{
-
-        font-size:18px;
-
-    }
-
-    .mini-card span{
-
-        font-size:11px;
-
-    }
-
-    .chart-box{
-
-        height:260px;
-        padding:10px;
-
+    .plot-card .price-card h2 {
+        font-size: 25px !important;
     }
 
 }

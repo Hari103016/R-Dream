@@ -182,6 +182,7 @@ export default function Receipt() {
 
       </div>
 
+
       {/* =================================================
           RECEIPT
       ================================================= */}
@@ -198,6 +199,7 @@ export default function Receipt() {
           className="receipt-watermark"
           alt="Dream Infra"
         />
+
 
         {/* =================================================
             HEADER
@@ -223,6 +225,7 @@ export default function Receipt() {
 
         </div>
 
+
         {/* =================================================
             RECEIPT TITLE
         ================================================= */}
@@ -234,6 +237,7 @@ export default function Receipt() {
           </h2>
 
         </div>
+
 
         {/* =================================================
             RECEIPT INFO
@@ -253,6 +257,7 @@ export default function Receipt() {
 
           </div>
 
+
           <div>
 
             <small>
@@ -266,6 +271,7 @@ export default function Receipt() {
           </div>
 
         </div>
+
 
         {/* =================================================
             CUSTOMER & PLOT INFORMATION
@@ -295,6 +301,7 @@ export default function Receipt() {
 
               </div>
 
+
               <div className="row">
 
                 <span>
@@ -306,6 +313,7 @@ export default function Receipt() {
                 </strong>
 
               </div>
+
 
               <div className="row">
 
@@ -325,6 +333,7 @@ export default function Receipt() {
 
               </div>
 
+
               <div className="row">
 
                 <span>
@@ -340,6 +349,7 @@ export default function Receipt() {
             </div>
 
           </div>
+
 
           {/* PLOT */}
 
@@ -363,6 +373,7 @@ export default function Receipt() {
 
               </div>
 
+
               <div className="row">
 
                 <span>
@@ -377,6 +388,7 @@ export default function Receipt() {
 
               </div>
 
+
               <div className="row">
 
                 <span>
@@ -388,6 +400,7 @@ export default function Receipt() {
                 </strong>
 
               </div>
+
 
               <div className="row">
 
@@ -410,6 +423,7 @@ export default function Receipt() {
           </div>
 
         </div>
+
 
         {/* =================================================
             PAYMENT DETAILS
@@ -469,6 +483,7 @@ export default function Receipt() {
 
                     </thead>
 
+
                     <tbody>
 
                       <tr>
@@ -524,31 +539,28 @@ export default function Receipt() {
 
         </div>
 
+
         {/* =================================================
             AMOUNT SUMMARY
         ================================================= */}
 
-        <div className="summary-section">
+        <div className="receipt-summary-section">
 
           {/* TOTAL */}
 
-          <div className="summary-card">
+          <div className="receipt-summary-card">
 
-            <div className="summary-icon">
+            <div className="receipt-summary-icon">
               ₹
             </div>
 
-            <div className="summary-text">
+            <div className="receipt-summary-content">
 
-              <small>
+              <span className="receipt-summary-label">
                 Total Amount
-              </small>
+              </span>
 
-            </div>
-
-            <div className="summary-value">
-
-              <h2>
+              <h2 className="receipt-summary-amount">
                 ₹{" "}
                 {Number(
                   customer.total_amount || 0
@@ -561,25 +573,22 @@ export default function Receipt() {
 
           </div>
 
+
           {/* PAID */}
 
-          <div className="summary-card">
+          <div className="receipt-summary-card">
 
-            <div className="summary-icon">
+            <div className="receipt-summary-icon">
               💳
             </div>
 
-            <div className="summary-text">
+            <div className="receipt-summary-content">
 
-              <small>
+              <span className="receipt-summary-label">
                 Paid Amount
-              </small>
+              </span>
 
-            </div>
-
-            <div className="summary-value">
-
-              <h2>
+              <h2 className="receipt-summary-amount">
                 ₹{" "}
                 {paidAmount.toLocaleString(
                   "en-IN"
@@ -590,25 +599,22 @@ export default function Receipt() {
 
           </div>
 
+
           {/* BALANCE */}
 
-          <div className="summary-card">
+          <div className="receipt-summary-card">
 
-            <div className="summary-icon">
+            <div className="receipt-summary-icon">
               ⚖
             </div>
 
-            <div className="summary-text">
+            <div className="receipt-summary-content">
 
-              <small>
+              <span className="receipt-summary-label">
                 Balance Amount
-              </small>
+              </span>
 
-            </div>
-
-            <div className="summary-value">
-
-              <h2>
+              <h2 className="receipt-summary-amount">
                 ₹{" "}
                 {Number(
                   customer.balance || 0
@@ -622,6 +628,7 @@ export default function Receipt() {
           </div>
 
         </div>
+
 
         {/* =================================================
             DECLARATION
@@ -660,6 +667,7 @@ export default function Receipt() {
 
         </div>
 
+
         {/* =================================================
             SIGNATURE
         ================================================= */}
@@ -673,6 +681,7 @@ export default function Receipt() {
             SEAL
 
           </div>
+
 
           <div className="signature-box">
 
@@ -690,6 +699,7 @@ export default function Receipt() {
 
         </div>
 
+
         {/* NOTE */}
 
         <div className="signature-section">
@@ -701,6 +711,7 @@ export default function Receipt() {
           </p>
 
         </div>
+
 
         {/* =================================================
             FOOTER
@@ -738,6 +749,7 @@ export default function Receipt() {
           </div>
 
         </div>
+
 
         {/* =================================================
             BOTTOM BAR

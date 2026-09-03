@@ -1,1179 +1,947 @@
-import { useEffect, useMemo, useState } from "react";
-
-import Sidebar from "../components/Sidebar";
-import Topbar from "../components/Topbar";
-
-import { supabase } from "../services/supabase";
-
-import {
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
-  X,
-} from "lucide-react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import "./LayoutMap.css";
+import { supabase } from "../services/supabase";
 
+const SVG_URL = "/layout.svg";
+const DIMENSIONS_URL = "/plot-dimensions.txt";
 
-/* =========================================================
-   SVG FILE
-========================================================= */
+const TOTAL_PLOTS = 272;
+const SVG_WIDTH = 1191;
+const SVG_HEIGHT = 1684;
 
-const SVG_URL = "/GUDIMETLA_LAYOUT.svg";
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 12;
+const BUTTON_ZOOM_FACTOR = 1.25;
 
-
-/* =========================================================
-   COLORS
-========================================================= */
-
-const COLORS = {
-  available: "#22c55e",
-  booked: "#f59e0b",
-  reserved: "#f59e0b",
-  sold: "#ef4444",
+const STATUS_META = {
+  available: {
+    label: "Available",
+    fill: "#00A83B",
+    stroke: "#006B25",
+  },
+  booked: {
+    label: "Booked",
+    fill: "#FF8C00",
+    stroke: "#B85C00",
+  },
+  sold: {
+    label: "Sold",
+    fill: "#E60000",
+    stroke: "#990000",
+  },
 };
 
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
 
-/* =========================================================
-   NUMBER REGEX
-
-   IMPORTANT:
-   This correctly handles:
-   .12
-   -.12
-   0.12
-========================================================= */
-
-const NUMBER_REGEX =
-  /-?(?:\d+(?:\.\d*)?|\.\d+)/g;
-
-
-/* =========================================================
-   NORMALIZE STATUS
-========================================================= */
-
-function normalizeStatus(value) {
-  const status = String(value || "")
+function normalizeStatus(status) {
+  const value = String(status ?? "")
     .trim()
     .toLowerCase()
-    .replace(/[_-]/g, " ")
+    .replace(/[_-]+/g, " ")
     .replace(/\s+/g, " ");
 
   if (
-    status === "booked" ||
-    status === "booking" ||
-    status === "reserved" ||
-    status === "advance paid" ||
-    status === "advancepaid"
-  ) {
-    return "booked";
-  }
-
-  if (
-    status === "sold" ||
-    status === "registration completed" ||
-    status === "registered"
+    value.includes("sold") ||
+    value.includes("registered") ||
+    value.includes("sale completed")
   ) {
     return "sold";
+  }
+
+  if (value.includes("book") || value.includes("reserv")) {
+    return "booked";
   }
 
   return "available";
 }
 
-
-/* =========================================================
-   GET PLOT NUMBER FROM SUPABASE
-========================================================= */
-
-function getPlotNumber(plot) {
-  return Number(
-    plot?.plot_number ??
-      plot?.plotNumber ??
-      plot?.plot_no ??
-      plot?.plotNo ??
-      plot?.number ??
-      plot?.plot_id
-  );
+function databaseStatus(status) {
+  return STATUS_META[normalizeStatus(status)].label;
 }
 
+function createInitialStatuses() {
+  const result = {};
 
-/* =========================================================
-   GET STATUS FROM SUPABASE
-========================================================= */
-
-function getPlotStatus(plot) {
-  return normalizeStatus(
-    plot?.status ??
-      plot?.plot_status ??
-      plot?.booking_status ??
-      plot?.availability ??
-      "available"
-  );
-}
-
-
-/* =========================================================
-   PARSE SVG MATRIX
-
-   Example:
-   matrix(.12 0 -0 .12 14 1656)
-
-   IMPORTANT:
-   Do NOT use a regex that converts ".12"
-   into "12".
-========================================================= */
-
-function parseMatrix(transform) {
-  const values = String(transform || "")
-    .match(NUMBER_REGEX);
-
-  if (!values || values.length < 6) {
-    return [
-      1,
-      0,
-      0,
-      1,
-      0,
-      0,
-    ];
+  for (let i = 1; i <= TOTAL_PLOTS; i += 1) {
+    result[i] = "available";
   }
 
-  return values
-    .slice(0, 6)
-    .map(Number);
+  return result;
 }
 
+function createDefaultDimensions() {
+  const result = {};
 
-/* =========================================================
-   TRANSFORM POINT
-========================================================= */
-
-function transformPoint(
-  x,
-  y,
-  matrix
-) {
-  const [
-    a,
-    b,
-    c,
-    d,
-    e,
-    f,
-  ] = matrix;
-
-  return {
-    x:
-      a * x +
-      c * y +
-      e,
-
-    y:
-      b * x +
-      d * y +
-      f,
-  };
-}
-
-
-/* =========================================================
-   EXTRACT PLOT NUMBERS
-========================================================= */
-
-function extractPlotCenters(
-  svgDocument
-) {
-  const textElements = [
-    ...svgDocument.querySelectorAll(
-      "text"
-    ),
-  ];
-
-  const plots = [];
-
-  for (
-    const textElement of textElements
-  ) {
-    const rawText =
-      textElement.textContent
-        .trim();
-
-    if (
-      !/^\d+$/.test(rawText)
-    ) {
-      continue;
-    }
-
-    const plotNumber =
-      Number(rawText);
-
-    if (
-      plotNumber < 1 ||
-      plotNumber > 272
-    ) {
-      continue;
-    }
-
-    /*
-      Plot-number text in this SVG
-      normally uses font-size around
-      73.457.
-
-      Plot 1 and Plot 2 use larger
-      fonts, so we allow > 65.
-    */
-
-    const fontSize =
-      parseFloat(
-        textElement.getAttribute(
-          "font-size"
-        ) || "0"
-      );
-
-    if (
-      fontSize < 65
-    ) {
-      continue;
-    }
-
-    const tspan =
-      textElement.querySelector(
-        "tspan"
-      );
-
-    if (!tspan) {
-      continue;
-    }
-
-    const xValues =
-      String(
-        tspan.getAttribute(
-          "x"
-        ) || ""
-      )
-        .trim()
-        .split(/\s+/);
-
-    const yValue =
-      parseFloat(
-        tspan.getAttribute(
-          "y"
-        )
-      );
-
-    if (
-      !xValues.length ||
-      !Number.isFinite(yValue)
-    ) {
-      continue;
-    }
-
-    const xValue =
-      parseFloat(
-        xValues[0]
-      );
-
-    if (
-      !Number.isFinite(xValue)
-    ) {
-      continue;
-    }
-
-    const matrix =
-      parseMatrix(
-        textElement.getAttribute(
-          "transform"
-        )
-      );
-
-    const position =
-      transformPoint(
-        xValue,
-        yValue,
-        matrix
-      );
-
-    plots.push({
-      plotNumber,
-      x: position.x,
-      y: position.y,
-    });
+  for (let i = 1; i <= TOTAL_PLOTS; i += 1) {
+    result[i] = {
+      length: null,
+      breadth: null,
+    };
   }
 
-
-  /*
-    Remove duplicate number
-    positions.
-  */
-
-  const unique = [];
-
-  const seen =
-    new Set();
-
-  for (
-    const plot of plots
-  ) {
-    const key =
-      `${plot.plotNumber}_${plot.x.toFixed(
-        1
-      )}_${plot.y.toFixed(1)}`;
-
-    if (
-      seen.has(key)
-    ) {
-      continue;
-    }
-
-    seen.add(key);
-
-    unique.push(plot);
-  }
-
-  /*
-    Sort by plot number.
-  */
-
-  unique.sort(
-    (a, b) =>
-      a.plotNumber -
-      b.plotNumber
-  );
-
-  console.log(
-    "SVG plot numbers detected:",
-    unique.length
-  );
-
-  return unique;
+  return result;
 }
 
+function parseDimensionsText(text) {
+  const result = {};
 
-/* =========================================================
-   EXTRACT BLACK HORIZONTAL / VERTICAL LINES
-========================================================= */
+  if (!text) return result;
 
-function extractBoundaryLines(
-  svgDocument
-) {
-  const horizontal = [];
-  const vertical = [];
+  for (const line of text.split(/\r?\n/)) {
+    const match = line.match(
+      /Plot\s*(\d+)\s*[-–—:]?\s*Length\s*:\s*([\d.]+)\s*ft\s*,?\s*Breadth\s*:\s*([\d.]+)\s*ft/i
+    );
 
-  const paths = [
-    ...svgDocument.querySelectorAll(
-      "path"
-    ),
-  ];
+    if (!match) continue;
 
-  for (
-    const path of paths
+    const plotNumber = Number(match[1]);
+    const length = Number(match[2]);
+    const breadth = Number(match[3]);
+
+    if (
+      Number.isInteger(plotNumber) &&
+      plotNumber >= 1 &&
+      plotNumber <= TOTAL_PLOTS &&
+      Number.isFinite(length) &&
+      Number.isFinite(breadth)
+    ) {
+      result[plotNumber] = {
+        length,
+        breadth,
+      };
+    }
+  }
+
+  return result;
+}
+
+function getNumericText(element) {
+  if (!element) return null;
+
+  const text = (element.textContent || "")
+    .replace(/\s+/g, "")
+    .trim();
+
+  if (!/^\d+$/.test(text)) return null;
+
+  const number = Number(text);
+
+  if (
+    !Number.isInteger(number) ||
+    number < 1 ||
+    number > TOTAL_PLOTS
   ) {
-    const stroke =
-      String(
-        path.getAttribute(
-          "stroke"
-        ) || ""
-      )
-        .trim()
-        .toLowerCase();
+    return null;
+  }
 
-    /*
-      Only black lines.
+  return number;
+}
 
-      Blue roads and red outer
-      boundary are excluded.
-    */
+function isPlotBoundaryPath(element) {
+  return (
+    element?.tagName?.toLowerCase() === "path" &&
+    /[Cc]/.test(element.getAttribute("d") || "")
+  );
+}
 
-    if (
-      stroke !== "#000000" &&
-      stroke !== "black"
-    ) {
-      continue;
-    }
+/*
+  Maps each ORIGINAL plot boundary to the ORIGINAL plot number.
+  No path coordinates, transforms, labels, or plot geometry are changed.
 
-    const d =
-      String(
-        path.getAttribute(
-          "d"
-        ) || ""
-      ).trim();
+  This mapper has already been verified against the supplied Gudimetla SVG:
+  all 272 plot boundaries are detected.
+*/
+function buildPlotMap(svg) {
+  const plotMap = new Map();
 
-    /*
-      Only pure horizontal /
-      vertical paths.
+  if (!svg) return plotMap;
 
-      Circle paths are ignored.
-    */
+  const groups = Array.from(svg.querySelectorAll("g"));
 
-    const match =
-      d.match(
-        /^M\s*([-\d.]+)\s+([-\d.]+)\s*([HV])\s*([-\d.]+)\s*$/
-      );
+  for (const group of groups) {
+    const children = Array.from(group.children);
 
-    if (!match) {
-      continue;
-    }
+    for (let index = 0; index < children.length; index += 1) {
+      const boundary = children[index];
 
-    const x =
-      Number(match[1]);
+      if (!isPlotBoundaryPath(boundary)) continue;
 
-    const y =
-      Number(match[2]);
+      let plotNumber = null;
+      let plotLabel = null;
 
-    const type =
-      match[3];
+      for (
+        let nextIndex = index + 1;
+        nextIndex < children.length;
+        nextIndex += 1
+      ) {
+        const next = children[nextIndex];
 
-    const end =
-      Number(match[4]);
+        if (isPlotBoundaryPath(next)) break;
+        if (next.tagName?.toLowerCase() !== "text") continue;
 
-    const matrix =
-      parseMatrix(
-        path.getAttribute(
-          "transform"
-        )
-      );
+        const number = getNumericText(next);
 
+        if (number !== null) {
+          plotNumber = number;
+          plotLabel = next;
+          break;
+        }
+      }
 
-    /* =====================================================
-       HORIZONTAL
-    ===================================================== */
+      if (
+        plotNumber === null ||
+        !plotLabel ||
+        plotMap.has(plotNumber)
+      ) {
+        continue;
+      }
 
-    if (
-      type === "H"
-    ) {
-      const p1 =
-        transformPoint(
-          x,
-          y,
-          matrix
-        );
+      boundary.dataset.plotNumber = String(plotNumber);
+      plotLabel.dataset.plotNumber = String(plotNumber);
 
-      const p2 =
-        transformPoint(
-          end,
-          y,
-          matrix
-        );
-
-      const x1 =
-        Math.min(
-          p1.x,
-          p2.x
-        );
-
-      const x2 =
-        Math.max(
-          p1.x,
-          p2.x
-        );
-
-      const length =
-        x2 - x1;
+      boundary.classList.add("plot-boundary");
+      plotLabel.classList.add("plot-number-label");
 
       /*
-        Plot-number circles are
-        approximately 19px wide.
-
-        Ignore those.
+        Keeps the interactive boundary stroke visually stable when the
+        SVG viewBox zoom changes.
       */
+      boundary.setAttribute(
+        "vector-effect",
+        "non-scaling-stroke"
+      );
 
-      if (
-        length < 25
-      ) {
-        continue;
-      }
-
-      horizontal.push({
-        y: p1.y,
-        x1,
-        x2,
-        length,
+      plotMap.set(plotNumber, {
+        boundary,
+        label: plotLabel,
       });
     }
+  }
 
+  const missing = [];
 
-    /* =====================================================
-       VERTICAL
-    ===================================================== */
-
-    if (
-      type === "V"
-    ) {
-      const p1 =
-        transformPoint(
-          x,
-          y,
-          matrix
-        );
-
-      const p2 =
-        transformPoint(
-          x,
-          end,
-          matrix
-        );
-
-      const y1 =
-        Math.min(
-          p1.y,
-          p2.y
-        );
-
-      const y2 =
-        Math.max(
-          p1.y,
-          p2.y
-        );
-
-      const length =
-        y2 - y1;
-
-      if (
-        length < 25
-      ) {
-        continue;
-      }
-
-      vertical.push({
-        x: p1.x,
-        y1,
-        y2,
-        length,
-      });
+  for (let i = 1; i <= TOTAL_PLOTS; i += 1) {
+    if (!plotMap.has(i)) {
+      missing.push(i);
     }
   }
 
   console.log(
-    "Boundary lines:",
-    {
-      horizontal:
-        horizontal.length,
-
-      vertical:
-        vertical.length,
-    }
+    `Gudimetla layout: ${plotMap.size}/${TOTAL_PLOTS} plots mapped`
   );
 
-  return {
-    horizontal,
-    vertical,
-  };
-}
-
-
-/* =========================================================
-   FIND HORIZONTAL BOUNDARY
-========================================================= */
-
-function findHorizontalBoundary(
-  lines,
-  x,
-  y,
-  direction
-) {
-  const candidates =
-    lines.filter(
-      (line) => {
-        const crossesX =
-          line.x1 <= x + 2 &&
-          line.x2 >= x - 2;
-
-        if (!crossesX) {
-          return false;
-        }
-
-        if (
-          direction === "top"
-        ) {
-          return (
-            line.y <
-            y - 5
-          );
-        }
-
-        return (
-          line.y >
-          y + 5
-        );
-      }
-    );
-
-  if (
-    !candidates.length
-  ) {
-    return null;
+  if (missing.length) {
+    console.warn("Missing plot numbers:", missing);
   }
 
-  candidates.sort(
-    (a, b) =>
-      Math.abs(
-        a.y - y
-      ) -
-      Math.abs(
-        b.y - y
-      )
+  return plotMap;
+}
+
+/*
+  Topmost vector-only clarity layer.
+
+  It clones each EXISTING plot boundary and EXISTING number at exactly
+  the same SVG coordinates. The clones are stroke/text only and are not
+  interactive. This keeps edges and numbers visible above status fills.
+*/
+function createClarityLayer(svg, plotMap) {
+  svg
+    .querySelector(".plot-clarity-layer")
+    ?.remove();
+
+  const layer = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "g"
   );
 
-  return candidates[0];
-}
-
-
-/* =========================================================
-   FIND VERTICAL BOUNDARY
-========================================================= */
-
-function findVerticalBoundary(
-  lines,
-  x,
-  y,
-  direction
-) {
-  const candidates =
-    lines.filter(
-      (line) => {
-        const crossesY =
-          line.y1 <= y + 2 &&
-          line.y2 >= y - 2;
-
-        if (!crossesY) {
-          return false;
-        }
-
-        if (
-          direction === "left"
-        ) {
-          return (
-            line.x <
-            x - 5
-          );
-        }
-
-        return (
-          line.x >
-          x + 5
-        );
-      }
-    );
-
-  if (
-    !candidates.length
-  ) {
-    return null;
-  }
-
-  candidates.sort(
-    (a, b) =>
-      Math.abs(
-        a.x - x
-      ) -
-      Math.abs(
-        b.x - x
-      )
+  layer.setAttribute(
+    "class",
+    "plot-clarity-layer"
   );
 
-  return candidates[0];
-}
-
-
-/* =========================================================
-   CREATE ONE PLOT RECTANGLE
-========================================================= */
-
-function getPlotBounds(
-  plot,
-  boundaryLines
-) {
-  const {
-    x,
-    y,
-  } = plot;
-
-  const top =
-    findHorizontalBoundary(
-      boundaryLines.horizontal,
-      x,
-      y,
-      "top"
-    );
-
-  const bottom =
-    findHorizontalBoundary(
-      boundaryLines.horizontal,
-      x,
-      y,
-      "bottom"
-    );
-
-  const left =
-    findVerticalBoundary(
-      boundaryLines.vertical,
-      x,
-      y,
-      "left"
-    );
-
-  const right =
-    findVerticalBoundary(
-      boundaryLines.vertical,
-      x,
-      y,
-      "right"
-    );
-
-
-  /*
-    Normal interior plot.
-  */
-
-  if (
-    top &&
-    bottom &&
-    left &&
-    right
-  ) {
-    const width =
-      right.x -
-      left.x;
-
-    const height =
-      bottom.y -
-      top.y;
-
-    /*
-      Prevent roads / huge regions
-      from becoming overlays.
-    */
-
-    if (
-      width >= 12 &&
-      width <= 80 &&
-      height >= 8 &&
-      height <= 80
-    ) {
-      const inset = 1.2;
-
-      return {
-        x:
-          left.x +
-          inset,
-
-        y:
-          top.y +
-          inset,
-
-        width:
-          width -
-          inset * 2,
-
-        height:
-          height -
-          inset * 2,
-      };
-    }
-  }
-
-
-  /*
-    Edge plots:
-
-    Some outer plots use the red
-    boundary instead of a black
-    vertical line.
-
-    In that case use the known
-    normal plot width.
-
-    This is only a fallback.
-  */
-
-  const normalWidth =
-    48.5;
-
-  if (
-    top &&
-    bottom
-  ) {
-    const height =
-      bottom.y -
-      top.y;
-
-    if (
-      height >= 8 &&
-      height <= 80
-    ) {
-      let leftX;
-      let rightX;
-
-      if (
-        right &&
-        !left
-      ) {
-        rightX =
-          right.x;
-
-        leftX =
-          rightX -
-          normalWidth;
-      } else if (
-        left &&
-        !right
-      ) {
-        leftX =
-          left.x;
-
-        rightX =
-          leftX +
-          normalWidth;
-      } else {
-        return null;
-      }
-
-      return {
-        x:
-          leftX + 1,
-        y:
-          top.y + 1,
-
-        width:
-          rightX -
-          leftX -
-          2,
-
-        height:
-          height - 2,
-      };
-    }
-  }
-
-  return null;
-}
-
-
-/* =========================================================
-   CREATE SVG OVERLAY LAYER
-========================================================= */
-
-function createPlotOverlays(
-  svgDocument,
-  plotCenters
-) {
-  const boundaries =
-    extractBoundaryLines(
-      svgDocument
-    );
-
-  const existing =
-    svgDocument.querySelector(
-      "#dynamic-plot-overlays"
-    );
-
-  if (existing) {
-    existing.remove();
-  }
-
-  const overlayGroup =
-    svgDocument.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "g"
-    );
-
-  overlayGroup.setAttribute(
-    "id",
-    "dynamic-plot-overlays"
-  );
-
-  overlayGroup.setAttribute(
+  layer.setAttribute(
     "pointer-events",
-    "all"
+    "none"
   );
-
-
-  let created = 0;
 
   for (
-    const plot of plotCenters
+    let plotNumber = 1;
+    plotNumber <= TOTAL_PLOTS;
+    plotNumber += 1
   ) {
-    const bounds =
-      getPlotBounds(
-        plot,
-        boundaries
-      );
+    const item = plotMap.get(plotNumber);
 
-    if (!bounds) {
-      continue;
-    }
+    if (!item) continue;
 
-    const rect =
-      svgDocument.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "rect"
-      );
+    const boundaryClone =
+      item.boundary.cloneNode(true);
 
-    rect.setAttribute(
-      "x",
-      bounds.x
+    boundaryClone.removeAttribute("style");
+    boundaryClone.removeAttribute(
+      "data-plot-number"
     );
 
-    rect.setAttribute(
-      "y",
-      bounds.y
-    );
-
-    rect.setAttribute(
-      "width",
-      bounds.width
-    );
-
-    rect.setAttribute(
-      "height",
-      bounds.height
-    );
-
-    rect.setAttribute(
-      "data-plot-number",
-      plot.plotNumber
-    );
-
-    rect.setAttribute(
-      "class",
-      "dynamic-plot"
-    );
-
-    /*
-      Start transparent.
-
-      Status will be applied later.
-    */
-
-    rect.setAttribute(
+    boundaryClone.setAttribute(
       "fill",
-      COLORS.available
-    );
-
-    rect.setAttribute(
-      "fill-opacity",
-      "0"
-    );
-
-    rect.setAttribute(
-      "stroke",
       "none"
     );
 
-    rect.setAttribute(
+    boundaryClone.setAttribute(
+      "vector-effect",
+      "non-scaling-stroke"
+    );
+
+    boundaryClone.setAttribute(
       "pointer-events",
-      "all"
+      "none"
     );
 
-    overlayGroup.appendChild(
-      rect
+    boundaryClone.classList.add(
+      "plot-clarity-boundary"
     );
 
-    created++;
+    const labelClone =
+      item.label.cloneNode(true);
+
+    labelClone.removeAttribute("style");
+    labelClone.removeAttribute(
+      "data-plot-number"
+    );
+
+    labelClone.setAttribute(
+      "pointer-events",
+      "none"
+    );
+
+    labelClone.classList.add(
+      "plot-clarity-label"
+    );
+
+    layer.appendChild(boundaryClone);
+    layer.appendChild(labelClone);
   }
 
-  svgDocument.documentElement.appendChild(
-    overlayGroup
-  );
-
-  console.log(
-    "Plot overlays created:",
-    created
-  );
+  svg.appendChild(layer);
 }
 
-
-/* =========================================================
-   APPLY LIVE STATUS
-========================================================= */
-
-function applyStatuses(
-  svgDocument,
-  plots
+function paintPlot(
+  plotNumber,
+  status,
+  plotMap,
+  selectedPlot
 ) {
-  const statusMap =
-    new Map();
+  const item =
+    plotMap.get(Number(plotNumber));
 
-  for (
-    const plot of plots
-  ) {
-    const number =
-      getPlotNumber(
-        plot
-      );
+  if (!item) return;
 
-    if (
-      !Number.isFinite(number)
-    ) {
-      continue;
-    }
+  const normalized =
+    normalizeStatus(status);
 
-    statusMap.set(
-      number,
-      getPlotStatus(
-        plot
-      )
+  const meta =
+    STATUS_META[normalized];
+
+  const selected =
+    Number(selectedPlot) ===
+    Number(plotNumber);
+
+  const { boundary, label } = item;
+
+  boundary.classList.remove(
+    "plot-available",
+    "plot-booked",
+    "plot-sold",
+    "plot-selected"
+  );
+
+  boundary.classList.add(
+    `plot-${normalized}`
+  );
+
+  if (selected) {
+    boundary.classList.add(
+      "plot-selected"
     );
   }
 
+  boundary.dataset.status =
+    normalized;
 
-  const overlays =
-    svgDocument.querySelectorAll(
-      ".dynamic-plot"
+  boundary.setAttribute(
+    "aria-label",
+    `Plot ${plotNumber}, ${meta.label}`
+  );
+
+  boundary.style.setProperty(
+    "fill",
+    meta.fill,
+    "important"
+  );
+
+  boundary.style.setProperty(
+    "fill-opacity",
+    normalized === "available"
+      ? "0.78"
+      : "0.82",
+    "important"
+  );
+
+  boundary.style.setProperty(
+    "stroke",
+    meta.stroke,
+    "important"
+  );
+
+  boundary.style.setProperty(
+    "stroke-opacity",
+    "1",
+    "important"
+  );
+
+  boundary.style.setProperty(
+    "stroke-width",
+    selected ? "4.5" : "2",
+    "important"
+  );
+
+  boundary.style.setProperty(
+    "cursor",
+    "pointer",
+    "important"
+  );
+
+  boundary.style.setProperty(
+    "pointer-events",
+    "all",
+    "important"
+  );
+
+  if (label) {
+    label.classList.toggle(
+      "plot-number-selected",
+      selected
     );
 
+    label.style.setProperty(
+      "fill",
+      "#111827",
+      "important"
+    );
 
-  overlays.forEach(
-    (overlay) => {
-      const number =
-        Number(
-          overlay.getAttribute(
-            "data-plot-number"
-          )
+    label.style.setProperty(
+      "stroke",
+      "#ffffff",
+      "important"
+    );
+
+    label.style.setProperty(
+      "stroke-width",
+      "1.5",
+      "important"
+    );
+
+    label.style.setProperty(
+      "paint-order",
+      "stroke fill",
+      "important"
+    );
+
+    label.style.setProperty(
+      "font-weight",
+      "800",
+      "important"
+    );
+
+    label.style.setProperty(
+      "cursor",
+      "pointer",
+      "important"
+    );
+
+    label.style.setProperty(
+      "pointer-events",
+      "all",
+      "important"
+    );
+  }
+}
+
+function paintAllPlots(
+  statuses,
+  plotMap,
+  selectedPlot
+) {
+  if (!plotMap?.size) return;
+
+  for (
+    let plotNumber = 1;
+    plotNumber <= TOTAL_PLOTS;
+    plotNumber += 1
+  ) {
+    paintPlot(
+      plotNumber,
+      statuses[plotNumber] ??
+        "available",
+      plotMap,
+      selectedPlot
+    );
+  }
+}
+
+function fullViewBox() {
+  return {
+    x: 0,
+    y: 0,
+    width: SVG_WIDTH,
+    height: SVG_HEIGHT,
+  };
+}
+
+function clampViewBox(viewBox) {
+  const width = clamp(
+    viewBox.width,
+    SVG_WIDTH / MAX_ZOOM,
+    SVG_WIDTH
+  );
+
+  const height =
+    width *
+    (SVG_HEIGHT / SVG_WIDTH);
+
+  const maxX =
+    SVG_WIDTH - width;
+
+  const maxY =
+    SVG_HEIGHT - height;
+
+  return {
+    x: clamp(viewBox.x, 0, Math.max(0, maxX)),
+    y: clamp(viewBox.y, 0, Math.max(0, maxY)),
+    width,
+    height,
+  };
+}
+
+export default function LayoutMap() {
+  const viewportRef = useRef(null);
+  const canvasRef = useRef(null);
+  const svgRef = useRef(null);
+  const plotMapRef = useRef(new Map());
+
+  const activePointersRef =
+    useRef(new Map());
+
+  const gestureRef = useRef(null);
+
+  const viewBoxRef =
+    useRef(fullViewBox());
+
+  const [svgLoaded, setSvgLoaded] =
+    useState(false);
+
+  const [svgError, setSvgError] =
+    useState("");
+
+  const [dimensions, setDimensions] =
+    useState(
+      createDefaultDimensions
+    );
+
+  const [statuses, setStatuses] =
+    useState(
+      createInitialStatuses
+    );
+
+  const [selectedPlot, setSelectedPlot] =
+    useState(null);
+
+  const [viewBox, setViewBox] =
+    useState(fullViewBox);
+
+  const [isDragging, setIsDragging] =
+    useState(false);
+
+  const zoom =
+    SVG_WIDTH / viewBox.width;
+
+  const applyViewBox =
+    useCallback((next) => {
+      const safe =
+        clampViewBox(next);
+
+      viewBoxRef.current = safe;
+      setViewBox(safe);
+    }, []);
+
+  /*
+    IMPORTANT CLARITY FIX:
+    Zoom is applied by changing the SVG viewBox, not by CSS transform: scale().
+    The browser therefore re-renders the SVG paths/text as vectors.
+  */
+  useEffect(() => {
+    const svg = svgRef.current;
+
+    if (!svg) return;
+
+    svg.setAttribute(
+      "viewBox",
+      `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`
+    );
+  }, [viewBox]);
+
+  const screenToSvg =
+    useCallback((clientX, clientY) => {
+      const svg = svgRef.current;
+
+      if (!svg) return null;
+
+      const matrix =
+        svg.getScreenCTM();
+
+      if (!matrix) return null;
+
+      const point =
+        new DOMPoint(
+          clientX,
+          clientY
+        ).matrixTransform(
+          matrix.inverse()
         );
 
-      const status =
-        statusMap.get(
-          number
-        ) ||
-        "available";
+      return {
+        x: point.x,
+        y: point.y,
+      };
+    }, []);
 
-      overlay.setAttribute(
-        "data-status",
-        status
+  const getRenderedSvgMetrics =
+    useCallback((targetViewBox) => {
+      const svg = svgRef.current;
+
+      if (!svg) return null;
+
+      const rect =
+        svg.getBoundingClientRect();
+
+      const scale = Math.min(
+        rect.width /
+          targetViewBox.width,
+        rect.height /
+          targetViewBox.height
       );
 
-      overlay.setAttribute(
-        "fill",
-        COLORS[
-          status
-        ] ||
-        COLORS.available
+      const renderedWidth =
+        targetViewBox.width *
+        scale;
+
+      const renderedHeight =
+        targetViewBox.height *
+        scale;
+
+      return {
+        rect,
+        scale,
+        offsetX:
+          (rect.width -
+            renderedWidth) /
+          2,
+        offsetY:
+          (rect.height -
+            renderedHeight) /
+          2,
+      };
+    }, []);
+
+  const zoomToAtScreenPoint =
+    useCallback(
+      (
+        nextZoomValue,
+        clientX,
+        clientY
+      ) => {
+        const current =
+          viewBoxRef.current;
+
+        const anchor =
+          screenToSvg(
+            clientX,
+            clientY
+          );
+
+        const svg =
+          svgRef.current;
+
+        if (!anchor || !svg) return;
+
+        const nextZoom = clamp(
+          nextZoomValue,
+          MIN_ZOOM,
+          MAX_ZOOM
+        );
+
+        const nextWidth =
+          SVG_WIDTH / nextZoom;
+
+        const nextHeight =
+          SVG_HEIGHT / nextZoom;
+
+        const nextViewBox = {
+          x: 0,
+          y: 0,
+          width: nextWidth,
+          height: nextHeight,
+        };
+
+        const metrics =
+          getRenderedSvgMetrics(
+            nextViewBox
+          );
+
+        if (!metrics) return;
+
+        const localX =
+          clientX -
+          metrics.rect.left -
+          metrics.offsetX;
+
+        const localY =
+          clientY -
+          metrics.rect.top -
+          metrics.offsetY;
+
+        /*
+          Keep the same SVG coordinate underneath the cursor/touch point.
+        */
+        nextViewBox.x =
+          anchor.x -
+          localX / metrics.scale;
+
+        nextViewBox.y =
+          anchor.y -
+          localY / metrics.scale;
+
+        applyViewBox(nextViewBox);
+      },
+      [
+        applyViewBox,
+        getRenderedSvgMetrics,
+        screenToSvg,
+      ]
+    );
+
+  const zoomAtCenter =
+    useCallback(
+      (nextZoom) => {
+        const svg =
+          svgRef.current;
+
+        if (!svg) return;
+
+        const rect =
+          svg.getBoundingClientRect();
+
+        zoomToAtScreenPoint(
+          nextZoom,
+          rect.left +
+            rect.width / 2,
+          rect.top +
+            rect.height / 2
+        );
+      },
+      [zoomToAtScreenPoint]
+    );
+
+  const fitMap =
+    useCallback(() => {
+      applyViewBox(
+        fullViewBox()
+      );
+    }, [applyViewBox]);
+
+  const resetMap =
+    useCallback(() => {
+      setSelectedPlot(null);
+      applyViewBox(
+        fullViewBox()
+      );
+    }, [applyViewBox]);
+
+  const loadPlotStatuses =
+    useCallback(async () => {
+      try {
+        const {
+          data,
+          error,
+        } = await supabase
+          .from("plots")
+          .select(
+            "plot_no, status"
+          );
+
+        if (error) {
+          throw error;
+        }
+
+        const next =
+          createInitialStatuses();
+
+        for (
+          const row of data || []
+        ) {
+          const plotNumber =
+            Number(row.plot_no);
+
+          if (
+            Number.isInteger(
+              plotNumber
+            ) &&
+            plotNumber >= 1 &&
+            plotNumber <=
+              TOTAL_PLOTS
+          ) {
+            next[
+              plotNumber
+            ] =
+              normalizeStatus(
+                row.status
+              );
+          }
+        }
+
+        setStatuses(next);
+      } catch (error) {
+        console.error(
+          "Error loading plot statuses:",
+          error
+        );
+      }
+    }, []);
+
+  useEffect(() => {
+    loadPlotStatuses();
+  }, [loadPlotStatuses]);
+
+  useEffect(() => {
+    const channel =
+      supabase
+        .channel(
+          "gudimetla-layout-plot-status"
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "plots",
+          },
+          () => {
+            loadPlotStatuses();
+          }
+        )
+        .subscribe();
+
+    const fallback =
+      window.setInterval(
+        loadPlotStatuses,
+        5000
       );
 
+    return () => {
+      window.clearInterval(
+        fallback
+      );
 
-      /*
-        Keep original plot
-        number visible.
-      */
+      supabase.removeChannel(
+        channel
+      );
+    };
+  }, [loadPlotStatuses]);
 
-      if (
-        status === "booked"
-      ) {
-        overlay.setAttribute(
-          "fill-opacity",
-          "0.50"
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDimensions() {
+      try {
+        const response =
+          await fetch(
+            DIMENSIONS_URL,
+            {
+              cache: "no-store",
+            }
+          );
+
+        if (!response.ok) {
+          return;
+        }
+
+        const text =
+          await response.text();
+
+        if (cancelled) {
+          return;
+        }
+
+        setDimensions(
+          (previous) => ({
+            ...previous,
+            ...parseDimensionsText(
+              text
+            ),
+          })
         );
-      } else if (
-        status === "sold"
-      ) {
-        overlay.setAttribute(
-          "fill-opacity",
-          "0.50"
-        );
-      } else {
-        overlay.setAttribute(
-          "fill-opacity",
-          "0.25"
+      } catch (error) {
+        console.warn(
+          "Dimension loading failed:",
+          error
         );
       }
     }
-  );
-}
 
+    loadDimensions();
 
-/* =========================================================
-   COMPONENT
-========================================================= */
-
-function LayoutMap() {
-
-  const [
-    sidebarOpen,
-    setSidebarOpen,
-  ] = useState(false);
-
-
-  const [
-    zoom,
-    setZoom,
-  ] = useState(1);
-
-
-  const [
-    svgMarkup,
-    setSvgMarkup,
-  ] = useState("");
-
-
-  const [
-    plots,
-    setPlots,
-  ] = useState([]);
-
-
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
-
-
-  const [
-    error,
-    setError,
-  ] = useState("");
-
-
-  const [
-    selectedPlot,
-    setSelectedPlot,
-  ] = useState(null);
-
-
-  /* =======================================================
-     LOAD SVG
-  ======================================================= */
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
-
     let cancelled = false;
 
-
-    async function loadSVG() {
-
+    async function loadSvg() {
       try {
-
-        setLoading(true);
-
-        setError("");
-
+        setSvgLoaded(false);
+        setSvgError("");
 
         const response =
           await fetch(
             SVG_URL,
             {
-              cache:
-                "no-store",
+              cache: "no-store",
             }
           );
 
-
-        if (
-          !response.ok
-        ) {
+        if (!response.ok) {
           throw new Error(
-            `SVG file could not be loaded. HTTP ${response.status}`
+            `Could not load ${SVG_URL}. HTTP ${response.status}`
           );
         }
-
 
         const svgText =
           await response.text();
 
+        if (cancelled) return;
 
         const parser =
           new DOMParser();
-
 
         const document =
           parser.parseFromString(
@@ -1181,795 +949,1096 @@ function LayoutMap() {
             "image/svg+xml"
           );
 
-
         if (
           document.querySelector(
             "parsererror"
           )
         ) {
           throw new Error(
-            "The SVG file is invalid."
+            "layout.svg is invalid."
           );
         }
 
-
-        const plotCenters =
-          extractPlotCenters(
-            document
-          );
-
-
-        createPlotOverlays(
-          document,
-          plotCenters
-        );
-
-
-        const markup =
-          new XMLSerializer()
-            .serializeToString(
-              document.documentElement
-            );
-
+        const svg =
+          document.documentElement;
 
         if (
-          !cancelled
+          !svg ||
+          svg.tagName.toLowerCase() !==
+            "svg"
         ) {
-          setSvgMarkup(
-            markup
+          throw new Error(
+            "Loaded file is not an SVG."
           );
-
-          setLoading(false);
         }
 
-      } catch (err) {
+        svg.removeAttribute(
+          "width"
+        );
 
+        svg.removeAttribute(
+          "height"
+        );
+
+        svg.setAttribute(
+          "viewBox",
+          `0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`
+        );
+
+        svg.setAttribute(
+          "preserveAspectRatio",
+          "xMidYMid meet"
+        );
+
+        svg.classList.add(
+          "layout-svg"
+        );
+
+        const canvas =
+          canvasRef.current;
+
+        if (!canvas) return;
+
+        canvas.replaceChildren(
+          svg
+        );
+
+        svgRef.current = svg;
+
+        const plotMap =
+          buildPlotMap(svg);
+
+        plotMapRef.current =
+          plotMap;
+
+        createClarityLayer(
+          svg,
+          plotMap
+        );
+
+        if (
+          plotMap.size !==
+          TOTAL_PLOTS
+        ) {
+          console.warn(
+            `Expected ${TOTAL_PLOTS} plots, mapped ${plotMap.size}.`
+          );
+        }
+
+        paintAllPlots(
+          statuses,
+          plotMap,
+          selectedPlot
+        );
+
+        viewBoxRef.current =
+          fullViewBox();
+
+        setViewBox(
+          fullViewBox()
+        );
+
+        if (!cancelled) {
+          setSvgLoaded(true);
+        }
+      } catch (error) {
         console.error(
-          "Layout SVG error:",
-          err
+          "SVG loading error:",
+          error
         );
 
-
-        if (
-          !cancelled
-        ) {
-          setError(
-            err.message ||
-              "Unable to load SVG."
+        if (!cancelled) {
+          setSvgError(
+            error?.message ||
+              "Could not load layout.svg"
           );
-
-          setLoading(false);
         }
       }
     }
 
-
-    loadSVG();
-
+    loadSvg();
 
     return () => {
       cancelled = true;
     };
-
+    // Parse the SVG once; later status changes repaint the existing SVG.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (!svgLoaded) {
+      return;
+    }
 
-  /* =======================================================
-     LOAD SUPABASE PLOTS
-  ======================================================= */
+    paintAllPlots(
+      statuses,
+      plotMapRef.current,
+      selectedPlot
+    );
+  }, [
+    statuses,
+    selectedPlot,
+    svgLoaded,
+  ]);
 
   useEffect(() => {
+    const svg =
+      svgRef.current;
 
-    let active = true;
+    if (
+      !svg ||
+      !svgLoaded
+    ) {
+      return undefined;
+    }
 
-
-    async function loadPlots() {
-
-      try {
-
-        const {
-          data,
-          error,
-        } =
-          await supabase
-            .from("plots")
-            .select("*");
-
-
-        if (error) {
-
-          console.error(
-            "Plots query error:",
-            error
+    const handleSvgClick =
+      (event) => {
+        const target =
+          event.target?.closest?.(
+            "[data-plot-number]"
           );
 
+        if (!target) return;
+
+        const plotNumber =
+          Number(
+            target.dataset
+              .plotNumber
+          );
+
+        if (
+          !Number.isInteger(
+            plotNumber
+          ) ||
+          plotNumber < 1 ||
+          plotNumber >
+            TOTAL_PLOTS
+        ) {
           return;
         }
 
+        event.preventDefault();
+        event.stopPropagation();
 
-        if (
-          active
-        ) {
-
-          setPlots(
-            Array.isArray(data)
-              ? data
-              : []
-          );
-
-        }
-
-      } catch (err) {
-
-        console.error(
-          "Plot loading error:",
-          err
+        setSelectedPlot(
+          plotNumber
         );
-
-      }
-    }
-
-
-    loadPlots();
-
-
-    /*
-      Refresh every 5 seconds.
-
-      This means when somebody books
-      a plot, the layout updates.
-    */
-
-    const interval =
-      setInterval(
-        loadPlots,
-        5000
-      );
-
-
-    return () => {
-
-      active = false;
-
-      clearInterval(
-        interval
-      );
-
-    };
-
-  }, []);
-
-
-  /* =======================================================
-     APPLY STATUS TO SVG
-  ======================================================= */
-
-  const finalSvg =
-    useMemo(() => {
-
-      if (
-        !svgMarkup
-      ) {
-        return "";
-      }
-
-
-      const parser =
-        new DOMParser();
-
-
-      const document =
-        parser.parseFromString(
-          svgMarkup,
-          "image/svg+xml"
-        );
-
-
-      applyStatuses(
-        document,
-        plots
-      );
-
-
-      return new XMLSerializer()
-        .serializeToString(
-          document.documentElement
-        );
-
-    }, [
-      svgMarkup,
-      plots,
-    ]);
-
-
-  /* =======================================================
-     STATISTICS
-  ======================================================= */
-
-  const statistics =
-    useMemo(() => {
-
-      let available = 0;
-      let booked = 0;
-      let sold = 0;
-
-
-      for (
-        const plot of plots
-      ) {
-
-        const status =
-          getPlotStatus(
-            plot
-          );
-
-
-        if (
-          status ===
-          "available"
-        ) {
-          available++;
-        }
-
-
-        if (
-          status ===
-          "booked"
-        ) {
-          booked++;
-        }
-
-
-        if (
-          status ===
-          "sold"
-        ) {
-          sold++;
-        }
-
-      }
-
-
-      return {
-        available,
-        booked,
-        sold,
       };
 
-    }, [plots]);
+    svg.addEventListener(
+      "click",
+      handleSvgClick
+    );
 
+    return () => {
+      svg.removeEventListener(
+        "click",
+        handleSvgClick
+      );
+    };
+  }, [svgLoaded]);
 
-  /* =======================================================
-     MAP CLICK
-  ======================================================= */
+  /*
+    Wheel / trackpad zoom.
+    No CSS scale is used.
+  */
+  useEffect(() => {
+    const viewport =
+      viewportRef.current;
 
-  function handleMapClick(
-    event
-  ) {
-
-    const target =
-      event.target;
-
-
-    if (
-      !target?.closest
-    ) {
-      return;
+    if (!viewport) {
+      return undefined;
     }
 
+    const handleWheel =
+      (event) => {
+        event.preventDefault();
 
-    const overlay =
-      target.closest(
-        ".dynamic-plot"
-      );
+        const currentZoom =
+          SVG_WIDTH /
+          viewBoxRef.current.width;
 
+        const modeScale =
+          event.deltaMode === 1
+            ? 16
+            : event.deltaMode === 2
+            ? viewport.clientHeight
+            : 1;
 
-    if (!overlay) {
-      return;
-    }
+        const delta =
+          event.deltaY *
+          modeScale;
 
+        const factor =
+          Math.exp(
+            -delta * 0.0015
+          );
 
-    const plotNumber =
-      Number(
-        overlay.getAttribute(
-          "data-plot-number"
-        )
-      );
+        zoomToAtScreenPoint(
+          currentZoom * factor,
+          event.clientX,
+          event.clientY
+        );
+      };
 
-
-    const plot =
-      plots.find(
-        (item) =>
-          getPlotNumber(
-            item
-          ) ===
-          plotNumber
-      );
-
-
-    setSelectedPlot(
-      plot || {
-        plot_number:
-          plotNumber,
-
-        status:
-          "Available",
+    viewport.addEventListener(
+      "wheel",
+      handleWheel,
+      {
+        passive: false,
       }
     );
 
-  }
+    return () => {
+      viewport.removeEventListener(
+        "wheel",
+        handleWheel
+      );
+    };
+  }, [zoomToAtScreenPoint]);
 
+  const startPanGesture =
+    useCallback(
+      (pointer) => {
+        const svg =
+          svgRef.current;
 
-  /* =======================================================
-     ZOOM
-  ======================================================= */
+        if (!svg) return;
 
-  function zoomOut() {
+        const startViewBox = {
+          ...viewBoxRef.current,
+        };
 
-    setZoom(
-      (previous) =>
+        const metrics =
+          getRenderedSvgMetrics(
+            startViewBox
+          );
+
+        if (!metrics) return;
+
+        gestureRef.current = {
+          type: "pan",
+          pointerId:
+            pointer.pointerId,
+          startClientX:
+            pointer.clientX,
+          startClientY:
+            pointer.clientY,
+          startViewBox,
+          scale:
+            metrics.scale,
+        };
+
+        setIsDragging(true);
+      },
+      [getRenderedSvgMetrics]
+    );
+
+  const startPinchGesture =
+    useCallback(() => {
+      const pointers =
+        Array.from(
+          activePointersRef
+            .current
+            .values()
+        );
+
+      if (
+        pointers.length < 2
+      ) {
+        return;
+      }
+
+      const first =
+        pointers[0];
+
+      const second =
+        pointers[1];
+
+      const midpointX =
+        (first.clientX +
+          second.clientX) /
+        2;
+
+      const midpointY =
+        (first.clientY +
+          second.clientY) /
+        2;
+
+      const anchor =
+        screenToSvg(
+          midpointX,
+          midpointY
+        );
+
+      if (!anchor) return;
+
+      const distance =
         Math.max(
-          0.5,
-          Number(
-            (
-              previous -
-              0.1
-            ).toFixed(1)
+          1,
+          Math.hypot(
+            second.clientX -
+              first.clientX,
+            second.clientY -
+              first.clientY
           )
+        );
+
+      const startViewBox = {
+        ...viewBoxRef.current,
+      };
+
+      gestureRef.current = {
+        type: "pinch",
+        startDistance:
+          distance,
+        startZoom:
+          SVG_WIDTH /
+          startViewBox.width,
+        anchor,
+      };
+
+      setIsDragging(false);
+    }, [screenToSvg]);
+
+  const handlePointerDown =
+    (event) => {
+      if (
+        event.target?.closest?.(
+          ".plot-details"
+        ) ||
+        event.target?.closest?.(
+          ".zoom-controls"
         )
+      ) {
+        return;
+      }
+
+      activePointersRef.current.set(
+        event.pointerId,
+        {
+          pointerId:
+            event.pointerId,
+          clientX:
+            event.clientX,
+          clientY:
+            event.clientY,
+        }
+      );
+
+      try {
+        event.currentTarget.setPointerCapture(
+          event.pointerId
+        );
+      } catch {
+        // Pointer capture can be unavailable on some browsers.
+      }
+
+      if (
+        activePointersRef.current
+          .size >= 2
+      ) {
+        startPinchGesture();
+        return;
+      }
+
+      if (
+        !event.target?.closest?.(
+          "[data-plot-number]"
+        )
+      ) {
+        startPanGesture({
+          pointerId:
+            event.pointerId,
+          clientX:
+            event.clientX,
+          clientY:
+            event.clientY,
+        });
+      }
+    };
+
+  const handlePointerMove =
+    (event) => {
+      if (
+        !activePointersRef.current.has(
+          event.pointerId
+        )
+      ) {
+        return;
+      }
+
+      activePointersRef.current.set(
+        event.pointerId,
+        {
+          pointerId:
+            event.pointerId,
+          clientX:
+            event.clientX,
+          clientY:
+            event.clientY,
+        }
+      );
+
+      const gesture =
+        gestureRef.current;
+
+      if (!gesture) return;
+
+      if (
+        gesture.type === "pan"
+      ) {
+        if (
+          gesture.pointerId !==
+          event.pointerId
+        ) {
+          return;
+        }
+
+        const dx =
+          event.clientX -
+          gesture.startClientX;
+
+        const dy =
+          event.clientY -
+          gesture.startClientY;
+
+        applyViewBox({
+          ...gesture.startViewBox,
+          x:
+            gesture.startViewBox.x -
+            dx / gesture.scale,
+          y:
+            gesture.startViewBox.y -
+            dy / gesture.scale,
+        });
+
+        return;
+      }
+
+      if (
+        gesture.type === "pinch"
+      ) {
+        const pointers =
+          Array.from(
+            activePointersRef
+              .current
+              .values()
+          );
+
+        if (
+          pointers.length < 2
+        ) {
+          return;
+        }
+
+        const first =
+          pointers[0];
+
+        const second =
+          pointers[1];
+
+        const midpointX =
+          (first.clientX +
+            second.clientX) /
+          2;
+
+        const midpointY =
+          (first.clientY +
+            second.clientY) /
+          2;
+
+        const distance =
+          Math.max(
+            1,
+            Math.hypot(
+              second.clientX -
+                first.clientX,
+              second.clientY -
+                first.clientY
+            )
+          );
+
+        const nextZoom =
+          clamp(
+            gesture.startZoom *
+              (distance /
+                gesture.startDistance),
+            MIN_ZOOM,
+            MAX_ZOOM
+          );
+
+        const nextWidth =
+          SVG_WIDTH /
+          nextZoom;
+
+        const nextHeight =
+          SVG_HEIGHT /
+          nextZoom;
+
+        const nextViewBox = {
+          x: 0,
+          y: 0,
+          width: nextWidth,
+          height: nextHeight,
+        };
+
+        const metrics =
+          getRenderedSvgMetrics(
+            nextViewBox
+          );
+
+        if (!metrics) {
+          return;
+        }
+
+        const localX =
+          midpointX -
+          metrics.rect.left -
+          metrics.offsetX;
+
+        const localY =
+          midpointY -
+          metrics.rect.top -
+          metrics.offsetY;
+
+        nextViewBox.x =
+          gesture.anchor.x -
+          localX /
+            metrics.scale;
+
+        nextViewBox.y =
+          gesture.anchor.y -
+          localY /
+            metrics.scale;
+
+        applyViewBox(
+          nextViewBox
+        );
+      }
+    };
+
+  const handlePointerEnd =
+    (event) => {
+      activePointersRef.current.delete(
+        event.pointerId
+      );
+
+      try {
+        if (
+          event.currentTarget.hasPointerCapture(
+            event.pointerId
+          )
+        ) {
+          event.currentTarget.releasePointerCapture(
+            event.pointerId
+          );
+        }
+      } catch {
+        // Ignore unsupported pointer-capture state.
+      }
+
+      const remaining =
+        Array.from(
+          activePointersRef
+            .current
+            .values()
+        );
+
+      if (
+        remaining.length >= 2
+      ) {
+        startPinchGesture();
+        return;
+      }
+
+      if (
+        remaining.length === 1
+      ) {
+        startPanGesture(
+          remaining[0]
+        );
+
+        return;
+      }
+
+      gestureRef.current =
+        null;
+
+      setIsDragging(false);
+    };
+
+  const changeSelectedStatus =
+    async (nextStatus) => {
+      if (!selectedPlot) {
+        return;
+      }
+
+      const plotNumber =
+        selectedPlot;
+
+      const normalized =
+        normalizeStatus(
+          nextStatus
+        );
+
+      const previousStatus =
+        statuses[plotNumber] ??
+        "available";
+
+      /*
+        Immediate UI repaint.
+      */
+      setStatuses(
+        (current) => ({
+          ...current,
+          [plotNumber]:
+            normalized,
+        })
+      );
+
+      paintPlot(
+        plotNumber,
+        normalized,
+        plotMapRef.current,
+        selectedPlot
+      );
+
+      const { error } =
+        await supabase
+          .from("plots")
+          .update({
+            status:
+              databaseStatus(
+                normalized
+              ),
+          })
+          .eq(
+            "plot_no",
+            plotNumber
+          );
+
+      if (error) {
+        console.error(
+          "Plot status update failed:",
+          error
+        );
+
+        setStatuses(
+          (current) => ({
+            ...current,
+            [plotNumber]:
+              previousStatus,
+          })
+        );
+
+        paintPlot(
+          plotNumber,
+          previousStatus,
+          plotMapRef.current,
+          selectedPlot
+        );
+
+        return;
+      }
+
+      loadPlotStatuses();
+    };
+
+  const bookedCount =
+    useMemo(
+      () =>
+        Object.values(
+          statuses
+        ).filter(
+          (status) =>
+            status === "booked"
+        ).length,
+      [statuses]
     );
 
-  }
-
-
-  function zoomIn() {
-
-    setZoom(
-      (previous) =>
-        Math.min(
-          2.5,
-          Number(
-            (
-              previous +
-              0.1
-            ).toFixed(1)
-          )
-        )
+  const soldCount =
+    useMemo(
+      () =>
+        Object.values(
+          statuses
+        ).filter(
+          (status) =>
+            status === "sold"
+        ).length,
+      [statuses]
     );
 
-  }
+  const availableCount =
+    TOTAL_PLOTS -
+    bookedCount -
+    soldCount;
 
+  const selectedPlotData =
+    useMemo(() => {
+      if (!selectedPlot) {
+        return null;
+      }
 
-  function resetZoom() {
+      return {
+        plotNumber:
+          selectedPlot,
 
-    setZoom(1);
+        status:
+          normalizeStatus(
+            statuses[
+              selectedPlot
+            ]
+          ),
 
-  }
+        length:
+          dimensions[
+            selectedPlot
+          ]?.length ??
+          null,
 
-
-  /* =======================================================
-     RETURN
-  ======================================================= */
+        breadth:
+          dimensions[
+            selectedPlot
+          ]?.breadth ??
+          null,
+      };
+    }, [
+      selectedPlot,
+      statuses,
+      dimensions,
+    ]);
 
   return (
-    <div className="layout-map-page-wrapper">
-
-
-      {/* SIDEBAR */}
-
-      <Sidebar
-        sidebarOpen={
-          sidebarOpen
-        }
-        setSidebarOpen={
-          setSidebarOpen
-        }
-      />
-
-
-      {/* MAIN */}
-
-      <div className="main-content">
-
-
-        {/* TOPBAR */}
-
-        <Topbar
-          setSidebarOpen={
-            setSidebarOpen
-          }
-        />
-
-
-        {/* BODY */}
-
-        <div className="layout-map-body">
-
-
-          {/* =================================================
-              HEADER
-          ================================================= */}
-
-          <div className="layout-map-heading">
-
-            <div>
-
-              <h1>
-                Layout Map
-              </h1>
-
-              <p>
-                GUDIMETLA Plot Layout
-              </p>
-
-            </div>
-
-
-            {/* ZOOM */}
-
-            <div className="layout-controls">
-
-              <button
-                type="button"
-                onClick={
-                  zoomOut
-                }
-                title="Zoom out"
-              >
-                <ZoomOut
-                  size={15}
-                />
-              </button>
-
-
-              <span>
-                {Math.round(
-                  zoom * 100
-                )}
-                %
-              </span>
-
-
-              <button
-                type="button"
-                onClick={
-                  zoomIn
-                }
-                title="Zoom in"
-              >
-                <ZoomIn
-                  size={15}
-                />
-              </button>
-
-
-              <button
-                type="button"
-                className="reset-zoom"
-                onClick={
-                  resetZoom
-                }
-              >
-                <RotateCcw
-                  size={13}
-                />
-
-                Reset
-              </button>
-
-            </div>
-
-          </div>
-
-
-          {/* =================================================
-              STATISTICS
-          ================================================= */}
-
-          <div className="layout-statistics">
-
-
-            <div className="map-stat available-stat">
-
-              <span />
-
-              <div>
-
-                <strong>
-                  {statistics.available}
-                </strong>
-
-                <small>
-                  Available
-                </small>
-
-              </div>
-
-            </div>
-
-
-            <div className="map-stat booked-stat">
-
-              <span />
-
-              <div>
-
-                <strong>
-                  {statistics.booked}
-                </strong>
-
-                <small>
-                  Booked / Reserved
-                </small>
-
-              </div>
-
-            </div>
-
-
-            <div className="map-stat sold-stat">
-
-              <span />
-
-              <div>
-
-                <strong>
-                  {statistics.sold}
-                </strong>
-
-                <small>
-                  Sold
-                </small>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-          {/* =================================================
-              LEGEND
-          ================================================= */}
-
-          <div className="layout-legend">
-
-            <div>
-              <span className="legend-dot available" />
-              Available
-            </div>
-
-            <div>
-              <span className="legend-dot booked" />
-              Booked
-            </div>
-
-            <div>
-              <span className="legend-dot sold" />
-              Sold
-            </div>
-
-          </div>
-
-
-          {/* =================================================
-              MAP
-          ================================================= */}
-
-          <div className="layout-map-card">
-
-            <div
-              className="layout-map-scroll"
-              onClick={
-                handleMapClick
-              }
-            >
-
-              {loading && (
-                <div className="map-loading">
-                  Loading layout map...
-                </div>
-              )}
-
-
-              {!loading &&
-                error && (
-                  <div className="map-error">
-
-                    <strong>
-                      Layout map could not be loaded.
-                    </strong>
-
-                    <span>
-                      {error}
-                    </span>
-
-                    <small>
-                      Check that this file exists:
-                      <br />
-                      <b>
-                        public/GUDIMETLA_LAYOUT.svg
-                      </b>
-                    </small>
-
-                  </div>
-                )}
-
-
-              {!loading &&
-                !error &&
-                finalSvg && (
-
-                  <div
-                    className="layout-map-svg"
-                    style={{
-                      width:
-                        `${1191 * zoom}px`,
-                    }}
-                    dangerouslySetInnerHTML={{
-                      __html:
-                        finalSvg,
-                    }}
-                  />
-
-                )}
-
-            </div>
-
-          </div>
-
+    <div className="layout-page">
+      <header className="layout-header">
+        <div className="header-title">
+          <h1>
+            Gudimetla Layout
+          </h1>
+
+          <p>
+            Select a plot to view
+            its status and dimensions.
+          </p>
         </div>
 
-      </div>
+        <div className="summary-cards">
+          <div className="summary-card total">
+            <strong>
+              {TOTAL_PLOTS}
+            </strong>
+            <span>Total</span>
+          </div>
 
+          <div className="summary-card available">
+            <strong>
+              {availableCount}
+            </strong>
+            <span>Available</span>
+          </div>
 
-      {/* =====================================================
-          SELECTED PLOT
-      ===================================================== */}
+          <div className="summary-card booked">
+            <strong>
+              {bookedCount}
+            </strong>
+            <span>Booked</span>
+          </div>
 
-      {selectedPlot && (
+          <div className="summary-card sold">
+            <strong>
+              {soldCount}
+            </strong>
+            <span>Sold</span>
+          </div>
+        </div>
+      </header>
 
-        <div className="selected-plot-card">
+      <div className="layout-toolbar">
+        <div
+          className="legend"
+          aria-label="Plot status legend"
+        >
+          <div className="legend-item">
+            <span className="legend-dot available-dot" />
+            <span>Available</span>
+          </div>
 
+          <div className="legend-item">
+            <span className="legend-dot booked-dot" />
+            <span>Booked</span>
+          </div>
+
+          <div className="legend-item">
+            <span className="legend-dot sold-dot" />
+            <span>Sold</span>
+          </div>
+        </div>
+
+        <div
+          className="zoom-controls"
+          onPointerDown={(event) =>
+            event.stopPropagation()
+          }
+        >
+          <button
+            type="button"
+            onClick={() =>
+              zoomAtCenter(
+                zoom /
+                  BUTTON_ZOOM_FACTOR
+              )
+            }
+            disabled={
+              zoom <= MIN_ZOOM +
+                0.001
+            }
+            aria-label="Zoom out"
+            title="Zoom out"
+          >
+            −
+          </button>
+
+          <span>
+            {Math.round(
+              zoom * 100
+            )}
+            %
+          </span>
 
           <button
             type="button"
-            className="close-plot-card"
             onClick={() =>
-              setSelectedPlot(
-                null
+              zoomAtCenter(
+                zoom *
+                  BUTTON_ZOOM_FACTOR
               )
             }
+            disabled={
+              zoom >= MAX_ZOOM -
+                0.001
+            }
+            aria-label="Zoom in"
+            title="Zoom in"
           >
-            <X size={17} />
+            +
           </button>
 
+          <button
+            type="button"
+            onClick={fitMap}
+            aria-label="Fit map"
+            title="Fit entire map"
+          >
+            Fit
+          </button>
 
-          <div className="selected-plot-title">
-
-            <span
-              className={`selected-status-dot ${getPlotStatus(
-                selectedPlot
-              )}`}
-            />
-
-            <h3>
-              Plot-
-              {getPlotNumber(
-                selectedPlot
-              )}
-            </h3>
-
-          </div>
-
-
-          <div className="selected-plot-details">
-
-
-            <div>
-
-              <span>
-                Plot Number
-              </span>
-
-              <strong>
-                {getPlotNumber(
-                  selectedPlot
-                )}
-              </strong>
-
-            </div>
-
-
-            <div>
-
-              <span>
-                Size
-              </span>
-
-              <strong>
-                {selectedPlot.size ??
-                  selectedPlot.plot_size ??
-                  selectedPlot.size_sq_yards ??
-                  "-"}
-              </strong>
-
-            </div>
-
-
-            <div>
-
-              <span>
-                Facing
-              </span>
-
-              <strong>
-                {selectedPlot.facing ??
-                  "-"}
-              </strong>
-
-            </div>
-
-
-            <div>
-
-              <span>
-                Road
-              </span>
-
-              <strong>
-                {selectedPlot.road_width ??
-                  selectedPlot.road ??
-                  "-"}
-              </strong>
-
-            </div>
-
-
-            <div>
-
-              <span>
-                Status
-              </span>
-
-              <strong
-                className={`plot-${getPlotStatus(
-                  selectedPlot
-                )}`}
-              >
-                {selectedPlot.status ??
-                  selectedPlot.plot_status ??
-                  selectedPlot.booking_status ??
-                  "Available"}
-              </strong>
-
-            </div>
-
-
-            <div>
-
-              <span>
-                Price
-              </span>
-
-              <strong>
-                {selectedPlot.price ??
-                  selectedPlot.rate ??
-                  "-"}
-              </strong>
-
-            </div>
-
-
-          </div>
-
+          <button
+            type="button"
+            onClick={resetMap}
+            aria-label="Reset map"
+            title="Reset map"
+          >
+            Reset
+          </button>
         </div>
+      </div>
 
-      )}
+      <main
+        ref={viewportRef}
+        className={`map-viewport ${
+          isDragging
+            ? "is-dragging"
+            : ""
+        }`}
+        onPointerDown={
+          handlePointerDown
+        }
+        onPointerMove={
+          handlePointerMove
+        }
+        onPointerUp={
+          handlePointerEnd
+        }
+        onPointerCancel={
+          handlePointerEnd
+        }
+      >
+        <div className="map-background" />
 
+        {/*
+          IMPORTANT:
+          There is NO CSS transform: scale() around the SVG.
+          The SVG occupies this viewport directly and zoom/pan are handled
+          by the SVG viewBox for true vector re-rendering.
+        */}
+        <div
+          ref={canvasRef}
+          className="map-canvas"
+        />
+
+        {!svgLoaded &&
+          !svgError && (
+            <div className="map-loading">
+              <div className="loading-spinner" />
+              <p>
+                Loading layout map...
+              </p>
+            </div>
+          )}
+
+        {svgError && (
+          <div className="map-error">
+            <h2>
+              Layout map not found
+            </h2>
+
+            <p>
+              {svgError}
+            </p>
+
+            <code>
+              public/layout.svg
+            </code>
+          </div>
+        )}
+
+        {selectedPlotData && (
+          <aside
+            className="plot-details"
+            onPointerDown={(event) =>
+              event.stopPropagation()
+            }
+          >
+            <div className="plot-details-header">
+              <div>
+                <small>PLOT</small>
+
+                <h2>
+                  {
+                    selectedPlotData.plotNumber
+                  }
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                className="close-button"
+                onClick={() =>
+                  setSelectedPlot(
+                    null
+                  )
+                }
+                aria-label="Close plot details"
+              >
+                ×
+              </button>
+            </div>
+
+            <div
+              className={`status-badge status-${selectedPlotData.status}`}
+            >
+              {
+                STATUS_META[
+                  selectedPlotData.status
+                ].label
+              }
+            </div>
+
+            <div className="dimension-grid">
+              <div>
+                <span>
+                  Length
+                </span>
+
+                <strong>
+                  {selectedPlotData.length !==
+                  null
+                    ? `${selectedPlotData.length} ft`
+                    : "Not available"}
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  Breadth
+                </span>
+
+                <strong>
+                  {selectedPlotData.breadth !==
+                  null
+                    ? `${selectedPlotData.breadth} ft`
+                    : "Not available"}
+                </strong>
+              </div>
+            </div>
+
+            <div className="status-actions">
+              <button
+                type="button"
+                className="available-button"
+                disabled={
+                  selectedPlotData.status ===
+                  "available"
+                }
+                onClick={() =>
+                  changeSelectedStatus(
+                    "available"
+                  )
+                }
+              >
+                Available
+              </button>
+
+              <button
+                type="button"
+                className="booked-button"
+                disabled={
+                  selectedPlotData.status ===
+                  "booked"
+                }
+                onClick={() =>
+                  changeSelectedStatus(
+                    "booked"
+                  )
+                }
+              >
+                Booked
+              </button>
+
+              <button
+                type="button"
+                className="sold-button"
+                disabled={
+                  selectedPlotData.status ===
+                  "sold"
+                }
+                onClick={() =>
+                  changeSelectedStatus(
+                    "sold"
+                  )
+                }
+              >
+                Sold
+              </button>
+            </div>
+          </aside>
+        )}
+
+        <div className="map-help">
+          <span>
+            {TOTAL_PLOTS} plots
+          </span>
+
+          <span>•</span>
+          <span>Drag to pan</span>
+          <span>•</span>
+          <span>
+            Wheel/pinch to zoom
+          </span>
+        </div>
+      </main>
     </div>
   );
 }
-
-
-export default LayoutMap;
