@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import {
   Bell,
@@ -27,8 +27,76 @@ import { searchCustomers } from "../services/searchService";
 import "./Topbar.css";
 
 function Topbar() {
-
   const navigate = useNavigate();
+  const location = useLocation();
+
+  /* ============================
+        PAGE TITLE
+  ============================ */
+
+  function getPageTitle(pathname) {
+    const path = pathname.replace(/\/+$/, "") || "/";
+
+    if (path === "/" || path === "/dashboard") {
+      return "Dashboard";
+    }
+
+    if (path === "/customers") {
+      return "Customers";
+    }
+
+    if (path === "/plots") {
+      return "Plots";
+    }
+
+    if (
+      path === "/layout-map" ||
+      path === "/layoutmap" ||
+      path === "/map"
+    ) {
+      return "Layout Map";
+    }
+
+    if (path === "/bookings") {
+      return "Bookings";
+    }
+
+    if (path === "/payments") {
+      return "Payments";
+    }
+
+    if (path === "/reports") {
+      return "Reports";
+    }
+
+    if (
+      path === "/admin-profile" ||
+      path === "/profile"
+    ) {
+      return "Admin Profile";
+    }
+
+    if (path === "/settings") {
+      return "Settings";
+    }
+
+    /*
+     * Customer details route.
+     * Example:
+     * /customer/72
+     */
+    if (
+      path.startsWith("/customer/")
+    ) {
+      return "Customer Details";
+    }
+
+    return "Dashboard";
+  }
+
+  const pageTitle = getPageTitle(
+    location.pathname
+  );
 
   /* ============================
         ADMIN PROFILE
@@ -60,19 +128,18 @@ function Topbar() {
         SEARCH
   ============================ */
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] =
+    useState("");
 
-  const [results, setResults] = useState([]);
+  const [results, setResults] =
+    useState([]);
 
   const [showSearch, setShowSearch] =
     useState(false);
 
   useEffect(() => {
-
     loadNotifications();
-
     loadAdmin();
-
   }, []);
 
   /* ============================
@@ -80,25 +147,48 @@ function Topbar() {
   ============================ */
 
   async function loadAdmin() {
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      if (userError) {
+        console.error(
+          "Admin Auth Error:",
+          userError
+        );
+        return;
+      }
 
-    if (!user) return;
+      if (!user) {
+        return;
+      }
 
-    const { data } = await supabase
-      .from("admin_profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
+      const { data, error } =
+        await supabase
+          .from("admin_profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
 
-    if (data) {
+      if (error) {
+        console.error(
+          "Admin Profile Error:",
+          error
+        );
+        return;
+      }
 
-      setAdmin(data);
-
+      if (data) {
+        setAdmin(data);
+      }
+    } catch (error) {
+      console.error(
+        "Admin Load Error:",
+        error
+      );
     }
-
   }
 
   /* ============================
@@ -106,13 +196,18 @@ function Topbar() {
   ============================ */
 
   async function logout() {
+    try {
+      await supabase.auth.signOut();
 
-    await supabase.auth.signOut();
-
-    navigate("/", {
-      replace: true,
-    });
-
+      navigate("/", {
+        replace: true,
+      });
+    } catch (error) {
+      console.error(
+        "Logout Error:",
+        error
+      );
+    }
   }
 
   /* ============================
@@ -120,56 +215,70 @@ function Topbar() {
   ============================ */
 
   async function loadNotifications() {
-
     try {
-
       const data =
         await getNotifications();
 
       const count =
         await getUnreadCount();
 
-      setNotifications(data);
+      setNotifications(
+        data || []
+      );
 
-      setUnreadCount(count);
-
+      setUnreadCount(
+        Number(count || 0)
+      );
     } catch (err) {
-
-      console.log(err);
-
+      console.error(
+        "Notifications Error:",
+        err
+      );
     }
-
   }
 
   async function handleMarkRead(id) {
-
-    await markAsRead(id);
-
-    loadNotifications();
-
+    try {
+      await markAsRead(id);
+      await loadNotifications();
+    } catch (error) {
+      console.error(
+        "Mark Notification Error:",
+        error
+      );
+    }
   }
 
   async function handleMarkAllRead() {
-
-    await markAllRead();
-
-    loadNotifications();
-
+    try {
+      await markAllRead();
+      await loadNotifications();
+    } catch (error) {
+      console.error(
+        "Mark All Notifications Error:",
+        error
+      );
+    }
   }
 
   async function handleClearAll() {
-
     if (
       !window.confirm(
         "Delete all notifications?"
       )
-    )
+    ) {
       return;
+    }
 
-    await clearNotifications();
-
-    loadNotifications();
-
+    try {
+      await clearNotifications();
+      await loadNotifications();
+    } catch (error) {
+      console.error(
+        "Clear Notifications Error:",
+        error
+      );
+    }
   }
 
   /* ============================
@@ -177,170 +286,142 @@ function Topbar() {
   ============================ */
 
   async function handleSearch(value) {
-
     setSearch(value);
 
     if (value.trim() === "") {
-
       setResults([]);
-
       setShowSearch(false);
-
       return;
-
     }
 
     try {
-
       const data =
         await searchCustomers(value);
 
-      setResults(data);
+      setResults(data || []);
 
-      if (data.length === 0) {
-
+      if (
+        !data ||
+        data.length === 0
+      ) {
         setShowSearch(false);
-
         return;
-
       }
 
       if (data.length === 1) {
-
         navigate(
           `/customer/${data[0].id}`
         );
 
         setSearch("");
-
         setResults([]);
-
         setShowSearch(false);
 
         return;
-
       }
 
       setShowSearch(true);
-
     } catch (err) {
-
-      console.log(err);
-
+      console.error(
+        "Customer Search Error:",
+        err
+      );
     }
-
   }
 
   function openCustomer(customer) {
-
     setSearch("");
-
     setResults([]);
-
     setShowSearch(false);
 
     navigate(
       `/customer/${customer.id}`
     );
-
   }
+
   return (
+    <div className="topbar">
 
-<div className="topbar">
+      {/* LEFT */}
 
-    {/* LEFT */}
+      <div className="topbar-left">
+        <h2>{pageTitle}</h2>
+      </div>
 
-    <div className="topbar-left">
+      {/* RIGHT */}
 
-        <h2>Dashboard</h2>
-
-    </div>
-
-    {/* RIGHT */}
-
-    <div className="topbar-right">
+      <div className="topbar-right">
 
         {/* SEARCH */}
 
         <div className="search-box">
 
-            <Search size={18} />
+          <Search size={18} />
 
-            <input
-                type="text"
-                placeholder="Search Plot No, Name, Phone..."
-                value={search}
-                autoComplete="off"
-                onChange={(e) =>
-                    handleSearch(e.target.value)
-                }
-            />
+          <input
+            type="text"
+            placeholder="Search Plot No, Name, Phone..."
+            value={search}
+            autoComplete="off"
+            onChange={(e) =>
+              handleSearch(
+                e.target.value
+              )
+            }
+          />
 
-            {showSearch && (
+          {showSearch && (
+            <div className="search-dropdown">
 
-                <div className="search-dropdown">
-
-                    {results.length === 0 ? (
-
-                        <div className="search-empty">
-
-                            No Results Found
-
-                        </div>
-
-                    ) : (
-
-                        results.map((customer) => (
-
-                            <div
-                                key={customer.id}
-                                className="search-item"
-                                onClick={() =>
-                                    openCustomer(customer)
-                                }
-                            >
-
-                                <div className="search-name">
-
-                                    {customer.name}
-
-                                </div>
-
-                                <div className="search-info">
-
-                                    <span>
-
-                                        🏡 Plot :
-                                        <strong>
-                                            {" "}
-                                            {customer.plot_no}
-                                        </strong>
-
-                                    </span>
-
-                                    <span>
-
-                                        📞 {customer.mobile}
-
-                                    </span>
-
-                                </div>
-
-                                <div className="search-status">
-
-                                    {customer.status}
-
-                                </div>
-
-                            </div>
-
-                        ))
-
-                    )}
-
+              {results.length === 0 ? (
+                <div className="search-empty">
+                  No Results Found
                 </div>
+              ) : (
+                results.map(
+                  (customer) => (
+                    <div
+                      key={customer.id}
+                      className="search-item"
+                      onClick={() =>
+                        openCustomer(
+                          customer
+                        )
+                      }
+                    >
 
-            )}
+                      <div className="search-name">
+                        {customer.name}
+                      </div>
+
+                      <div className="search-info">
+
+                        <span>
+                          🏡 Plot :
+                          <strong>
+                            {" "}
+                            {customer.plot_no}
+                          </strong>
+                        </span>
+
+                        <span>
+                          📞{" "}
+                          {customer.mobile}
+                        </span>
+
+                      </div>
+
+                      <div className="search-status">
+                        {customer.status}
+                      </div>
+
+                    </div>
+                  )
+                )
+              )}
+
+            </div>
+          )}
 
         </div>
 
@@ -348,134 +429,133 @@ function Topbar() {
 
         <div className="notification-wrapper">
 
-            <button
-                className="notification-btn"
-                onClick={() =>
-                    setShowDropdown(!showDropdown)
-                }
-            >
+          <button
+            type="button"
+            className="notification-btn"
+            onClick={() =>
+              setShowDropdown(
+                !showDropdown
+              )
+            }
+            title="Notifications"
+          >
 
-                <Bell size={22} />
+            <Bell size={22} />
 
-                {unreadCount > 0 && (
+            {unreadCount > 0 && (
+              <span className="notification-badge">
+                {unreadCount}
+              </span>
+            )}
 
-                    <span className="notification-badge">
+          </button>
 
-                        {unreadCount}
+          {showDropdown && (
+            <div className="notification-dropdown">
 
-                    </span>
+              <div className="notification-header">
 
-                )}
+                <h3>
+                  Notifications
+                </h3>
 
-            </button>
+                <div className="notification-actions">
 
-            {showDropdown && (
+                  <button
+                    type="button"
+                    onClick={
+                      handleMarkAllRead
+                    }
+                    title="Mark all as read"
+                  >
+                    <CheckCheck
+                      size={16}
+                    />
+                  </button>
 
-                <div className="notification-dropdown">
-
-                    <div className="notification-header">
-
-                        <h3>
-
-                            Notifications
-
-                        </h3>
-
-                        <div className="notification-actions">
-
-                            <button
-                                onClick={
-                                    handleMarkAllRead
-                                }
-                            >
-
-                                <CheckCheck size={16} />
-
-                            </button>
-
-                            <button
-                                onClick={
-                                    handleClearAll
-                                }
-                            >
-
-                                <Trash2 size={16} />
-
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                    <div className="notification-list">
-
-                        {notifications.length === 0 ? (
-
-                            <div className="notification-empty">
-
-                                No Notifications
-
-                            </div>
-
-                        ) : (
-
-                            notifications.map((item) => (
-
-                                <div
-                                    key={item.id}
-                                    className={`notification-item ${
-                                        item.is_read
-                                            ? ""
-                                            : "unread"
-                                    }`}
-                                    onClick={() =>
-                                        handleMarkRead(item.id)
-                                    }
-                                >
-
-                                    <h4>
-
-                                        {item.title}
-
-                                    </h4>
-
-                                    <p>
-
-                                        {item.message}
-
-                                    </p>
-
-                                    <small>
-
-                                        {new Date(
-                                            item.created_at
-                                        ).toLocaleString()}
-
-                                    </small>
-
-                                </div>
-
-                            ))
-
-                        )}
-
-                    </div>
+                  <button
+                    type="button"
+                    onClick={
+                      handleClearAll
+                    }
+                    title="Delete all notifications"
+                  >
+                    <Trash2
+                      size={16}
+                    />
+                  </button>
 
                 </div>
 
-            )}
+              </div>
+
+              <div className="notification-list">
+
+                {notifications.length === 0 ? (
+
+                  <div className="notification-empty">
+                    No Notifications
+                  </div>
+
+                ) : (
+
+                  notifications.map(
+                    (item) => (
+                      <div
+                        key={item.id}
+                        className={`notification-item ${
+                          item.is_read
+                            ? ""
+                            : "unread"
+                        }`}
+                        onClick={() =>
+                          handleMarkRead(
+                            item.id
+                          )
+                        }
+                      >
+
+                        <h4>
+                          {item.title}
+                        </h4>
+
+                        <p>
+                          {item.message}
+                        </p>
+
+                        <small>
+                          {item.created_at
+                            ? new Date(
+                                item.created_at
+                              ).toLocaleString(
+                                "en-IN"
+                              )
+                            : "Unknown time"}
+                        </small>
+
+                      </div>
+                    )
+                  )
+
+                )}
+
+              </div>
+
+            </div>
+          )}
 
         </div>
-                {/* ============================
-              ADMIN PROFILE
-        ============================ */}
+
+        {/* ADMIN PROFILE */}
 
         <div className="admin-wrapper">
 
           <div
             className="admin-profile"
             onClick={() =>
-              setShowProfile(!showProfile)
+              setShowProfile(
+                !showProfile
+              )
             }
           >
 
@@ -491,11 +571,13 @@ function Topbar() {
             <div className="admin-details">
 
               <h4>
-                {admin.full_name || "Administrator"}
+                {admin.full_name ||
+                  "Administrator"}
               </h4>
 
               <span>
-                {admin.role || "Administrator"}
+                {admin.role ||
+                  "Administrator"}
               </span>
 
             </div>
@@ -505,17 +587,18 @@ function Topbar() {
           </div>
 
           {showProfile && (
-
             <div className="admin-dropdown">
 
               <div
                 className="dropdown-item"
                 onClick={() => {
+                  setShowProfile(
+                    false
+                  );
 
-                  setShowProfile(false);
-
-                  navigate("/admin-profile");
-
+                  navigate(
+                    "/admin-profile"
+                  );
                 }}
               >
 
@@ -528,15 +611,19 @@ function Topbar() {
               <div
                 className="dropdown-item"
                 onClick={() => {
+                  setShowProfile(
+                    false
+                  );
 
-                  setShowProfile(false);
-
-                  navigate("/settings");
-
+                  navigate(
+                    "/settings"
+                  );
                 }}
               >
 
-                <Settings size={18} />
+                <Settings
+                  size={18}
+                />
 
                 Settings
 
@@ -554,7 +641,6 @@ function Topbar() {
               </div>
 
             </div>
-
           )}
 
         </div>
@@ -562,9 +648,7 @@ function Topbar() {
       </div>
 
     </div>
-
   );
-
 }
 
 export default Topbar;

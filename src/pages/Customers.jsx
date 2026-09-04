@@ -30,7 +30,37 @@ import AddCustomerModal from "../components/AddCustomerModal";
 
 import "./Customers.css";
 
+function getCanonicalCustomerFinancials(customer, totalPaidOverride) {
+  const total = Number(customer?.total_amount || 0);
+  const paid = Number(
+    totalPaidOverride ?? customer?.amount_paid ?? 0
+  );
+  const balance = Math.max(total - paid, 0);
+
+  if (total > 0) {
+    const completed = paid >= total;
+
+    return {
+      ...customer,
+      amount_paid: paid,
+      balance,
+      status: completed ? "Sold" : "Booked",
+      registration_status: completed ? "Completed" : "Pending",
+    };
+  }
+
+  return {
+    ...customer,
+    amount_paid: paid,
+    balance,
+    status: customer?.status || "Booked",
+    registration_status:
+      customer?.registration_status || "Pending",
+  };
+}
+
 function Customers() {
+
   const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -48,22 +78,57 @@ function Customers() {
   async function fetchCustomers() {
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from("customers")
-      .select("*")
-      .order("id", {
-        ascending: false,
+    try {
+      const [
+        { data: customerData, error: customerError },
+        { data: paymentData, error: paymentError },
+      ] = await Promise.all([
+        supabase
+          .from("customers")
+          .select("*")
+          .order("id", {
+            ascending: false,
+          }),
+        supabase
+          .from("payments")
+          .select("customer_id, amount"),
+      ]);
+
+      if (customerError) throw customerError;
+      if (paymentError) throw paymentError;
+
+      const paidByCustomer = new Map();
+
+      (customerData || []).forEach((customer) => {
+        paidByCustomer.set(customer.id, 0);
       });
 
-    if (error) {
-      console.error(error);
-      toast.error("Failed to load customers");
-      setLoading(false);
-      return;
-    }
+      (paymentData || []).forEach((payment) => {
+        const customerId = payment.customer_id;
+        if (customerId == null) return;
 
-    setCustomers(data || []);
-    setLoading(false);
+        paidByCustomer.set(
+          customerId,
+          (paidByCustomer.get(customerId) || 0) +
+            Number(payment.amount || 0)
+        );
+      });
+
+      const normalizedCustomers = (customerData || []).map(
+        (customer) =>
+          getCanonicalCustomerFinancials(
+            customer,
+            paidByCustomer.get(customer.id)
+          )
+      );
+
+      setCustomers(normalizedCustomers);
+    } catch (error) {
+      console.error("Failed to load customers:", error);
+      toast.error("Failed to load customers");
+    } finally {
+      setLoading(false);
+    }
   }
 
   /* ==========================================================
@@ -101,6 +166,11 @@ function Customers() {
   const bookedCustomers = filteredCustomers.filter(
     (customer) =>
       customer.status?.toLowerCase() === "booked"
+  ).length;
+
+  const soldCustomers = filteredCustomers.filter(
+    (customer) =>
+      customer.status?.toLowerCase() === "sold"
   ).length;
 
   const totalCollected = filteredCustomers.reduce(

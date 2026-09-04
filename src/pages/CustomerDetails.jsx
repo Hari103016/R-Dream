@@ -5,6 +5,7 @@ import AddPaymentModal from "../components/AddPaymentModal";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import "./CustomerDetails.css";
+import "./CustomerDetailsRegistration.css";
 
 import {
   User,
@@ -37,6 +38,7 @@ function CustomerDetails() {
     plot_size: "",
     facing: "",
     status: "",
+    registration_status: "Pending",
     total_amount: "",
     amount_paid: "",
     balance: "",
@@ -132,6 +134,7 @@ function CustomerDetails() {
       plot_size: customer.plot_size || "",
       facing: customer.facing || "",
       status: customer.status || "",
+      registration_status: customer.registration_status || "Pending",
       total_amount: customer.total_amount || "",
       amount_paid: customer.amount_paid || "",
       balance: customer.balance || "",
@@ -258,6 +261,10 @@ function CustomerDetails() {
             updatedPlots.length === 0
               ? "Available"
               : customer.status,
+          registration_status:
+            updatedPlots.length === 0
+              ? "Pending"
+              : customer.registration_status || "Pending",
         })
         .eq("id", customer.id)
         .select()
@@ -294,6 +301,10 @@ function CustomerDetails() {
           updatedPlots.length === 0
             ? "Available"
             : customer.status,
+        registration_status:
+          updatedPlots.length === 0
+            ? "Pending"
+            : customer.registration_status || "Pending",
       }));
 
       // -----------------------------------------
@@ -341,6 +352,16 @@ function CustomerDetails() {
       totalAmount - amountPaid
     );
 
+    const registrationStatus =
+      totalAmount > 0 && amountPaid >= totalAmount
+        ? "Completed"
+        : "Pending";
+
+    const customerStatus =
+      totalAmount > 0 && amountPaid >= totalAmount
+        ? "Sold"
+        : customer.status || "Booked";
+
     const { error } = await supabase
       .from("customers")
       .update({
@@ -349,7 +370,8 @@ function CustomerDetails() {
         plot_no: formData.plot_no,
         plot_size: formData.plot_size,
         facing: formData.facing,
-        status: formData.status,
+        status: customerStatus,
+        registration_status: registrationStatus,
         total_amount: totalAmount,
         amount_paid: amountPaid,
         balance: balance,
@@ -509,6 +531,10 @@ Your Plot Details
       customer.balance || 0
     ).toLocaleString("en-IN")}
 
+📋 Registration Status : ${
+      customer.registration_status || "Pending"
+    }
+
 Thank you for choosing R Dream Infra Developers.
 
 📞 Contact us for any assistance.`;
@@ -561,6 +587,11 @@ Thank you for choosing R Dream Infra Developers.
             (paid / total) * 100
           )
         );
+
+  const registrationStatus =
+    total > 0 && paid >= total
+      ? "Completed"
+      : "Pending";
 
   // ============================================
   // MAIN PAGE
@@ -650,6 +681,16 @@ Thank you for choosing R Dream Infra Developers.
               {customer?.status}
             </span>
 
+            <span
+              className={`registration-status-badge ${
+                registrationStatus === "Completed"
+                  ? "registration-status-completed"
+                  : "registration-status-pending"
+              }`}
+            >
+              Registration: {registrationStatus}
+            </span>
+
           </div>
 
         </div>
@@ -729,6 +770,30 @@ Thank you for choosing R Dream Infra Developers.
 
             <h2>
               {payments.length}
+            </h2>
+
+          </div>
+
+          {/* REGISTRATION */}
+
+          <div
+            className={`summary-card registration-status-card ${
+              registrationStatus === "Completed"
+                ? "registration-status-completed"
+                : "registration-status-pending"
+            }`}
+          >
+
+            <Receipt size={30} />
+
+            <h4>
+              Registration Status
+            </h4>
+
+            <h2>
+              {registrationStatus === "Completed"
+                ? "Completed"
+                : "Pending"}
             </h2>
 
           </div>
@@ -1235,6 +1300,55 @@ Thank you for choosing R Dream Infra Developers.
 
           )}
 
+          {/* REGISTRATION STATUS */}
+
+          {registrationStatus === "Completed" ? (
+
+            <div className="timeline-item">
+
+              <div className="timeline-icon complete">
+                ✓
+              </div>
+
+              <div className="timeline-content">
+
+                <h4>
+                  Registration Completed
+                </h4>
+
+                <p>
+                  Full payment received. Plot is Sold.
+                </p>
+
+              </div>
+
+            </div>
+
+          ) : (
+
+            <div className="timeline-item">
+
+              <div className="timeline-icon pending">
+                !
+              </div>
+
+              <div className="timeline-content">
+
+                <h4>
+                  Registration Pending
+                </h4>
+
+                <p>
+                  Registration will be completed after
+                  the full amount is paid.
+                </p>
+
+              </div>
+
+            </div>
+
+          )}
+
         </div>
 
       </div>
@@ -1347,13 +1461,18 @@ Thank you for choosing R Dream Infra Developers.
                 value={
                   formData.status
                 }
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    status:
-                      e.target.value,
-                  })
+                readOnly
+              />
+
+              {/* REGISTRATION STATUS */}
+
+              <input
+                type="text"
+                placeholder="Registration Status"
+                value={
+                  formData.registration_status
                 }
+                readOnly
               />
 
               {/* TOTAL AMOUNT */}

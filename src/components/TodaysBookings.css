@@ -721,3 +721,146 @@
     }
 
 }
+
+/* ==========================================================
+   STEP 7.3 — RELIABILITY ADDITIONS
+   Existing design above is preserved.
+   ========================================================== */
+
+.today-bookings-updated {
+    display: block;
+    margin-top: 4px;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.today-refresh-btn.is-refreshing svg {
+    animation: todaysBookingsSpin .9s linear infinite;
+}
+
+.today-refresh-btn:disabled {
+    cursor: not-allowed;
+    opacity: .6;
+}
+
+.today-bookings-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border: 1px solid rgba(239, 68, 68, .28);
+    border-radius: 12px;
+    background: rgba(239, 68, 68, .08);
+}
+
+.today-bookings-alert-icon {
+    flex: 0 0 auto;
+    font-size: 19px;
+}
+
+.today-bookings-alert-content {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.today-bookings-alert-content strong {
+    color: #f8fafc;
+    font-size: 13px;
+}
+
+.today-bookings-alert-content span {
+    color: #94a3b8;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.today-bookings-retry {
+    flex: 0 0 auto;
+    padding: 8px 13px;
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 8px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.today-bookings-retry:hover {
+    background: #1d4ed8;
+}
+
+.today-bookings-retry:disabled {
+    cursor: not-allowed;
+    opacity: .6;
+}
+
+.today-bookings-skeleton-item {
+    height: 72px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, .05);
+    border-radius: 12px;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, .04) 25%,
+        rgba(255, 255, 255, .09) 37%,
+        rgba(255, 255, 255, .04) 63%
+    );
+    background-size: 400% 100%;
+    animation: todaysBookingsShimmer 1.4s ease infinite;
+}
+
+.today-bookings-refresh-bar {
+    margin-top: 10px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, .035);
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+}
+
+@keyframes todaysBookingsShimmer {
+    0% {
+        background-position: 100% 0;
+    }
+
+    100% {
+        background-position: -100% 0;
+    }
+}
+
+@keyframes todaysBookingsSpin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 640px) {
+    .today-bookings-alert {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .today-bookings-alert-content {
+        min-width: calc(100% - 50px);
+    }
+
+    .today-bookings-retry {
+        margin-left: 32px;
+    }
+
+    .today-bookings-updated {
+        font-size: 10px;
+    }
+}

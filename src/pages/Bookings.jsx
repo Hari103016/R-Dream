@@ -21,6 +21,35 @@ import { supabase } from "../services/supabase";
 
 import "./Bookings.css";
 
+function getCanonicalCustomerFinancials(customer, totalPaidOverride) {
+  const total = Number(customer?.total_amount || 0);
+  const paid = Number(
+    totalPaidOverride ?? customer?.amount_paid ?? 0
+  );
+  const balance = Math.max(total - paid, 0);
+
+  if (total > 0) {
+    const completed = paid >= total;
+
+    return {
+      ...customer,
+      amount_paid: paid,
+      balance,
+      status: completed ? "Sold" : "Booked",
+      registration_status: completed ? "Completed" : "Pending",
+    };
+  }
+
+  return {
+    ...customer,
+    amount_paid: paid,
+    balance,
+    status: customer?.status || "Booked",
+    registration_status:
+      customer?.registration_status || "Pending",
+  };
+}
+
 function Bookings() {
   const navigate = useNavigate();
 
@@ -123,24 +152,53 @@ function Bookings() {
     try {
       setLoading(true);
 
-      const { data, error } = await supabase
-        .from("customers")
-        .select("*")
-        .order("booking_date", {
-          ascending: false,
-        });
+      const [
+        { data: customerData, error: customerError },
+        { data: paymentData, error: paymentError },
+      ] = await Promise.all([
+        supabase
+          .from("customers")
+          .select("*")
+          .order("booking_date", {
+            ascending: false,
+          }),
+        supabase
+          .from("payments")
+          .select("customer_id, amount"),
+      ]);
 
-      if (error) {
-        throw error;
-      }
+      if (customerError) throw customerError;
+      if (paymentError) throw paymentError;
 
-      setBookings(data || []);
-      setFilteredBookings(data || []);
-    } catch (error) {
-      console.error(
-        "Error fetching bookings:",
-        error
+      const paidByCustomer = new Map();
+
+      (customerData || []).forEach((customer) => {
+        paidByCustomer.set(customer.id, 0);
+      });
+
+      (paymentData || []).forEach((payment) => {
+        const customerId = payment.customer_id;
+        if (customerId == null) return;
+
+        paidByCustomer.set(
+          customerId,
+          (paidByCustomer.get(customerId) || 0) +
+            Number(payment.amount || 0)
+        );
+      });
+
+      const normalizedBookings = (customerData || []).map(
+        (customer) =>
+          getCanonicalCustomerFinancials(
+            customer,
+            paidByCustomer.get(customer.id)
+          )
       );
+
+      setBookings(normalizedBookings);
+      setFilteredBookings(normalizedBookings);
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
     } finally {
       setLoading(false);
     }
@@ -173,8 +231,7 @@ function Bookings() {
     ).length;
 
     const completedBookings = bookings.filter(
-      (customer) =>
-        Number(customer.balance || 0) === 0
+      (customer) => customer.status === "Sold"
     ).length;
 
     return {

@@ -18,6 +18,35 @@ import { supabase } from "../services/supabase";
 
 import "./Reports.css";
 
+function getCanonicalCustomerFinancials(customer, totalPaidOverride) {
+  const total = Number(customer?.total_amount || 0);
+  const paid = Number(
+    totalPaidOverride ?? customer?.amount_paid ?? 0
+  );
+  const balance = Math.max(total - paid, 0);
+
+  if (total > 0) {
+    const completed = paid >= total;
+
+    return {
+      ...customer,
+      amount_paid: paid,
+      balance,
+      status: completed ? "Sold" : "Booked",
+      registration_status: completed ? "Completed" : "Pending",
+    };
+  }
+
+  return {
+    ...customer,
+    amount_paid: paid,
+    balance,
+    status: customer?.status || "Booked",
+    registration_status:
+      customer?.registration_status || "Pending",
+  };
+}
+
 function Reports() {
   const navigate = useNavigate();
 
@@ -48,43 +77,86 @@ function Reports() {
     try {
       setLoading(true);
 
-      // Customers
+      const [
+        { data: customerData, error: customerError },
+        { data: plotData, error: plotError },
+        { data: paymentData, error: paymentError },
+      ] = await Promise.all([
+        supabase
+          .from("customers")
+          .select("*")
+          .order("booking_date", {
+            ascending: false,
+          }),
+        supabase
+          .from("plots")
+          .select("*"),
+        supabase
+          .from("payments")
+          .select("customer_id, amount"),
+      ]);
 
-      const {
-        data: customerData,
-        error: customerError,
-      } = await supabase
-        .from("customers")
-        .select("*")
-        .order("booking_date", {
-          ascending: false,
-        });
+      if (customerError) throw customerError;
+      if (plotError) throw plotError;
+      if (paymentError) throw paymentError;
 
-      if (customerError) {
-        throw customerError;
-      }
+      const paidByCustomer = new Map();
 
-      // Plots
+      (customerData || []).forEach((customer) => {
+        paidByCustomer.set(customer.id, 0);
+      });
 
-      const {
-        data: plotData,
-        error: plotError,
-      } = await supabase
-        .from("plots")
-        .select("*");
+      (paymentData || []).forEach((payment) => {
+        const customerId = payment.customer_id;
+        if (customerId == null) return;
 
-      if (plotError) {
-        throw plotError;
-      }
+        paidByCustomer.set(
+          customerId,
+          (paidByCustomer.get(customerId) || 0) +
+            Number(payment.amount || 0)
+        );
+      });
 
-      setCustomers(customerData || []);
-      setPlots(plotData || []);
-
-    } catch (error) {
-      console.error(
-        "Error fetching reports:",
-        error
+      const normalizedCustomers = (customerData || []).map(
+        (customer) =>
+          getCanonicalCustomerFinancials(
+            customer,
+            paidByCustomer.get(customer.id)
+          )
       );
+
+      const statusByCustomer = new Map(
+        normalizedCustomers.map((customer) => [
+          customer.id,
+          customer.status,
+        ])
+      );
+
+      const normalizedPlots = (plotData || []).map((plot) => {
+        const customerStatus = statusByCustomer.get(
+          plot.customer_id
+        );
+
+        if (!customerStatus) {
+          return {
+            ...plot,
+            status: plot.status || "Available",
+          };
+        }
+
+        return {
+          ...plot,
+          status:
+            customerStatus === "Sold"
+              ? "Sold"
+              : "Booked",
+        };
+      });
+
+      setCustomers(normalizedCustomers);
+      setPlots(normalizedPlots);
+    } catch (error) {
+      console.error("Error fetching reports:", error);
     } finally {
       setLoading(false);
     }

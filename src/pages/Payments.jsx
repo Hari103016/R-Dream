@@ -45,6 +45,25 @@ function Payments() {
 
   useEffect(() => {
     fetchPayments();
+
+    const channel = supabase
+      .channel("payments-page-refresh")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "payments",
+        },
+        () => {
+          fetchPayments();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   /* ===========================================

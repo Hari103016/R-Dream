@@ -22,7 +22,40 @@ import BookPlotModal from "../components/BookPlotModal";
 
 import "./Plots.css";
 
+function getCanonicalCustomerFinancials(customer, totalPaidOverride) {
+  const total = Number(customer?.total_amount || 0);
+  const paid = Number(
+    totalPaidOverride ?? customer?.amount_paid ?? 0
+  );
+  const balance = Math.max(total - paid, 0);
+
+  if (total > 0) {
+    const completed = paid >= total;
+
+    return {
+      ...customer,
+      amount_paid: paid,
+      balance,
+      status: completed ? "Sold" : "Booked",
+      registration_status: completed ? "Completed" : "Pending",
+    };
+  }
+
+  return {
+    ...customer,
+    amount_paid: paid,
+    balance,
+    status: customer?.status || "Booked",
+    registration_status:
+      customer?.registration_status || "Pending",
+  };
+}
+
 function Plots() {
+
+  const [customers, setCustomers] = useState([]);
+  const [payments, setPayments] = useState([]);
+
 
   const navigate = useNavigate();
 
@@ -53,28 +86,87 @@ function Plots() {
   }, []);
 
   async function fetchPlots() {
-
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from("plots")
-      .select("*")
-      .order("plot_no");
+    try {
+      const [
+        { data: plotData, error: plotError },
+        { data: customerData, error: customerError },
+        { data: paymentData, error: paymentError },
+      ] = await Promise.all([
+        supabase
+          .from("plots")
+          .select("*")
+          .order("plot_no"),
+        supabase
+          .from("customers")
+          .select("id, total_amount, amount_paid, status, registration_status"),
+        supabase
+          .from("payments")
+          .select("customer_id, amount"),
+      ]);
 
-    if (error) {
+      if (plotError) throw plotError;
+      if (customerError) throw customerError;
+      if (paymentError) throw paymentError;
 
+      const paidByCustomer = new Map();
+
+      (customerData || []).forEach((customer) => {
+        paidByCustomer.set(customer.id, 0);
+      });
+
+      (paymentData || []).forEach((payment) => {
+        const customerId = payment.customer_id;
+        if (customerId == null) return;
+
+        paidByCustomer.set(
+          customerId,
+          (paidByCustomer.get(customerId) || 0) +
+            Number(payment.amount || 0)
+        );
+      });
+
+      const customerMap = new Map(
+        (customerData || []).map((customer) => [
+          customer.id,
+          getCanonicalCustomerFinancials(
+            customer,
+            paidByCustomer.get(customer.id)
+          ),
+        ])
+      );
+
+      /*
+       * Plot status is derived from the customer's real payment total.
+       * This prevents a stale plots.status value from keeping a fully
+       * paid plot orange.
+       */
+      const normalizedPlots = (plotData || []).map((plot) => {
+        const customer = customerMap.get(plot.customer_id);
+
+        if (!customer || Number(customer.total_amount || 0) <= 0) {
+          return {
+            ...plot,
+            status: plot.status || "Available",
+          };
+        }
+
+        return {
+          ...plot,
+          status: customer.status === "Sold" ? "Sold" : "Booked",
+        };
+      });
+
+      setCustomers(customerData || []);
+      setPayments(paymentData || []);
+      setPlots(normalizedPlots);
+    } catch (error) {
+      console.error("Unable to load plots:", error);
       toast.error("Unable to load plots");
-
+    } finally {
       setLoading(false);
-
-      return;
-
     }
-
-    setPlots(data || []);
-
-    setLoading(false);
-
   }
 
   const filteredPlots = useMemo(() => {

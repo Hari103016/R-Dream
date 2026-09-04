@@ -1,0 +1,48 @@
+/* Registration status colors only.
+   Plot/customer status colors remain unchanged.
+*/
+
+.registration-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2;
+  color: #fff !important;
+  border: 1px solid transparent;
+  box-shadow: none;
+}
+
+/* Pending registration = blue, NOT orange. */
+.registration-status-badge.registration-status-pending {
+  background: #2563eb !important;
+  border-color: #1d4ed8 !important;
+}
+
+/* Completed registration = green. */
+.registration-status-badge.registration-status-completed {
+  background: #16a34a !important;
+  border-color: #15803d !important;
+}
+
+/* Registration summary card follows registration meaning, not plot status. */
+.registration-status-card.registration-status-pending {
+  border-left: 3px solid #2563eb !important;
+}
+
+.registration-status-card.registration-status-completed {
+  border-left: 3px solid #16a34a !important;
+}
+
+.registration-status-card.registration-status-pending h2 {
+  color: #60a5fa !important;
+}
+
+.registration-status-card.registration-status-completed h2 {
+  color: #4ade80 !important;
+}

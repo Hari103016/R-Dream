@@ -1,4 +1,4 @@
-import { supabase } from "../supabaseClient";
+import { supabase } from "./supabase";
 
 /**
  * Get latest notifications
@@ -89,7 +89,7 @@ export async function deleteNotification(id) {
  * Delete all notifications
  */
 export async function clearNotifications() {
-  const { error } =await supabase
+  const { error } = await supabase
     .from("notifications")
     .delete()
     .neq("id", 0);

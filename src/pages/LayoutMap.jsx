@@ -778,43 +778,198 @@ export default function LayoutMap() {
   const loadPlotStatuses =
     useCallback(async () => {
       try {
-        const {
-          data,
-          error,
-        } = await supabase
-          .from("plots")
-          .select(
-            "plot_no, status"
-          );
+        /*
+          STATUS FIX:
+          A plot becomes Sold/red when the linked customer is fully paid
+          or registration is completed, even if plots.status is still stale.
+        */
+        const [
+          plotsResult,
+          customersResult,
+          paymentsResult,
+        ] = await Promise.all([
+          supabase
+            .from("plots")
+            .select(
+              "plot_no, status, customer_id"
+            ),
 
-        if (error) {
-          throw error;
+          supabase
+            .from("customers")
+            .select(
+              "id, status, registration_status, total_amount, amount_paid"
+            ),
+
+          supabase
+            .from("payments")
+            .select(
+              "customer_id, amount"
+            ),
+        ]);
+
+        if (plotsResult.error) {
+          throw plotsResult.error;
+        }
+
+        if (customersResult.error) {
+          throw customersResult.error;
+        }
+
+        if (paymentsResult.error) {
+          throw paymentsResult.error;
         }
 
         const next =
           createInitialStatuses();
 
+        const customersById =
+          new Map();
+
         for (
-          const row of data || []
+          const customer of
+            customersResult.data || []
+        ) {
+          customersById.set(
+            Number(customer.id),
+            customer
+          );
+        }
+
+        const paidByCustomer =
+          new Map();
+
+        for (
+          const payment of
+            paymentsResult.data || []
+        ) {
+          const customerId =
+            Number(
+              payment.customer_id
+            );
+
+          if (
+            !Number.isFinite(
+              customerId
+            )
+          ) {
+            continue;
+          }
+
+          const amount =
+            Number(payment.amount) || 0;
+
+          paidByCustomer.set(
+            customerId,
+            (paidByCustomer.get(
+              customerId
+            ) || 0) + amount
+          );
+        }
+
+        for (
+          const row of
+            plotsResult.data || []
         ) {
           const plotNumber =
             Number(row.plot_no);
 
           if (
-            Number.isInteger(
+            !Number.isInteger(
               plotNumber
-            ) &&
-            plotNumber >= 1 &&
-            plotNumber <=
+            ) ||
+            plotNumber < 1 ||
+            plotNumber >
               TOTAL_PLOTS
           ) {
-            next[
-              plotNumber
-            ] =
-              normalizeStatus(
-                row.status
-              );
+            continue;
           }
+
+          let resolvedStatus =
+            normalizeStatus(
+              row.status
+            );
+
+          const customerId =
+            Number(
+              row.customer_id
+            );
+
+          const customer =
+            Number.isFinite(
+              customerId
+            )
+              ? customersById.get(
+                  customerId
+                )
+              : null;
+
+          if (customer) {
+            const registrationStatus =
+              String(
+                customer.registration_status ??
+                  ""
+              )
+                .trim()
+                .toLowerCase();
+
+            const customerStatus =
+              normalizeStatus(
+                customer.status
+              );
+
+            const totalAmount =
+              Number(
+                customer.total_amount
+              ) || 0;
+
+            const storedPaid =
+              Number(
+                customer.amount_paid
+              ) || 0;
+
+            const paymentSum =
+              paidByCustomer.get(
+                customerId
+              ) || 0;
+
+            const effectivePaid =
+              Math.max(
+                storedPaid,
+                paymentSum
+              );
+
+            const fullyPaid =
+              totalAmount > 0 &&
+              effectivePaid >=
+                totalAmount;
+
+            const registrationCompleted =
+              registrationStatus ===
+                "completed" ||
+              registrationStatus ===
+                "registered";
+
+            if (
+              fullyPaid ||
+              registrationCompleted ||
+              customerStatus ===
+                "sold"
+            ) {
+              resolvedStatus =
+                "sold";
+            } else if (
+              customerId &&
+              resolvedStatus ===
+                "available"
+            ) {
+              resolvedStatus =
+                "booked";
+            }
+          }
+
+          next[
+            plotNumber
+          ] = resolvedStatus;
         }
 
         setStatuses(next);
@@ -831,10 +986,14 @@ export default function LayoutMap() {
   }, [loadPlotStatuses]);
 
   useEffect(() => {
+    /*
+      Refresh the map when plot/customer/payment data changes.
+      The five-second fallback remains in place.
+    */
     const channel =
       supabase
         .channel(
-          "gudimetla-layout-plot-status"
+          "gudimetla-layout-live-status"
         )
         .on(
           "postgres_changes",
@@ -842,6 +1001,28 @@ export default function LayoutMap() {
             event: "*",
             schema: "public",
             table: "plots",
+          },
+          () => {
+            loadPlotStatuses();
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "customers",
+          },
+          () => {
+            loadPlotStatuses();
+          }
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "payments",
           },
           () => {
             loadPlotStatuses();
