@@ -560,15 +560,6 @@
   background: rgba(35,119,255,.045);
 }
 
-.check-column {
-  width: 35px;
-}
-
-.check-column input {
-  width: 14px;
-  height: 14px;
-  accent-color: #2878ff;
-}
 
 .row-number {
   width: 32px;
@@ -1459,12 +1450,6 @@
    ========================================================= */
 
 .premium-customers-table
-  .check-column input {
-  width: 15px;
-  height: 15px;
-
-  cursor: pointer;
-}
 
 
 /* =========================================================
@@ -1610,4 +1595,286 @@
     font-size: 14px !important;
   }
 
+}
+/* =========================================================
+   R DREAM — DELETE CUSTOMER CONFIRMATION
+   Single premium popup — no double layer
+   ========================================================= */
+
+.swal2-container {
+  z-index: 99999 !important;
+}
+
+.swal2-popup.rd-customer-delete-popup {
+  width: 520px !important;
+  max-width: calc(100vw - 30px) !important;
+
+  margin: 0 !important;
+  padding: 28px 28px 22px !important;
+
+  box-sizing: border-box !important;
+
+  border: 1px solid rgba(72, 143, 235, 0.30) !important;
+  border-radius: 22px !important;
+
+  background:
+    radial-gradient(
+      circle at 50% -15%,
+      rgba(255, 166, 61, 0.12),
+      transparent 40%
+    ),
+    linear-gradient(
+      145deg,
+      #12253e 0%,
+      #0a1729 58%,
+      #081323 100%
+    ) !important;
+
+  box-shadow:
+    0 35px 100px rgba(0, 0, 0, 0.68) !important;
+
+  color: #eef6ff !important;
+  overflow: hidden !important;
+}
+
+.swal2-popup.rd-customer-delete-popup::before,
+.swal2-popup.rd-customer-delete-popup::after {
+  display: none !important;
+  content: none !important;
+}
+
+.rd-customer-delete-popup .rd-customer-delete-icon {
+  width: 72px !important;
+  height: 72px !important;
+
+  margin: 0 auto 18px !important;
+
+  border: 1px solid rgba(255, 174, 74, 0.42) !important;
+  border-radius: 50% !important;
+
+  background: rgba(255, 166, 61, 0.07) !important;
+
+  box-shadow:
+    0 0 0 8px rgba(255, 166, 61, 0.04),
+    0 12px 30px rgba(0, 0, 0, 0.22) !important;
+
+  color: #ffb34d !important;
+}
+
+.rd-customer-delete-popup .rd-customer-delete-icon .swal2-icon-content {
+  font-size: 38px !important;
+  font-weight: 700 !important;
+}
+
+.rd-customer-delete-popup .rd-customer-delete-title {
+  margin: 0 !important;
+
+  color: #f7fbff !important;
+
+  font-size: 27px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.5px !important;
+}
+
+.rd-customer-delete-popup .rd-customer-delete-text {
+  margin: 10px auto 0 !important;
+
+  color: #91a5bd !important;
+
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+
+.rd-customer-delete-popup .rd-customer-delete-actions {
+  width: calc(100% + 56px) !important;
+
+  margin: 24px -28px -22px !important;
+  padding: 18px 28px 20px !important;
+
+  border-top: 1px solid rgba(101, 145, 190, 0.14) !important;
+
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.rd-customer-delete-popup .rd-customer-delete-confirm,
+.rd-customer-delete-popup .rd-customer-delete-cancel {
+  min-width: 118px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 22px !important;
+
+  border-radius: 9px !important;
+
+  font-size: 13px !important;
+  font-weight: 800 !important;
+
+  cursor: pointer !important;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease !important;
+}
+
+.rd-customer-delete-popup .rd-customer-delete-confirm {
+  border: 1px solid rgba(255, 74, 84, 0.50) !important;
+
+  background: linear-gradient(
+    135deg,
+    #ff3344,
+    #e51f32
+  ) !important;
+
+  color: #ffffff !important;
+
+  box-shadow:
+    0 10px 24px rgba(239, 68, 68, 0.22) !important;
+}
+
+.rd-customer-delete-popup .rd-customer-delete-cancel {
+  border: 1px solid rgba(72, 143, 235, 0.30) !important;
+
+  background: #142941 !important;
+
+  color: #d8e6f5 !important;
+}
+
+.rd-customer-delete-popup .rd-customer-delete-confirm:hover,
+.rd-customer-delete-popup .rd-customer-delete-cancel:hover {
+  transform: translateY(-1px) !important;
+  filter: brightness(1.08) !important;
+}
+
+.rd-customer-delete-popup .rd-customer-delete-confirm:focus,
+.rd-customer-delete-popup .rd-customer-delete-cancel:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.16) !important;
+}
+
+@media (max-width: 600px) {
+  .swal2-popup.rd-customer-delete-popup {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    padding: 24px 20px 18px !important;
+  }
+
+  .rd-customer-delete-popup .rd-customer-delete-actions {
+    width: calc(100% + 40px) !important;
+    margin-left: -20px !important;
+    margin-right: -20px !important;
+    margin-bottom: -18px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+
+
+/* =========================================================
+   R DREAM - REGISTRATION STATUS + EXCEL
+   One compact horizontal control per customer.
+========================================================= */
+
+.registration-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 150px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.registration-cell .registration-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 78px;
+  height: 34px;
+  padding: 0 11px !important;
+  border-radius: 7px;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.registration-excel-button {
+  width: 70px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 8px;
+  border: 1px solid rgba(34, 197, 94, .48);
+  border-radius: 7px;
+  background: linear-gradient(135deg, #08a86f, #07915f);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .1px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .14);
+  transition: transform .16s ease, background .16s ease,
+              border-color .16s ease, box-shadow .16s ease;
+}
+
+.registration-excel-button svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+}
+
+.registration-excel-button:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #10bd80, #079e68);
+  border-color: rgba(73, 236, 166, .72);
+  box-shadow: 0 6px 16px rgba(0, 190, 125, .18);
+}
+
+.registration-excel-button:active {
+  transform: translateY(0);
+}
+
+.registration-excel-button:focus-visible {
+  outline: 2px solid rgba(73, 236, 166, .6);
+  outline-offset: 2px;
+}
+
+/* The table no longer contains a selection-checkbox column. */
+.premium-customers-table th:first-child,
+.premium-customers-table td:first-child {
+  padding-left: 15px !important;
+}
+
+@media (max-width: 1100px) {
+  .registration-cell {
+    min-width: 142px;
+    gap: 5px;
+  }
+
+  .registration-cell .registration-pill {
+    min-width: 72px;
+    height: 32px;
+    padding: 0 8px !important;
+    font-size: 11px !important;
+  }
+
+  .registration-excel-button {
+    width: 66px;
+    height: 32px;
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 800px) {
+  .registration-cell {
+    justify-content: flex-start;
+    min-width: 0;
+  }
 }

@@ -4,22 +4,64 @@ import Swal from "sweetalert2";
 import { supabase } from "../services/supabase";
 import "./EditPlotModal.css";
 
-const RATES = {
+const DEFAULT_RATES = {
   East: 2300,
   West: 2000,
   Corner: 2700,
   "North East": 3000,
 };
 
-function getRateByFacing(facing) {
-  return RATES[facing] || 2300;
+const THOTARAVULAPADU_RATES = {
+  East: 2300,
+  West: 2000,
+  Corner: 2500,
+  "North East": 2700,
+};
+
+const THOTARAVULAPADU_SPECIAL_PLOTS = {
+  "73": 3000,
+  "74": 3000,
+  "75": 3000,
+  "76": 3000,
+};
+
+function isThotaravulapadu(venture) {
+  const village = String(venture?.village || "")
+    .trim()
+    .toLowerCase();
+
+  return (
+    village === "thotaravulapadu" ||
+    village.includes("thotaravulapadu")
+  );
+}
+
+function getRateByPlotAndFacing(plotNo, facing, venture) {
+  if (isThotaravulapadu(venture)) {
+    const normalizedPlotNo = String(plotNo || "").trim();
+
+    if (
+      Object.prototype.hasOwnProperty.call(
+        THOTARAVULAPADU_SPECIAL_PLOTS,
+        normalizedPlotNo
+      )
+    ) {
+      return THOTARAVULAPADU_SPECIAL_PLOTS[normalizedPlotNo];
+    }
+
+    return THOTARAVULAPADU_RATES[facing] || 2300;
+  }
+
+  return DEFAULT_RATES[facing] || 2300;
 }
 
 function EditPlotModal({ plot, onClose, selectedVenture = null }) {
   const [ventures, setVentures] = useState([]);
+
   const [ventureId, setVentureId] = useState(
     plot?.venture_id || selectedVenture?.id || ""
   );
+
   const [formData, setFormData] = useState({
     plot_size: plot?.plot_size ?? "",
     facing: plot?.facing || "East",
@@ -30,8 +72,35 @@ function EditPlotModal({ plot, onClose, selectedVenture = null }) {
   const [saving, setSaving] = useState(false);
   const [loadingVentures, setLoadingVentures] = useState(true);
 
-  const rate = getRateByFacing(formData.facing);
-  const price = (Number(formData.plot_size) || 0) * rate;
+  const selectedVentureData = useMemo(
+    () =>
+      ventures.find(
+        (v) => String(v.id) === String(ventureId)
+      ),
+    [ventures, ventureId]
+  );
+
+  const effectiveVenture =
+    selectedVentureData ||
+    (selectedVenture?.id &&
+    String(selectedVenture.id) === String(ventureId)
+      ? selectedVenture
+      : null);
+
+  const rate = getRateByPlotAndFacing(
+    plot?.plot_no,
+    formData.facing,
+    effectiveVenture
+  );
+
+  const price =
+    (Number(formData.plot_size) || 0) * rate;
+
+  const specialPlot =
+    isThotaravulapadu(effectiveVenture) &&
+    ["73", "74", "75", "76"].includes(
+      String(plot?.plot_no || "").trim()
+    );
 
   useEffect(() => {
     let active = true;
@@ -49,12 +118,14 @@ function EditPlotModal({ plot, onClose, selectedVenture = null }) {
 
       if (error) {
         console.error("Load Ventures Error:", error);
+
         Swal.fire({
           title: "Unable to Load Ventures",
           text: error.message,
           icon: "error",
           confirmButtonColor: "#2563eb",
         });
+
         setVentures([]);
       } else {
         const rows = data || [];
@@ -77,14 +148,9 @@ function EditPlotModal({ plot, onClose, selectedVenture = null }) {
     return () => {
       active = false;
     };
-    // Venture is intentionally resolved once when the plot changes.
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plot?.id]);
-
-  const selectedVentureData = useMemo(
-    () => ventures.find((v) => v.id === ventureId),
-    [ventures, ventureId]
-  );
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -118,8 +184,14 @@ function EditPlotModal({ plot, onClose, selectedVenture = null }) {
 
     setSaving(true);
 
-    const finalRate = getRateByFacing(formData.facing);
-    const finalPrice = Number(formData.plot_size) * finalRate;
+    const finalRate = getRateByPlotAndFacing(
+      plot?.plot_no,
+      formData.facing,
+      effectiveVenture
+    );
+
+    const finalPrice =
+      Number(formData.plot_size) * finalRate;
 
     const { error } = await supabase
       .from("plots")
@@ -190,7 +262,9 @@ function EditPlotModal({ plot, onClose, selectedVenture = null }) {
               disabled={loadingVentures || saving}
             >
               <option value="">
-                {loadingVentures ? "Loading ventures..." : "Select Venture / Phase"}
+                {loadingVentures
+                  ? "Loading ventures..."
+                  : "Select Venture / Phase"}
               </option>
 
               {ventures.map((venture) => (
@@ -200,11 +274,11 @@ function EditPlotModal({ plot, onClose, selectedVenture = null }) {
               ))}
             </select>
 
-            {selectedVentureData && (
+            {effectiveVenture && (
               <small>
-                {selectedVentureData.village} • {selectedVentureData.phase_name}
-                {selectedVentureData.total_plots
-                  ? ` • ${selectedVentureData.total_plots} plots`
+                {effectiveVenture.village} • {effectiveVenture.phase_name}
+                {effectiveVenture.total_plots
+                  ? ` • ${effectiveVenture.total_plots} plots`
                   : ""}
               </small>
             )}
@@ -212,6 +286,7 @@ function EditPlotModal({ plot, onClose, selectedVenture = null }) {
 
           <div className="edit-form-group">
             <label>Plot Size (Sq.Yds)</label>
+
             <input
               type="number"
               name="plot_size"
@@ -225,6 +300,7 @@ function EditPlotModal({ plot, onClose, selectedVenture = null }) {
 
           <div className="edit-form-group">
             <label>Facing</label>
+
             <select
               name="facing"
               value={formData.facing}
@@ -240,6 +316,7 @@ function EditPlotModal({ plot, onClose, selectedVenture = null }) {
 
           <div className="edit-form-group">
             <label>Road Width</label>
+
             <select
               name="road_width"
               value={formData.road_width}
@@ -254,22 +331,33 @@ function EditPlotModal({ plot, onClose, selectedVenture = null }) {
 
           <div className="edit-form-group">
             <label>Rate / Sq.Yd</label>
+
             <div className="edit-readonly-field green">
               ₹{rate.toLocaleString("en-IN")}
             </div>
-            <small>Automatically calculated from facing</small>
+
+            <small>
+              {specialPlot
+                ? "Special rate • ₹3,000 / Sq.Yd"
+                : isThotaravulapadu(effectiveVenture)
+                ? "Thotaravulapadu rate • Based on facing"
+                : "Standard venture rate • Based on facing"}
+            </small>
           </div>
 
           <div className="edit-form-group">
             <label>Total Price</label>
+
             <div className="edit-readonly-field yellow">
               ₹{price.toLocaleString("en-IN")}
             </div>
+
             <small>Plot Size × Rate</small>
           </div>
 
           <div className="edit-form-group">
             <label>Status</label>
+
             <select
               name="status"
               value={formData.status}

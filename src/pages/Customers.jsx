@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 
 import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 
 import Swal from "sweetalert2";
@@ -445,17 +446,37 @@ function Customers() {
         showCancelButton:
           true,
 
-        confirmButtonColor:
-          "#ef4444",
-
-        cancelButtonColor:
-          "#2563eb",
-
         confirmButtonText:
           "Delete",
 
         cancelButtonText:
           "Cancel",
+
+        buttonsStyling:
+          false,
+
+        customClass: {
+          popup:
+            "rd-customer-delete-popup",
+
+          icon:
+            "rd-customer-delete-icon",
+
+          title:
+            "rd-customer-delete-title",
+
+          htmlContainer:
+            "rd-customer-delete-text",
+
+          actions:
+            "rd-customer-delete-actions",
+
+          confirmButton:
+            "rd-customer-delete-confirm",
+
+          cancelButton:
+            "rd-customer-delete-cancel",
+        },
 
       });
 
@@ -1735,6 +1756,504 @@ function Customers() {
 
 
   /* ==========================================================
+     CUSTOMER REGISTRATION EXCEL
+     - One button for every customer row
+     - Groups all separate bookings using mobile number
+     - Shows every booked plot
+     - Shows registration status per plot
+     - Excel Registration column has Pending / Completed dropdown
+  ========================================================== */
+
+  async function exportCustomerRegistrationExcel(customer) {
+    try {
+      const mobile = String(customer?.mobile || "").trim();
+      if (!mobile) {
+        toast.warning("Customer mobile number is missing");
+        return;
+      }
+
+      toast.info("Preparing customer registration Excel...");
+
+      const { data: customerRows, error: customerError } = await supabase
+        .from("customers")
+        .select("*")
+        .eq("mobile", mobile)
+        .order("booking_date", { ascending: true });
+
+      if (customerError) throw customerError;
+
+      const bookings = customerRows || [];
+      if (!bookings.length) {
+        toast.warning("No booking records found for this customer");
+        return;
+      }
+
+      const customerIds = bookings
+        .map((row) => row.id)
+        .filter((id) => id !== null && id !== undefined);
+
+      const { data: plotRows, error: plotError } = await supabase
+        .from("plots")
+        .select("*")
+        .in("customer_id", customerIds);
+
+      if (plotError) throw plotError;
+
+      const bookingById = new Map(
+        bookings.map((row) => [String(row.id), row])
+      );
+
+      const asList = (value) => {
+        if (Array.isArray(value)) return value;
+        if (value === null || value === undefined || value === "") return [];
+        return String(value)
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean);
+      };
+
+      const formatDate = (value) => {
+        if (!value) return "";
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return String(value);
+        return date.toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        });
+      };
+
+      const getValue = (obj, keys, fallback = "") => {
+        for (const key of keys) {
+          if (obj?.[key] !== undefined && obj?.[key] !== null && obj?.[key] !== "") {
+            return obj[key];
+          }
+        }
+        return fallback;
+      };
+
+      const getRegistration = (booking) => {
+        const value = String(
+          booking?.registration_status || customer?.registration_status || "Pending"
+        ).toLowerCase();
+        return value === "completed" || value === "registered"
+          ? "Registered"
+          : "Not Registered";
+      };
+
+      const finalPlotRows = [];
+      const linkedBookingIds = new Set();
+
+      (plotRows || []).forEach((plot) => {
+        const booking = bookingById.get(String(plot.customer_id));
+        if (booking?.id !== undefined && booking?.id !== null) {
+          linkedBookingIds.add(String(booking.id));
+        }
+
+        const size = Number(
+          getValue(plot, ["plot_size", "plot_area", "size", "area"], 0)
+        ) || 0;
+        const value = Number(
+          getValue(plot, ["price", "total_amount", "amount"], 0)
+        ) || 0;
+
+        finalPlotRows.push({
+          plotNo: getValue(plot, ["plot_no", "plot_number", "plotNumber"], ""),
+          plotSize: size,
+          rate: size > 0 ? value / size : 0,
+          plotValue: value,
+          registration: getRegistration(booking),
+          registrationDate:
+            getRegistration(booking) === "Registered"
+              ? formatDate(
+                  getValue(plot, [
+                    "registration_date",
+                    "registered_date",
+                    "registrationDate",
+                  ])
+                )
+              : "",
+        });
+      });
+
+      bookings.forEach((booking) => {
+        if (linkedBookingIds.has(String(booking.id))) return;
+
+        const plotNumbers = asList(booking.plot_no);
+        const plotSizes = asList(booking.plot_size || booking.plot_area);
+        const count = Math.max(plotNumbers.length, plotSizes.length, 1);
+        const totalValue = Number(booking.total_amount || 0) || 0;
+        const perPlotValue = count === 1 ? totalValue : totalValue / count;
+
+        for (let i = 0; i < count; i += 1) {
+          const size = Number(plotSizes[i] || 0) || 0;
+          finalPlotRows.push({
+            plotNo: plotNumbers[i] || booking.plot_no || "",
+            plotSize: size,
+            rate: size > 0 ? perPlotValue / size : 0,
+            plotValue: perPlotValue,
+            registration: getRegistration(booking),
+            registrationDate: "",
+          });
+        }
+      });
+
+      finalPlotRows.forEach((row, index) => {
+        row.sno = index + 1;
+      });
+
+      const totalPaid = bookings.reduce(
+        (sum, row) => sum + Number(row.amount_paid || 0),
+        0
+      );
+
+      const totalArea = finalPlotRows.reduce(
+        (sum, row) => sum + Number(row.plotSize || 0),
+        0
+      );
+
+      const bookingTotalValue = finalPlotRows.reduce(
+        (sum, row) => sum + Number(row.plotValue || 0),
+        0
+      );
+
+      const customerName = customer?.name || bookings[0]?.name || "Customer";
+      const safeName =
+        String(customerName)
+          .replace(/[^a-zA-Z0-9 _-]/g, "")
+          .trim()
+          .replace(/\s+/g, "_") || "Customer";
+
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = "R Dream Infra Developers";
+      workbook.company = "R Dream Infra Developers";
+      workbook.title = `${customerName} Plot Registry`;
+      workbook.created = new Date();
+
+      const worksheet = workbook.addWorksheet("Plot Registry", {
+        views: [{ showGridLines: false }],
+        pageSetup: {
+          orientation: "landscape",
+          paperSize: 9,
+          fitToPage: true,
+          fitToWidth: 1,
+          fitToHeight: 0,
+          horizontalCentered: true,
+          verticalCentered: false,
+          margins: {
+            left: 0.20,
+            right: 0.20,
+            top: 0.20,
+            bottom: 0.20,
+            header: 0.15,
+            footer: 0.15,
+          },
+        },
+      });
+
+      // Simple, balanced widths. No oversized blank area and no clipped right edge.
+      worksheet.columns = [
+        { width: 17 }, // A Serial
+        { width: 26 }, // B Plot Number
+        { width: 16 }, // C Sq.Yd.
+        { width: 28 }, // D Rate
+        { width: 32 }, // E Registration Date
+        { width: 28 }, // F Status
+        { width: 29 }, // G Plot Value
+        { width: 29 }, // H Amount Paid
+      ];
+
+      const darkGreen = "2F6B3B";
+      const lightGreen = "EEF6EB";
+      const border = "C7D8C2";
+      const gold = "D5AF45";
+      const text = "243424";
+      const white = "FFFFFF";
+      const yellow = "FFF0B5";
+      const green = "C8EFC2";
+
+      const borderStyle = {
+        top: { style: "thin", color: { argb: border } },
+        bottom: { style: "thin", color: { argb: border } },
+        left: { style: "thin", color: { argb: border } },
+        right: { style: "thin", color: { argb: border } },
+      };
+
+      const style = (cell, opts = {}) => {
+        cell.font = {
+          name: "Arial",
+          size: opts.size || 10,
+          bold: !!opts.bold,
+          color: { argb: opts.color || text },
+        };
+        cell.alignment = {
+          horizontal: opts.align || "center",
+          vertical: "middle",
+          wrapText: !!opts.wrap,
+        };
+        cell.border = borderStyle;
+      };
+
+      // Header
+      worksheet.mergeCells("A1:H1");
+      worksheet.getCell("A1").value = "R DREAM INFRA DEVELOPERS";
+      worksheet.getCell("A1").fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: darkGreen },
+      };
+      worksheet.getCell("A1").font = {
+        name: "Arial",
+        size: 19,
+        bold: true,
+        color: { argb: white },
+      };
+      worksheet.getCell("A1").alignment = {
+        horizontal: "center",
+        vertical: "middle",
+      };
+      worksheet.getCell("A1").border = {
+        bottom: { style: "medium", color: { argb: gold } },
+      };
+      worksheet.getRow(1).height = 32;
+
+      worksheet.mergeCells("A2:H2");
+      worksheet.getCell("A2").value = "REAL ESTATE PLOT REGISTRY TRACKER";
+      worksheet.getCell("A2").font = {
+        name: "Arial",
+        size: 14,
+        bold: true,
+        color: { argb: darkGreen },
+      };
+      worksheet.getCell("A2").alignment = {
+        horizontal: "left",
+        vertical: "middle",
+      };
+      worksheet.getRow(2).height = 25;
+
+      // Customer details
+      worksheet.mergeCells("A3:D3");
+      worksheet.mergeCells("E3:H3");
+      worksheet.getCell("A3").value = `Customer Name : ${customerName}`;
+      worksheet.getCell("E3").value = `Mobile Number : ${mobile}`;
+      ["A3", "E3"].forEach((address) => {
+        style(worksheet.getCell(address), {
+          size: 11,
+          bold: true,
+          align: "left",
+        });
+        worksheet.getCell(address).fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: lightGreen },
+        };
+      });
+      worksheet.getRow(3).height = 24;
+
+      // Four simple summary blocks.
+      const blocks = [
+        ["A4:B4", "A5:B5", "TOTAL PLOTS", { formula: `COUNTA(B9:B${8 + finalPlotRows.length})` }],
+        ["C4:D4", "C5:D5", "TOTAL AREA (SQ YD)", { formula: `SUM(C9:C${8 + finalPlotRows.length})` }],
+        ["E4:F4", "E5:F5", "TOTAL REGISTERED VALUE", { formula: `SUMIF(F9:F${8 + finalPlotRows.length},\"Registered\",G9:G${8 + finalPlotRows.length})` }],
+        ["G4:H4", "G5:H5", "TOTAL DUE", { formula: `MAX(0,E5-SUMIF(F9:F${8 + finalPlotRows.length},\"Registered\",H9:H${8 + finalPlotRows.length}))` }],
+      ];
+
+      blocks.forEach(([labelRange, valueRange, label, value]) => {
+        worksheet.mergeCells(labelRange);
+        worksheet.mergeCells(valueRange);
+        const labelCell = worksheet.getCell(labelRange.split(":")[0]);
+        const valueCell = worksheet.getCell(valueRange.split(":")[0]);
+        labelCell.value = label;
+        valueCell.value = value;
+        style(labelCell, { size: 9, bold: true, color: "657565" });
+        style(valueCell, { size: 16, bold: true });
+        labelCell.fill = valueCell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: lightGreen },
+        };
+      });
+
+      worksheet.getCell("A5").numFmt = "#,##0";
+      worksheet.getCell("C5").numFmt = "#,##0";
+      worksheet.getCell("E5").numFmt = '₹#,##0';
+      worksheet.getCell("G5").numFmt = '₹#,##0';
+      worksheet.getRow(4).height = 20;
+      worksheet.getRow(5).height = 30;
+
+      worksheet.mergeCells("A6:D6");
+      worksheet.mergeCells("E6:H6");
+      worksheet.getCell("A6").value = `TOTAL AMOUNT PAID : ₹${totalPaid.toLocaleString("en-IN")}`;
+      worksheet.getCell("E6").value = `AMOUNT RECEIVED : ₹${totalPaid.toLocaleString("en-IN")}`;
+      ["A6", "E6"].forEach((address) => {
+        style(worksheet.getCell(address), { size: 10, bold: true, align: "left", color: darkGreen });
+        worksheet.getCell(address).fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: lightGreen },
+        };
+      });
+      worksheet.getRow(6).height = 22;
+      worksheet.getRow(7).height = 23;
+
+      // Registry title
+      worksheet.mergeCells("A7:H7");
+      worksheet.getCell("A7").value = "PLOT REGISTRY";
+      worksheet.getCell("A7").fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: darkGreen },
+      };
+      worksheet.getCell("A7").font = {
+        name: "Arial",
+        size: 12,
+        bold: true,
+        color: { argb: white },
+      };
+      worksheet.getCell("A7").alignment = { horizontal: "left", vertical: "middle" };
+      worksheet.getRow(7).height = 23;
+
+      const header = worksheet.addRow([
+        "Serial No.",
+        "Plot Number",
+        "Sq. Yd.",
+        "Rate (per Sq. Yd.)",
+        "Date of Registration",
+        "Status",
+        "Plot Value",
+        "Amount Paid",
+      ]);
+
+      header.eachCell((cell) => {
+        style(cell, { size: 10, bold: true, color: white, wrap: true });
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: darkGreen },
+        };
+      });
+      header.height = 28;
+
+      const plotStartRow = header.number + 1;
+      const plotEndRow = plotStartRow + finalPlotRows.length - 1;
+
+      finalPlotRows.forEach((row) => {
+        const value = Number(row.plotValue || 0);
+        const paid =
+          bookingTotalValue > 0 && value > 0
+            ? totalPaid * (value / bookingTotalValue)
+            : 0;
+
+        const excelRow = worksheet.addRow([
+          row.sno,
+          row.plotNo,
+          Number(row.plotSize || 0),
+          Number(row.rate || 0),
+          row.registrationDate || "",
+          row.registration,
+          value,
+          paid,
+        ]);
+
+        excelRow.eachCell((cell) => style(cell, { size: 10 }));
+        excelRow.getCell(3).numFmt = "#,##0";
+        excelRow.getCell(4).numFmt = '₹#,##0';
+        excelRow.getCell(7).numFmt = '₹#,##0';
+        excelRow.getCell(8).numFmt = '₹#,##0';
+
+        const status = excelRow.getCell(6);
+        status.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: row.registration === "Registered" ? green : yellow },
+        };
+        status.font = {
+          name: "Arial",
+          size: 10,
+          bold: true,
+          color: { argb: text },
+        };
+      });
+
+      if (plotEndRow >= plotStartRow) {
+        worksheet.dataValidations.add(`F${plotStartRow}:F${plotEndRow}`, {
+          type: "list",
+          allowBlank: false,
+          formulae: ['"Registered,Not Registered"'],
+          showErrorMessage: true,
+          errorTitle: "Invalid status",
+          error: "Select Registered or Not Registered.",
+        });
+      }
+
+      worksheet.autoFilter = `A${header.number}:H${plotEndRow}`;
+      worksheet.freezePanes = `A${plotStartRow}`;
+
+      // Clean, lightly highlighted totals row.
+      // Keep every value in its own column so the row stays simple and readable.
+      const totalRow = worksheet.addRow([
+        "TOTAL",
+        `${finalPlotRows.length} PLOTS`,
+        { formula: `SUM(C${plotStartRow}:C${plotEndRow})` },
+        "",
+        "",
+        "TOTAL VALUE",
+        { formula: `SUM(G${plotStartRow}:G${plotEndRow})` },
+        { formula: `SUM(H${plotStartRow}:H${plotEndRow})` },
+      ]);
+
+      const totalLightGreen = "F1F7F2";
+      const totalBorder = "B8D2BE";
+      const totalText = "1F5E38";
+
+      totalRow.height = 27;
+      totalRow.eachCell((cell) => {
+        cell.font = {
+          name: "Arial",
+          size: 10,
+          bold: true,
+          color: { argb: totalText },
+        };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: totalLightGreen },
+        };
+        cell.alignment = {
+          horizontal: "center",
+          vertical: "middle",
+          wrapText: true,
+        };
+        cell.border = {
+          top: { style: "thin", color: { argb: totalBorder } },
+          bottom: { style: "thin", color: { argb: totalBorder } },
+          left: { style: "thin", color: { argb: totalBorder } },
+          right: { style: "thin", color: { argb: totalBorder } },
+        };
+      });
+
+      totalRow.getCell(3).numFmt = "#,##0";
+      totalRow.getCell(7).numFmt = '₹#,##0';
+      totalRow.getCell(8).numFmt = '₹#,##0';
+
+      // No payment-history section and no extra explanatory rows.
+      worksheet.properties.defaultRowHeight = 18;
+      worksheet.pageSetup.printArea = `A1:H${totalRow.number}`;
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      saveAs(blob, `R_Dream_${safeName}_Plot_Registry.xlsx`);
+      toast.success("Customer plot registry Excel downloaded");
+    } catch (error) {
+      console.error("Customer registration Excel error:", error);
+      toast.error(error?.message || "Failed to create customer Excel");
+    }
+  }
+
+  /* ==========================================================
      STATUS CLASS
   ========================================================== */
 
@@ -2757,21 +3276,37 @@ function Customers() {
 
                               <td>
 
-                                <span
-                                  className={`registration-pill ${
-                                    registration
-                                      .toLowerCase() ===
-                                    "completed"
-                                      ? "completed"
-                                      : "pending"
-                                  }`}
-                                >
+                                <div className="registration-cell">
 
-                                  {
-                                    registration
-                                  }
+                                  <span
+                                    className={`registration-pill ${
+                                      registration
+                                        .toLowerCase() ===
+                                      "completed"
+                                        ? "completed"
+                                        : "pending"
+                                    }`}
+                                  >
 
-                                </span>
+                                    {registration}
+
+                                  </span>
+
+                                  <button
+                                    type="button"
+                                    className="registration-excel-button"
+                                    title="Download one Excel containing all plots booked by this customer"
+                                    onClick={() =>
+                                      exportCustomerRegistrationExcel(
+                                        customer
+                                      )
+                                    }
+                                  >
+                                    <Download size={14} />
+                                    Excel
+                                  </button>
+
+                                </div>
 
                               </td>
 
