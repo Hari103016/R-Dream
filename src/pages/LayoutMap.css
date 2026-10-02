@@ -166,15 +166,15 @@ body {
 }
 
 .available-dot {
-  background: #22c55e;
+  background: #00A83B;
 }
 
 .booked-dot {
-  background: #f59e0b;
+  background: #FF8C00;
 }
 
 .sold-dot {
-  background: #ef4444;
+  background: #E60000;
 }
 
 .zoom-controls {
@@ -325,19 +325,38 @@ body {
     brightness(1.03);
 }
 
-.map-canvas .plot-available {
-  fill: #22c55e !important;
-  stroke: #15803d !important;
-}
-
 .map-canvas .plot-booked {
-  fill: #f59e0b !important;
-  stroke: #b45309 !important;
+  fill: #FF8C00 !important;
+  stroke: #B85C00 !important;
 }
 
 .map-canvas .plot-sold {
-  fill: #ef4444 !important;
-  stroke: #b91c1c !important;
+  fill: #E60000 !important;
+  stroke: #990000 !important;
+}
+
+/* =========================================================
+   PLOT STATUS COLOR LAYER
+   ========================================================= */
+
+.map-canvas .plot-status-color-layer {
+  pointer-events: none;
+}
+
+.map-canvas .plot-status-color {
+  pointer-events: none;
+  stroke-linejoin: round;
+  shape-rendering: geometricPrecision;
+}
+
+.map-canvas .plot-status-color.plot-booked {
+  fill: #FF8C00 !important;
+  stroke: #B85C00 !important;
+}
+
+.map-canvas .plot-status-color.plot-sold {
+  fill: #E60000 !important;
+  stroke: #990000 !important;
 }
 
 /* =========================================================
@@ -375,8 +394,8 @@ body {
   stroke-width: 1.5px !important;
   paint-order: stroke fill !important;
   font-weight: 800 !important;
-  pointer-events: all !important;
-  cursor: pointer !important;
+  pointer-events: none !important;
+  cursor: default !important;
   text-rendering: geometricPrecision !important;
 }
 
@@ -522,18 +541,18 @@ body {
 }
 
 .status-available {
-  background: #dcfce7;
-  color: #15803d;
+  background: #E8F7EE;
+  color: #006B25;
 }
 
 .status-booked {
-  background: #fef3c7;
-  color: #b45309;
+  background: #FFF1D6;
+  color: #B85C00;
 }
 
 .status-sold {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: #FDE2E2;
+  color: #990000;
 }
 
 .dimension-grid {
@@ -595,21 +614,21 @@ body {
 }
 
 .available-button {
-  border-color: #86efac !important;
-  background: #dcfce7;
-  color: #15803d;
+  border-color: #74D99A !important;
+  background: #E8F7EE;
+  color: #006B25;
 }
 
 .booked-button {
-  border-color: #fcd34d !important;
-  background: #fef3c7;
-  color: #b45309;
+  border-color: #FFB347 !important;
+  background: #FFF1D6;
+  color: #B85C00;
 }
 
 .sold-button {
-  border-color: #fca5a5 !important;
-  background: #fee2e2;
-  color: #b91c1c;
+  border-color: #F28B8B !important;
+  background: #FDE2E2;
+  color: #990000;
 }
 
 /* =========================================================
@@ -755,4 +774,511 @@ body {
   .loading-spinner {
     animation-duration: 1.4s;
   }
+}
+
+/* =========================================================
+   VENTURE / PHASE SELECTOR — ADDITION ONLY
+   ========================================================= */
+.layout-feature-shell {
+  width: 100%;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f5f7fb;
+}
+
+.layout-venture-selector {
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  background: #fff;
+  border-bottom: 1px solid #e3e8ef;
+  z-index: 100;
+}
+
+.layout-venture-selector label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #19304f;
+  white-space: nowrap;
+}
+
+.layout-venture-selector select {
+  min-width: 220px;
+  height: 36px;
+  padding: 0 34px 0 12px;
+  border: 1px solid #cfd8e5;
+  border-radius: 7px;
+  background: #fff;
+  color: #19304f;
+  font-size: 12px;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+}
+
+.layout-venture-selector select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+.layout-feature-shell > .layout-page {
+  min-height: 0;
+  height: calc(100vh - 52px);
+}
+
+.layout-empty-state {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   THOTLARAVULAPADU — ADDITION ONLY
+   The Gudimetla CSS above is unchanged.
+   ========================================================= */
+.thot-map-canvas {
+  overflow: hidden;
+}
+
+.thot-layout-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+}
+
+.thot-layout-svg > image {
+  pointer-events: none;
+}
+
+.thot-status-layer {
+  pointer-events: none;
+}
+
+.thot-status-layer .thot-plot-hit {
+  pointer-events: all;
+  cursor: pointer;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: geometricPrecision;
+}
+
+.thot-status-layer .thot-plot-hit:hover,
+.thot-status-layer .thot-plot-hit.thot-plot-selected {
+  stroke: #2563eb !important;
+  stroke-opacity: 1 !important;
+}
+
+.thot-details {
+  z-index: 200 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+@media (max-width: 650px) {
+  .layout-venture-selector {
+    min-height: 48px;
+    padding: 8px 10px;
+  }
+
+  .layout-venture-selector select {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .layout-feature-shell > .layout-page {
+    height: calc(100vh - 48px);
+  }
+}
+
+
+/* =========================================================
+   THOTLARAVULAPADU — DIMENSION-ACCURATE PLOT OVERLAYS
+   Dimensions supplied for plots 1–76 are applied in SVG units.
+   45 ft length uses 1.92 SVG units/ft; breadth is per plot.
+   ========================================================= */
+
+.thot-map-viewport .thot-map-canvas {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.thot-map-viewport .thot-layout-svg {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: visible !important;
+}
+
+.thot-map-viewport .thot-plot-hit {
+  pointer-events: none !important;
+  cursor: default !important;
+  vector-effect: non-scaling-stroke !important;
+}
+
+.thot-map-viewport .thot-plot-hit:hover {
+  fill-opacity: .20 !important;
+  stroke: #2563eb !important;
+  stroke-width: 2 !important;
+}
+
+.thot-map-viewport .thot-plot-selected {
+  fill: #2563eb !important;
+  fill-opacity: .25 !important;
+  stroke: #2563eb !important;
+  stroke-width: 3 !important;
+}
+
+/* Thotlaravulapadu: plots are status indicators only.
+   Clicking a plot must NOT create a selection box or details panel. */
+.thot-map-viewport .thot-plot-hit {
+  cursor: default !important;
+  stroke: transparent !important;
+  stroke-width: 0 !important;
+  stroke-opacity: 0 !important;
+  outline: none !important;
+}
+
+.thot-map-viewport .thot-plot-hit:hover {
+  stroke: transparent !important;
+  stroke-width: 0 !important;
+  fill-opacity: inherit !important;
+}
+
+.thot-map-viewport .thot-plot-selected {
+  stroke: transparent !important;
+  stroke-width: 0 !important;
+  stroke-opacity: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Final Totaravulapadu status-only behavior */
+.thot-map-viewport .thot-status-layer,
+.thot-map-viewport .thot-plot-hit {
+  pointer-events: none !important;
+}
+.thot-map-viewport .thot-plot-hit:hover,
+.thot-map-viewport .thot-plot-hit.thot-plot-selected,
+.thot-map-viewport .thot-plot-selected {
+  stroke: transparent !important;
+  stroke-width: 0 !important;
+  stroke-opacity: 0 !important;
+  filter: none !important;
+}
+
+
+/* =========================================================
+   THOTLARAVULAPADU — ACTUAL PLOT BOUNDARY STATUS LAYER
+   Uses polygon boundaries extracted from the supplied layout SVG.
+   No click box, no hover outline, no details popup.
+   ========================================================= */
+.thot-map-viewport .thot-status-layer {
+  pointer-events: none !important;
+}
+
+.thot-map-viewport .thot-plot-status {
+  pointer-events: none !important;
+  cursor: default !important;
+  stroke: none !important;
+  stroke-width: 0 !important;
+  stroke-opacity: 0 !important;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: geometricPrecision;
+}
+
+.thot-map-viewport .thot-plot-status:hover,
+.thot-map-viewport .thot-plot-status:focus,
+.thot-map-viewport .thot-plot-status:active {
+  stroke: none !important;
+  stroke-width: 0 !important;
+  filter: none !important;
+  outline: none !important;
+}
+
+
+/* =========================================================
+   THOTLARAVULAPADU FINAL — MATCH GUDIMETLA
+   - Booked/Sold opacity matches Gudimetla: 0.82
+   - Vector viewBox zoom/pan is handled in JSX, not CSS scale
+   - No click boxes, no hover outline, no selection popup
+   ========================================================= */
+.thot-map-viewport {
+  touch-action: none;
+}
+
+.thot-map-viewport .thot-map-canvas {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.thot-map-viewport .thot-layout-svg {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+}
+
+.thot-map-viewport .thot-status-layer,
+.thot-map-viewport .thot-plot-status {
+  pointer-events: none !important;
+}
+
+.thot-map-viewport .thot-plot-status {
+  stroke: none !important;
+  stroke-width: 0 !important;
+  stroke-opacity: 0 !important;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: geometricPrecision;
+}
+
+.thot-map-viewport .thot-plot-status[data-status="booked"] {
+  fill: #FF8C00 !important;
+  fill-opacity: 0.82 !important;
+}
+
+.thot-map-viewport .thot-plot-status[data-status="sold"] {
+  fill: #E60000 !important;
+  fill-opacity: 0.82 !important;
+}
+
+.thot-map-viewport .thot-plot-status[data-status="available"] {
+  fill: transparent !important;
+  fill-opacity: 0 !important;
+}
+
+.thot-map-viewport.is-dragging,
+.thot-map-viewport.is-dragging .thot-layout-svg {
+  cursor: grabbing !important;
+}
+
+/* =========================================================
+   THOTLARAVULAPADU INLINE VECTOR ARTWORK
+   Keep the original SVG artwork crisp above status fills.
+   The SVG is now rendered as real vector children, not an <image>,
+   so Gudimetla-style viewBox zoom stays responsive.
+   ========================================================= */
+.thot-map-viewport .thot-original-svg-artwork {
+  pointer-events: none !important;
+}
+
+.thot-map-viewport .thot-original-svg-clarity {
+  pointer-events: none !important;
+  mix-blend-mode: multiply;
+}
+
+
+/* THOT PERFORMANCE FIX: keep the SVG compositor-friendly and prevent browser
+   text/image selection while dragging. Zoom/pan is driven directly through
+   the SVG viewBox in JSX; no CSS scaling is used. */
+.thot-map-viewport .thot-layout-svg {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.thot-map-viewport .thot-original-svg-artwork,
+.thot-map-viewport .thot-status-layer {
+  pointer-events: none !important;
+}
+
+/* =========================================================
+   THOTLARAVULAPADU — LOW-LAG MODE
+   The map is one compositor layer. Pan/zoom changes only its CSS transform;
+   React does not re-render the large layout while the pointer is moving.
+   ========================================================= */
+.thot-map-viewport {
+  touch-action: none !important;
+  overflow: hidden !important;
+  overscroll-behavior: contain;
+}
+
+.thot-map-viewport .thot-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1588px;
+  height: 1122.6667px;
+  transform-origin: 0 0;
+  will-change: transform;
+  contain: layout paint style;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.thot-map-viewport .thot-layout-image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 1588px !important;
+  height: 1122.6667px !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: fill;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.thot-map-viewport .thot-status-overlay {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 1588px !important;
+  height: 1122.6667px !important;
+  max-width: none !important;
+  max-height: none !important;
+  pointer-events: none !important;
+  overflow: visible;
+}
+
+.thot-map-viewport .thot-plot-status {
+  pointer-events: none !important;
+  stroke: none !important;
+  stroke-width: 0 !important;
+}
+
+/* Deliberately lighter than the previous 0.82 fill. */
+.thot-map-viewport .thot-plot-status[fill="#FF8C00"] {
+  fill: #FF8C00 !important;
+  fill-opacity: 0.34 !important;
+}
+
+.thot-map-viewport .thot-plot-status[fill="#E60000"] {
+  fill: #E60000 !important;
+  fill-opacity: 0.34 !important;
+}
+
+.thot-map-viewport.is-dragging,
+.thot-map-viewport.is-dragging .thot-world {
+  cursor: grabbing !important;
+}
+
+/* =========================================================
+   THOTLARAVULAPADU — GUDIMETLA-STYLE VECTOR ZOOM
+   The SVG viewBox is changed during zoom/pan so the browser
+   re-renders the artwork instead of scaling a compositor snapshot.
+   ========================================================= */
+.thot-map-viewport {
+  touch-action: none !important;
+  overflow: hidden !important;
+  overscroll-behavior: contain;
+  cursor: grab;
+}
+
+.thot-map-viewport.is-dragging {
+  cursor: grabbing !important;
+}
+
+.thot-map-viewport .thot-layout-svg {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.thot-map-viewport .thot-layout-svg > image {
+  shape-rendering: geometricPrecision;
+}
+
+.thot-map-viewport .thot-status-layer,
+.thot-map-viewport .thot-plot-status {
+  pointer-events: none !important;
+}
+
+.thot-map-viewport .thot-plot-status {
+  stroke: none !important;
+  stroke-width: 0 !important;
+  stroke-opacity: 0 !important;
+  shape-rendering: geometricPrecision;
+}
+
+/* Match the solid visual strength of Gudimetla booked/sold fills. */
+.thot-map-viewport .thot-plot-status[data-status="booked"] {
+  fill: #FF8C00 !important;
+  fill-opacity: 0.82 !important;
+}
+
+.thot-map-viewport .thot-plot-status[data-status="sold"] {
+  fill: #E60000 !important;
+  fill-opacity: 0.82 !important;
+}
+
+.thot-map-viewport .thot-plot-status[data-status="available"] {
+  fill: transparent !important;
+  fill-opacity: 0 !important;
+}
+
+
+/* FINAL THOT STATUS OVERRIDE — stronger fill like Gudimetla */
+.thot-map-viewport .thot-status-layer .thot-plot-status[data-status="booked"] {
+  fill: #FF8C00 !important;
+  fill-opacity: 0.75 !important;
+  stroke: none !important;
+  stroke-width: 0 !important;
+}
+
+.thot-map-viewport .thot-status-layer .thot-plot-status[data-status="sold"] {
+  fill: #E60000 !important;
+  fill-opacity: 0.95 !important;
+  stroke: none !important;
+  stroke-width: 0 !important;
+}
+
+.thot-map-viewport .thot-status-layer .thot-plot-status[data-status="available"] {
+  fill: transparent !important;
+  fill-opacity: 0 !important;
+}
+
+/* Keep the original SVG artwork vector-rendered while zooming. */
+.thot-map-viewport .thot-layout-svg {
+  shape-rendering: geometricPrecision !important;
+  text-rendering: geometricPrecision !important;
+  image-rendering: auto !important;
 }

@@ -1,55 +1,185 @@
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { useLocation } from "react-router-dom";
 import logo from "../assets/logo.png";
 import "./Receipt.css";
-
 import {
   downloadReceipt,
   shareReceipt,
 } from "../utils/downloadReceipt";
 
-export default function Receipt() {
-  const receiptRef = useRef(null);
+/* =========================================================
+   HELPERS
+========================================================= */
 
+const valueOrDash = (value) => {
+  if (
+    value === undefined ||
+    value === null ||
+    String(value).trim() === ""
+  ) {
+    return "-";
+  }
+
+  return value;
+};
+
+const formatMoney = (value) => {
+  return Number(value || 0).toLocaleString("en-IN", {
+    maximumFractionDigits: 0,
+  });
+};
+
+const formatDate = (value) => {
+  if (!value) return "-";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+/* =========================================================
+   NUMBER TO WORDS
+========================================================= */
+
+const numberToWords = (number) => {
+  const num = Math.floor(Number(number || 0));
+
+  if (num === 0) {
+    return "Rupees Zero Only";
+  }
+
+  const ones = [
+    "",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Eleven",
+    "Twelve",
+    "Thirteen",
+    "Fourteen",
+    "Fifteen",
+    "Sixteen",
+    "Seventeen",
+    "Eighteen",
+    "Nineteen",
+  ];
+
+  const tens = [
+    "",
+    "",
+    "Twenty",
+    "Thirty",
+    "Forty",
+    "Fifty",
+    "Sixty",
+    "Seventy",
+    "Eighty",
+    "Ninety",
+  ];
+
+  const twoDigit = (n) => {
+    if (n < 20) return ones[n];
+
+    return (
+      tens[Math.floor(n / 10)] +
+      (n % 10 ? ` ${ones[n % 10]}` : "")
+    );
+  };
+
+  const threeDigit = (n) => {
+    if (n < 100) return twoDigit(n);
+
+    return (
+      `${ones[Math.floor(n / 100)]} Hundred` +
+      (n % 100 ? ` ${twoDigit(n % 100)}` : "")
+    );
+  };
+
+  let n = num;
+  const parts = [];
+
+  const crore = Math.floor(n / 10000000);
+  n %= 10000000;
+
+  const lakh = Math.floor(n / 100000);
+  n %= 100000;
+
+  const thousand = Math.floor(n / 1000);
+  n %= 1000;
+
+  if (crore) {
+    parts.push(`${threeDigit(crore)} Crore`);
+  }
+
+  if (lakh) {
+    parts.push(`${twoDigit(lakh)} Lakh`);
+  }
+
+  if (thousand) {
+    parts.push(`${twoDigit(thousand)} Thousand`);
+  }
+
+  if (n) {
+    parts.push(threeDigit(n));
+  }
+
+  return `Rupees ${parts.join(" ")} Only`;
+};
+
+/* =========================================================
+   MAIN RECEIPT
+========================================================= */
+
+export default function Receipt() {
   const { state } = useLocation();
 
+  const receiptRef = useRef(null);
+
   const customer = state?.customer;
-  const payments = state?.payments || [];
 
-  const [sharing, setSharing] = useState(false);
+  const payments = Array.isArray(state?.payments)
+    ? state.payments
+    : [];
 
-  /* =====================================================
+  const plot = state?.plot || {};
+
+  /* -------------------------------------------------------
      NO CUSTOMER
-  ===================================================== */
+  ------------------------------------------------------- */
 
   if (!customer) {
     return (
-      <h2
-        style={{
-          textAlign: "center",
-          marginTop: "50px",
-        }}
-      >
-        No Receipt Found
-      </h2>
+      <div className="receipt-empty">
+        <div className="receipt-empty-card">
+          <h2>No Receipt Found</h2>
+
+          <p>
+            Customer/payment information was not
+            provided.
+          </p>
+        </div>
+      </div>
     );
   }
 
-  /* =====================================================
-     RECEIPT NUMBER
-  ===================================================== */
-
-  const receiptNo = `RD-${customer.id}`;
-
-  /* =====================================================
-     DATE
-  ===================================================== */
-
-  const today = new Date().toLocaleDateString("en-IN");
-
-  /* =====================================================
-     PAID AMOUNT
-  ===================================================== */
+  /* -------------------------------------------------------
+     PAYMENT CALCULATIONS
+  ------------------------------------------------------- */
 
   const paidAmount = payments.reduce(
     (total, payment) =>
@@ -57,11 +187,110 @@ export default function Receipt() {
     0
   );
 
-  /* =====================================================
-     DOWNLOAD PDF
-  ===================================================== */
+  const totalAmount = Number(
+    customer.total_amount ??
+      customer.totalAmount ??
+      plot.total_amount ??
+      plot.price ??
+      0
+  );
 
-  async function downloadPDF() {
+  const balanceAmount = Math.max(
+    0,
+    Number(
+      customer.balance ??
+        customer.balance_amount ??
+        totalAmount - paidAmount
+    )
+  );
+
+  /* -------------------------------------------------------
+     RECEIPT INFORMATION
+  ------------------------------------------------------- */
+
+  const receiptNo =
+    customer.receipt_no ||
+    customer.receipt_number ||
+    `RD-${String(customer.id || "").padStart(
+      6,
+      "0"
+    )}`;
+
+  const customerId =
+    customer.customer_code ||
+    customer.customer_id ||
+    `CUS-${String(customer.id || "").padStart(
+      3,
+      "0"
+    )}`;
+
+  const plotNo = valueOrDash(
+    customer.plot_no ??
+      customer.plot_number ??
+      plot.plot_no ??
+      plot.plot_number
+  );
+
+  const phase = valueOrDash(
+    customer.phase ??
+      plot.phase ??
+      customer.facing ??
+      plot.facing
+  );
+
+  const rawPlotSize = valueOrDash(
+    customer.plot_size ??
+      customer.size ??
+      plot.plot_size ??
+      plot.size
+  );
+
+  const plotSize =
+    rawPlotSize === "-"
+      ? "-"
+      : /sq\.?\s*yd/i.test(String(rawPlotSize))
+      ? rawPlotSize
+      : `${rawPlotSize} Sq.Yds`;
+
+  const latestPayment =
+    payments.length > 0
+      ? payments[payments.length - 1]
+      : null;
+
+  const paymentMode = valueOrDash(
+    latestPayment?.payment_mode ??
+      latestPayment?.mode ??
+      customer.payment_mode
+  );
+
+  const transactionId = valueOrDash(
+    latestPayment?.transaction_id ??
+      latestPayment?.transactionId ??
+      latestPayment?.txn_id ??
+      latestPayment?.reference_no
+  );
+
+  const transactionDate = formatDate(
+    latestPayment?.payment_date ??
+      latestPayment?.date ??
+      customer.payment_date ??
+      customer.booking_date ??
+      new Date()
+  );
+
+  const receiptDate = formatDate(
+    latestPayment?.payment_date ??
+      latestPayment?.date ??
+      customer.payment_date ??
+      customer.booking_date ??
+      new Date()
+  );
+
+  /* -------------------------------------------------------
+     DOWNLOAD PDF
+  ------------------------------------------------------- */
+
+  const handleDownload = async () => {
     try {
       await downloadReceipt(
         receiptRef,
@@ -69,709 +298,658 @@ export default function Receipt() {
       );
     } catch (error) {
       console.error(
-        "PDF download failed:",
+        "Receipt download error:",
         error
       );
 
       alert(
-        error?.message ||
-          "Unable to generate the PDF receipt."
+        "Unable to download receipt. Please try again."
       );
     }
-  }
+  };
 
-  /* =====================================================
-     SHARE RECEIPT VIA WHATSAPP
-  ===================================================== */
+  /* -------------------------------------------------------
+     WHATSAPP
+  ------------------------------------------------------- */
 
-  async function shareWhatsApp() {
-    if (sharing) {
-      return;
-    }
-
+  const handleWhatsApp = async () => {
     try {
-      if (!receiptRef?.current) {
-        alert("Receipt not found.");
-        return;
-      }
+      const mobile =
+        customer.mobile ||
+        customer.phone ||
+        customer.phone_number;
 
-      if (!customer.mobile) {
+      if (!mobile) {
         alert(
           "Customer mobile number is not available."
         );
+
         return;
       }
 
-      setSharing(true);
-
-      const result = await shareReceipt(
+      await shareReceipt(
         receiptRef,
-        customer.mobile,
+        mobile,
         customer.name || "Customer",
-        receiptNo,
-        {
-          plotNo: customer.plot_no,
-
-          plotSize: customer.plot_size,
-
-          facing: customer.facing,
-
-          totalAmount:
-            customer.total_amount,
-
-          paidAmount: paidAmount,
-
-          balanceAmount:
-            customer.balance,
-        }
+        `Payment_Receipt_${receiptNo}.pdf`
       );
-
-      if (result?.success) {
-        console.log(
-          "Receipt shared successfully:",
-          result
-        );
-      }
     } catch (error) {
       console.error(
-        "WhatsApp receipt sharing failed:",
+        "WhatsApp receipt error:",
         error
       );
 
       alert(
-        error?.message ||
-          "Unable to send receipt via WhatsApp."
+        "Unable to send receipt through WhatsApp."
       );
-    } finally {
-      setSharing(false);
     }
-  }
+  };
 
-  /* =====================================================
-     RETURN
-  ===================================================== */
+  /* =========================================================
+     JSX
+  ========================================================= */
 
   return (
-    <div className="receipt-page">
+    <main className="receipt-page">
 
-      {/* =================================================
+      {/* =====================================================
           ACTION BUTTONS
-      ================================================= */}
+      ===================================================== */}
 
       <div className="receipt-actions">
 
         <button
           type="button"
           className="download-btn"
-          onClick={downloadPDF}
-          disabled={sharing}
+          onClick={handleDownload}
         >
           📄 Download PDF
         </button>
 
         <button
           type="button"
-          className="whatsapp-share-btn"
-          onClick={shareWhatsApp}
-          disabled={sharing}
+          className="whatsapp-btn"
+          onClick={handleWhatsApp}
         >
-          {sharing
-            ? "⏳ Preparing Receipt..."
-            : "💬 Send Receipt via WhatsApp"}
+          💬 Send Receipt via WhatsApp
         </button>
 
       </div>
 
-
-      {/* =================================================
+      {/* =====================================================
           RECEIPT
-      ================================================= */}
+      ===================================================== */}
 
-      <div
-        className="luxury-receipt"
+      <article
+        className="receipt-paper"
         ref={receiptRef}
       >
 
-        {/* WATERMARK */}
-
-        <img
-          src={logo}
-          className="receipt-watermark"
-          alt="Dream Infra"
-        />
-
-
-        {/* =================================================
+        {/* ===================================================
             HEADER
-        ================================================= */}
+        =================================================== */}
+        <header className="receipt-header">
 
-        <div className="top-header">
+          {/* LEFT BLACK PANEL */}
+          <div className="reference-side reference-side-left">
 
-          <div className="title-section">
+            <div className="reference-quote">“</div>
 
-            <h1>
-              R DREAM INFRA DEVELOPERS
-            </h1>
-
-            <p>
-              Premium Residential Open Plots
-            </p>
-
-            <div className="venture-tag">
-              GUDIMETTLA VENTURE
+            <div className="reference-slogan">
+              INVEST
+              <br />
+              IN A
+              <br />
+              BRIGHTER
+              <br />
+              <span>TOMORROW</span>
             </div>
 
+            <div className="reference-line" />
+
+            <div className="reference-features">
+              <div className="reference-feature">
+                <span className="reference-feature-circle">⌂</span>
+                <span>
+                  PREMIUM
+                  <br />
+                  PLOTS
+                </span>
+              </div>
+
+              <div className="reference-feature-divider" />
+
+              <div className="reference-feature">
+                <span className="reference-feature-circle">A</span>
+                <span>
+                  NH-65
+                  <br />
+                  ACCESS
+                </span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* CENTER LOGO */}
+          <div className="reference-center">
+
+            <img
+              src={logo}
+              alt="R Dream Infra Developers"
+              className="receipt-logo"
+            />
+
+            <div className="logo-tagline">
+              <span />
+              Your Dream Our Priority
+              <span />
+            </div>
+
+          </div>
+
+          {/* RIGHT BLACK PANEL */}
+          <div className="reference-side reference-side-right">
+
+            <div className="reference-quote">”</div>
+
+            <div className="reference-slogan">
+              BUILD TODAY
+              <br />
+              A BETTER
+              <br />
+              <span>TOMORROW</span>
+            </div>
+
+            <div className="reference-line reference-line-right" />
+
+            <div className="reference-features reference-features-right">
+
+              <div className="reference-feature">
+                <span className="reference-feature-circle">A</span>
+                <span>
+                  24 FT
+                  <br />
+                  ROADS
+                </span>
+              </div>
+
+              <div className="reference-feature-divider" />
+
+              <div className="reference-feature">
+                <span className="reference-feature-circle">✓</span>
+                <span>
+                  CLEAR
+                  <br />
+                  TITLES
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+
+        </header>
+
+        {/* ===================================================
+            PAYMENT RECEIPT TITLE
+        =================================================== */}
+
+        <div className="title-wrap">
+
+          <div className="main-title">
+
+            <span className="title-chevron">
+              ‹
+            </span>
+
+            <span>
+              PAYMENT RECEIPT
+            </span>
+
+            <span className="title-chevron">
+              ›
+            </span>
+
+          </div>
+
+          <div className="title-subline">
+            THANK YOU FOR YOUR TRUST
           </div>
 
         </div>
 
+        {/* ===================================================
+            RECEIPT / PLOT INFORMATION
+        =================================================== */}
 
-        {/* =================================================
-            RECEIPT TITLE
-        ================================================= */}
+        <section className="meta-grid">
 
-        <div className="receipt-title">
+          <div className="meta-column">
 
-          <h2>
-            PAYMENT RECEIPT
-          </h2>
+            <MetaRow
+              label="Receipt No"
+              value={receiptNo}
+            />
 
-        </div>
+            <MetaRow
+              label="Date"
+              value={receiptDate}
+            />
 
-
-        {/* =================================================
-            RECEIPT INFO
-        ================================================= */}
-
-        <div className="receipt-info">
-
-          <div>
-
-            <small>
-              Receipt Number
-            </small>
-
-            <h3>
-              {receiptNo}
-            </h3>
+            <MetaRow
+              label="Customer ID"
+              value={customerId}
+            />
 
           </div>
 
+          <div className="meta-column">
 
-          <div>
+            <MetaRow
+              label="Plot No"
+              value={plotNo}
+              accent
+            />
 
-            <small>
-              Receipt Date
-            </small>
+            <MetaRow
+              label="Phase"
+              value={phase}
+              accent
+            />
 
-            <h3>
-              {today}
-            </h3>
-
-          </div>
-
-        </div>
-
-
-        {/* =================================================
-            CUSTOMER & PLOT INFORMATION
-        ================================================= */}
-
-        <div className="info-grid">
-
-          {/* CUSTOMER */}
-
-          <div className="info-card">
-
-            <div className="card-header">
-              CUSTOMER INFORMATION
-            </div>
-
-            <div className="card-body">
-
-              <div className="row">
-
-                <span>
-                  Name
-                </span>
-
-                <strong>
-                  {customer.name || "-"}
-                </strong>
-
-              </div>
-
-
-              <div className="row">
-
-                <span>
-                  Mobile
-                </span>
-
-                <strong>
-                  {customer.mobile || "-"}
-                </strong>
-
-              </div>
-
-
-              <div className="row">
-
-                <span>
-                  Booking Date
-                </span>
-
-                <strong>
-                  {customer.booking_date
-                    ? new Date(
-                        customer.booking_date
-                      ).toLocaleDateString(
-                        "en-IN"
-                      )
-                    : "-"}
-                </strong>
-
-              </div>
-
-
-              <div className="row">
-
-                <span>
-                  Status
-                </span>
-
-                <strong>
-                  {customer.status || "-"}
-                </strong>
-
-              </div>
-
-            </div>
+            <MetaRow
+              label="Plot Size"
+              value={plotSize}
+              accent
+            />
 
           </div>
 
+        </section>
 
-          {/* PLOT */}
+        {/* ===================================================
+            CUSTOMER DETAILS
+        =================================================== */}
 
-          <div className="info-card">
+        <ReceiptSection title="Customer Details">
 
-            <div className="card-header">
-              PLOT INFORMATION
-            </div>
+          <DetailRow
+            label="Customer Name"
+            value={customer.name}
+          />
 
-            <div className="card-body">
+          <DetailRow
+            label="Phone Number"
+            value={
+              customer.mobile ||
+              customer.phone ||
+              customer.phone_number
+            }
+          />
 
-              <div className="row">
+        </ReceiptSection>
 
-                <span>
-                  Plot Number
-                </span>
-
-                <strong>
-                  {customer.plot_no || "-"}
-                </strong>
-
-              </div>
-
-
-              <div className="row">
-
-                <span>
-                  Plot Size
-                </span>
-
-                <strong>
-                  {customer.plot_size
-                    ? `${customer.plot_size} Sq.Yds`
-                    : "-"}
-                </strong>
-
-              </div>
-
-
-              <div className="row">
-
-                <span>
-                  Facing
-                </span>
-
-                <strong>
-                  {customer.facing || "-"}
-                </strong>
-
-              </div>
-
-
-              <div className="row">
-
-                <span>
-                  Receipt Status
-                </span>
-
-                <strong
-                  style={{
-                    color: "#2e7d32",
-                  }}
-                >
-                  Payment Received
-                </strong>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        {/* =================================================
+        {/* ===================================================
             PAYMENT DETAILS
-        ================================================= */}
+        =================================================== */}
 
-        <div className="payment-card">
+        <ReceiptSection title="Payment Details">
 
-          <div className="payment-header">
-            PAYMENT DETAILS
-          </div>
+          <div className="payment-table-container">
 
-          {payments.length === 0 ? (
+            <table className="payment-table">
 
-            <div className="no-payment">
-              No Payments Found
-            </div>
+              <colgroup>
 
-          ) : (
+                <col className="col-sno" />
 
-            payments.map(
-              (payment, index) => (
+                <col className="col-particulars" />
 
-                <div
-                  key={
-                    payment.id || index
-                  }
-                  className="payment-row-wrapper"
-                >
+                <col className="col-amount" />
 
-                  <table className="payment-table">
+              </colgroup>
 
-                    <thead>
+              <thead>
 
-                      <tr>
+                <tr>
 
-                        <th>
-                          S.No
-                        </th>
+                  <th>
+                    S.No
+                  </th>
 
-                        <th>
-                          Date
-                        </th>
+                  <th>
+                    Particulars
+                  </th>
 
-                        <th>
-                          Payment Mode
-                        </th>
+                  <th>
+                    Amount (₹)
+                  </th>
 
-                        <th>
-                          Remarks
-                        </th>
+                </tr>
 
-                        <th>
-                          Amount
-                        </th>
+              </thead>
 
-                      </tr>
+              <tbody>
 
-                    </thead>
+                {payments.length === 0 ? (
 
+                  <tr>
 
-                    <tbody>
+                    <td
+                      colSpan="3"
+                      className="no-payment"
+                    >
+                      No Payment Records Found
+                    </td>
 
-                      <tr>
+                  </tr>
+
+                ) : (
+
+                  payments.map(
+                    (payment, index) => (
+
+                      <tr
+                        key={
+                          payment.id ||
+                          index
+                        }
+                      >
 
                         <td>
                           {index + 1}
                         </td>
 
                         <td>
-                          {payment.payment_date
-                            ? new Date(
-                                payment.payment_date
-                              ).toLocaleDateString(
-                                "en-IN"
+                          {valueOrDash(
+                            payment.particulars ||
+                              payment.remarks ||
+                              payment.description ||
+                              (
+                                index === 0
+                                  ? "Booking Advance"
+                                  : "Payment"
                               )
-                            : "-"}
+                          )}
                         </td>
 
-                        <td>
-                          {payment.payment_mode ||
-                            "-"}
-                        </td>
+                        <td className="amount-value">
 
-                        <td>
-                          {payment.remarks ||
-                            "-"}
-                        </td>
-
-                        <td className="amount-cell">
-
-                          ₹{" "}
-
-                          {Number(
-                            payment.amount || 0
-                          ).toLocaleString(
-                            "en-IN"
+                          {formatMoney(
+                            payment.amount
                           )}
 
                         </td>
 
                       </tr>
 
-                    </tbody>
+                    )
+                  )
 
-                  </table>
-
-                </div>
-
-              )
-            )
-
-          )}
-
-        </div>
-
-
-        {/* =================================================
-            AMOUNT SUMMARY
-        ================================================= */}
-
-        <div className="receipt-summary-section">
-
-          {/* TOTAL */}
-
-          <div className="receipt-summary-card">
-
-            <div className="receipt-summary-icon">
-              ₹
-            </div>
-
-            <div className="receipt-summary-content">
-
-              <span className="receipt-summary-label">
-                Total Amount
-              </span>
-
-              <h2 className="receipt-summary-amount">
-                ₹{" "}
-                {Number(
-                  customer.total_amount || 0
-                ).toLocaleString(
-                  "en-IN"
                 )}
-              </h2>
 
-            </div>
+                <tr className="total-row">
 
-          </div>
+                  <td colSpan="2">
+                    Total Paid
+                  </td>
 
+                  <td>
+                    {formatMoney(
+                      paidAmount
+                    )}
+                  </td>
 
-          {/* PAID */}
+                </tr>
 
-          <div className="receipt-summary-card">
+              </tbody>
 
-            <div className="receipt-summary-icon">
-              💳
-            </div>
-
-            <div className="receipt-summary-content">
-
-              <span className="receipt-summary-label">
-                Paid Amount
-              </span>
-
-              <h2 className="receipt-summary-amount">
-                ₹{" "}
-                {paidAmount.toLocaleString(
-                  "en-IN"
-                )}
-              </h2>
-
-            </div>
+            </table>
 
           </div>
 
+        </ReceiptSection>
 
-          {/* BALANCE */}
+        {/* ===================================================
+            AMOUNT IN WORDS
+        =================================================== */}
 
-          <div className="receipt-summary-card">
+        <ReceiptSection
+          title="Amount (in Words)"
+          compact
+        >
 
-            <div className="receipt-summary-icon">
-              ⚖
-            </div>
+          <div className="words-value">
 
-            <div className="receipt-summary-content">
-
-              <span className="receipt-summary-label">
-                Balance Amount
-              </span>
-
-              <h2 className="receipt-summary-amount">
-                ₹{" "}
-                {Number(
-                  customer.balance || 0
-                ).toLocaleString(
-                  "en-IN"
-                )}
-              </h2>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        {/* =================================================
-            DECLARATION
-        ================================================= */}
-
-        <div className="declaration-box">
-
-          <div className="declaration-title">
-            DECLARATION
-          </div>
-
-          <p>
-            This receipt certifies that the
-            payment has been successfully
-            received by{" "}
-            <strong>
-              R DREAM INFRA DEVELOPERS
-            </strong>{" "}
-            towards the purchase of the
-            above-mentioned plot.
-          </p>
-
-          <p>
-            This receipt has been generated
-            electronically from our official
-            management system and is valid
-            without a handwritten signature.
-          </p>
-
-          <p>
-            Kindly preserve this receipt for
-            future reference. It may be
-            required during plot registration
-            and other documentation.
-          </p>
-
-        </div>
-
-
-        {/* =================================================
-            SIGNATURE
-        ================================================= */}
-
-        <div className="signature-area">
-
-          <div className="company-seal">
-
-            COMPANY
-            <br />
-            SEAL
-
-          </div>
-
-
-          <div className="signature-box">
-
-            <div className="signature-line"></div>
-
-            <h4>
-              Authorized Signatory
-            </h4>
-
-            <p>
-              R DREAM INFRA DEVELOPERS
-            </p>
-
-          </div>
-
-        </div>
-
-
-        {/* NOTE */}
-
-        <div className="signature-section">
-
-          <p className="receipt-note">
-            This is a computer-generated
-            receipt and does not require a
-            physical signature.
-          </p>
-
-        </div>
-
-
-        {/* =================================================
-            FOOTER
-        ================================================= */}
-
-        <div className="receipt-footer">
-
-          <h3>
-            THANK YOU FOR CHOOSING
-          </h3>
-
-          <h2>
-            R DREAM INFRA DEVELOPERS
-          </h2>
-
-          <p>
-            Panchayat Approved Layout •
-            Clear Title • Ready for Registration
-          </p>
-
-          <div className="footer-contact">
-
-            <span>
-              📞 +91 9876543210
-            </span>
-
-            <span>
-              ✉ info@rdreaminfra.com
-            </span>
-
-            <span>
-              🌐 www.rdreaminfra.com
-            </span>
-
-          </div>
-
-        </div>
-
-
-        {/* =================================================
-            BOTTOM BAR
-        ================================================= */}
-
-        <div className="bottom-bar">
-
-          <span>
-            Generated :{" "}
-            {new Date().toLocaleString(
-              "en-IN"
+            {numberToWords(
+              paidAmount
             )}
-          </span>
 
-          <span>
-            Receipt ID : {receiptNo}
-          </span>
+          </div>
 
-        </div>
+        </ReceiptSection>
 
-      </div>
+        {/* ===================================================
+            PAYMENT MODE
+        =================================================== */}
+
+        <ReceiptSection title="Payment Mode">
+
+          <DetailRow
+            label="Mode"
+            value={paymentMode}
+          />
+
+          <DetailRow
+            label="Transaction ID"
+            value={transactionId}
+          />
+
+          <DetailRow
+            label="Transaction Date"
+            value={transactionDate}
+          />
+
+        </ReceiptSection>
+
+        {/* ===================================================
+            DECLARATION
+        =================================================== */}
+
+        <section className="declaration">
+
+          <strong>
+            DECLARATION
+          </strong>
+
+          <p>
+
+            This receipt certifies that
+            the payment has been successfully
+            received by{" "}
+
+            <b>
+              R DREAM INFRA DEVELOPERS
+            </b>
+
+            {" "}towards the above-mentioned plot.
+
+          </p>
+
+        </section>
+
+        {/* ===================================================
+            SIGNATURE / THANK YOU
+        =================================================== */}
+
+        <section className="signature-area">
+
+          <div className="thank-you">
+
+            <div className="thank-you-script">
+              Thank You!
+            </div>
+
+            <div className="thank-you-sub">
+              for being a part of R Dream
+            </div>
+
+          </div>
+
+          <div className="authorized">
+
+            <div className="signature-script">
+              Authorized
+            </div>
+
+            <div className="signature-line" />
+
+            <div className="authorized-title">
+              Authorized Signatory
+            </div>
+
+            <div className="authorized-company">
+              R Dream
+            </div>
+
+          </div>
+
+        </section>
+
+        {/* ===================================================
+            FOOTER
+        =================================================== */}
+
+        <footer className="receipt-footer">
+
+          <div className="footer-left">
+
+            <span>
+              ◉ www.rdream.in
+            </span>
+
+            <i>|</i>
+
+            <span>
+              ✉ info@rdream.in
+            </span>
+
+            <i>|</i>
+
+            <span>
+              ☎ +91 98765 43210
+            </span>
+
+          </div>
+
+          <div className="footer-right">
+
+            <b>
+              /
+            </b>
+
+            <span>
+              Build Today
+              <br />
+              A Better Tomorrow
+            </span>
+
+          </div>
+
+        </footer>
+
+        <div className="receipt-bottom-border" />
+
+      </article>
+
+    </main>
+  );
+}
+
+/* =========================================================
+   META ROW
+========================================================= */
+
+function MetaRow({
+  label,
+  value,
+  accent = false,
+}) {
+  return (
+    <div
+      className={`meta-row ${
+        accent ? "accent" : ""
+      }`}
+    >
+
+      <span className="row-label">
+        {label}
+      </span>
+
+      <b className="row-colon">
+        :
+      </b>
+
+      <span className="row-value">
+        {valueOrDash(value)}
+      </span>
 
     </div>
+  );
+}
+
+/* =========================================================
+   DETAIL ROW
+========================================================= */
+
+function DetailRow({
+  label,
+  value,
+}) {
+  return (
+    <div className="detail-row">
+
+      <span className="row-label">
+        {label}
+      </span>
+
+      <b className="row-colon">
+        :
+      </b>
+
+      <span className="row-value">
+        {valueOrDash(value)}
+      </span>
+
+    </div>
+  );
+}
+
+/* =========================================================
+   SECTION
+========================================================= */
+
+function ReceiptSection({
+  title,
+  children,
+  compact = false,
+}) {
+  return (
+    <section
+      className={`receipt-section ${
+        compact
+          ? "compact-section"
+          : ""
+      }`}
+    >
+
+      <div className="section-title">
+        {title}
+      </div>
+
+      {children}
+
+    </section>
   );
 }

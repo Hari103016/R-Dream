@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import {
   Search,
   Download,
@@ -10,38 +9,22 @@ import {
   BadgeCheck,
   Clock3,
   ArrowLeft,
+  RefreshCw,
 } from "lucide-react";
-
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-
 import { supabase } from "../services/supabase";
-
 import "./Payments.css";
 
 function Payments() {
   const navigate = useNavigate();
 
-  /* ===========================================
-     STATE
-  =========================================== */
-
   const [payments, setPayments] = useState([]);
   const [filteredPayments, setFilteredPayments] = useState([]);
-
   const [loading, setLoading] = useState(true);
-
   const [search, setSearch] = useState("");
-
-  const [paymentModeFilter, setPaymentModeFilter] =
-    useState("All");
-
-  const [dateFilter, setDateFilter] =
-    useState("");
-
-  /* ===========================================
-     LOAD PAYMENTS
-  =========================================== */
+  const [paymentModeFilter, setPaymentModeFilter] = useState("All");
+  const [dateFilter, setDateFilter] = useState("");
 
   useEffect(() => {
     fetchPayments();
@@ -55,9 +38,7 @@ function Payments() {
           schema: "public",
           table: "payments",
         },
-        () => {
-          fetchPayments();
-        }
+        () => fetchPayments()
       )
       .subscribe();
 
@@ -66,63 +47,35 @@ function Payments() {
     };
   }, []);
 
-  /* ===========================================
-     FILTER PAYMENTS
-  =========================================== */
-
   useEffect(() => {
     let data = [...payments];
-
-    /* Search */
 
     if (search.trim() !== "") {
       const value = search.toLowerCase();
 
       data = data.filter((payment) => {
         return (
-          payment.customers?.name
-            ?.toLowerCase()
-            .includes(value) ||
-          payment.customers?.mobile
-            ?.toString()
-            .includes(search) ||
-          payment.customers?.plot_no
-            ?.toString()
-            .includes(search)
+          payment.customers?.name?.toLowerCase().includes(value) ||
+          payment.customers?.mobile?.toString().includes(search) ||
+          payment.customers?.plot_no?.toString().includes(search)
         );
       });
     }
 
-    /* Payment Mode */
-
     if (paymentModeFilter !== "All") {
       data = data.filter(
-        (payment) =>
-          payment.payment_mode ===
-          paymentModeFilter
+        (payment) => payment.payment_mode === paymentModeFilter
       );
     }
 
-    /* Date */
-
     if (dateFilter !== "") {
       data = data.filter(
-        (payment) =>
-          payment.payment_date === dateFilter
+        (payment) => payment.payment_date === dateFilter
       );
     }
 
     setFilteredPayments(data);
-  }, [
-    payments,
-    search,
-    paymentModeFilter,
-    dateFilter,
-  ]);
-
-  /* ===========================================
-     FETCH PAYMENTS
-  =========================================== */
+  }, [payments, search, paymentModeFilter, dateFilter]);
 
   async function fetchPayments() {
     try {
@@ -139,58 +92,38 @@ function Payments() {
             plot_no
           )
         `)
-        .order("payment_date", {
-          ascending: false,
-        });
+        .order("payment_date", { ascending: false });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       setPayments(data || []);
       setFilteredPayments(data || []);
     } catch (error) {
-      console.error(
-        "Error fetching payments:",
-        error
-      );
+      console.error("Error fetching payments:", error);
     } finally {
       setLoading(false);
     }
   }
 
-  /* ===========================================
-     DASHBOARD STATISTICS
-  =========================================== */
-
   const stats = useMemo(() => {
     const totalPayments = payments.length;
 
     const totalCollection = payments.reduce(
-      (total, payment) =>
-        total + Number(payment.amount || 0),
+      (total, payment) => total + Number(payment.amount || 0),
       0
     );
 
-    const today =
-      new Date()
-        .toISOString()
-        .split("T")[0];
+    const today = new Date().toISOString().split("T")[0];
 
     const todayCollection = payments
-      .filter(
-        (payment) =>
-          payment.payment_date === today
-      )
+      .filter((payment) => payment.payment_date === today)
       .reduce(
-        (total, payment) =>
-          total + Number(payment.amount || 0),
+        (total, payment) => total + Number(payment.amount || 0),
         0
       );
 
     const cashPayments = payments.filter(
-      (payment) =>
-        payment.payment_mode === "Cash"
+      (payment) => payment.payment_mode === "Cash"
     ).length;
 
     return {
@@ -201,493 +134,363 @@ function Payments() {
     };
   }, [payments]);
 
-  /* ===========================================
-     EXPORT TO EXCEL
-  =========================================== */
-
   function exportExcel() {
-    const rows = filteredPayments.map(
-      (payment) => ({
-        "Customer Name":
-          payment.customers?.name,
+    const rows = filteredPayments.map((payment) => ({
+      "Customer Name": payment.customers?.name,
+      "Plot No": payment.customers?.plot_no,
+      Mobile: payment.customers?.mobile,
+      Amount: payment.amount,
+      "Payment Mode": payment.payment_mode,
+      "Payment Date": payment.payment_date,
+      Remarks: payment.remarks,
+    }));
 
-        "Plot No":
-          payment.customers?.plot_no,
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
 
-        Mobile:
-          payment.customers?.mobile,
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Payments");
 
-        Amount:
-          payment.amount,
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
 
-        "Payment Mode":
-          payment.payment_mode,
-
-        "Payment Date":
-          payment.payment_date,
-
-        Remarks:
-          payment.remarks,
-      })
-    );
-
-    const worksheet =
-      XLSX.utils.json_to_sheet(rows);
-
-    const workbook =
-      XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      "Payments"
-    );
-
-    const excelBuffer =
-      XLSX.write(workbook, {
-        bookType: "xlsx",
-        type: "array",
-      });
-
-    const file = new Blob(
-      [excelBuffer],
-      {
-        type:
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
-      }
-    );
+    const file = new Blob([excelBuffer], {
+      type:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8",
+    });
 
     saveAs(
       file,
-      `Payments_${new Date().toLocaleDateString(
-        "en-IN"
-      )}.xlsx`
+      `Payments_${new Date().toLocaleDateString("en-IN")}.xlsx`
     );
   }
 
-  /* ===========================================
-     RETURN
-  =========================================== */
+  function clearFilters() {
+    setSearch("");
+    setPaymentModeFilter("All");
+    setDateFilter("");
+  }
 
   return (
-    <div className="payments-page">
+    <div className="payments-page payments-unique-page">
+      <section className="payments-hero">
+        <div className="payments-hero-content">
+          <div className="payments-kicker">R DREAM INFRA DEVELOPERS</div>
 
-      {/* ===========================================
-          HEADER
-      =========================================== */}
+          <div className="payments-title-row">
+            <button
+              type="button"
+              className="payments-back-btn"
+              onClick={() => navigate(-1)}
+              title="Go back"
+            >
+              <ArrowLeft size={18} />
+            </button>
 
-      <div className="payments-header">
+            <div>
+              <h1>Payments</h1>
+              <p>
+                A clear financial command center for every customer
+                payment and collection.
+              </p>
+            </div>
+          </div>
 
-        {/* TITLE + BACK */}
+          <div className="payments-live-line">
+            <span />
+            LIVE PAYMENT DATABASE
+            <b>{payments.length} transactions</b>
+          </div>
+        </div>
 
-        <div className="payments-title-section">
+        <div className="payments-hero-art" aria-hidden="true">
+          <div className="payment-orbit orbit-one" />
+          <div className="payment-orbit orbit-two" />
+          <div className="payment-orbit orbit-three" />
+          <div className="payment-art-card art-card-one">
+            <IndianRupee size={23} />
+          </div>
+          <div className="payment-art-card art-card-two">
+            <CreditCard size={20} />
+          </div>
+          <div className="payment-art-line" />
+        </div>
+      </section>
+
+      <section className="payment-stats-section">
+        <div className="payment-section-label">
+          <span>COLLECTION OVERVIEW</span>
+          <i />
+        </div>
+
+        <div className="payment-stat-grid">
+          <article className="payment-stat-card green">
+            <div className="payment-stat-icon">
+              <IndianRupee size={22} />
+            </div>
+            <div className="payment-stat-content">
+              <span>Total Collection</span>
+              <strong>
+                ₹{stats.totalCollection.toLocaleString("en-IN")}
+              </strong>
+              <small>All payments received</small>
+            </div>
+            <b>01</b>
+          </article>
+
+          <article className="payment-stat-card blue">
+            <div className="payment-stat-icon">
+              <Clock3 size={22} />
+            </div>
+            <div className="payment-stat-content">
+              <span>Today's Collection</span>
+              <strong>
+                ₹{stats.todayCollection.toLocaleString("en-IN")}
+              </strong>
+              <small>Collected today</small>
+            </div>
+            <b>02</b>
+          </article>
+
+          <article className="payment-stat-card purple">
+            <div className="payment-stat-icon">
+              <CreditCard size={22} />
+            </div>
+            <div className="payment-stat-content">
+              <span>Total Payments</span>
+              <strong>{stats.totalPayments}</strong>
+              <small>Recorded transactions</small>
+            </div>
+            <b>03</b>
+          </article>
+
+          <article className="payment-stat-card gold">
+            <div className="payment-stat-icon">
+              <BadgeCheck size={22} />
+            </div>
+            <div className="payment-stat-content">
+              <span>Cash Payments</span>
+              <strong>{stats.cashPayments}</strong>
+              <small>Cash transactions</small>
+            </div>
+            <b>04</b>
+          </article>
+        </div>
+      </section>
+
+      <section className="payment-toolbar-section">
+        <div className="payment-section-label">
+          <span>TRANSACTION FILTERS</span>
+          <i />
+        </div>
+
+        <div className="payment-toolbar">
+          <label className="payment-search">
+            <Search size={18} />
+            <input
+              type="text"
+              placeholder="Search customer, plot number or mobile..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                aria-label="Clear search"
+              >
+                ×
+              </button>
+            )}
+          </label>
+
+          <label className="payment-filter">
+            <span>PAYMENT MODE</span>
+            <select
+              value={paymentModeFilter}
+              onChange={(e) => setPaymentModeFilter(e.target.value)}
+            >
+              <option value="All">All Payment Modes</option>
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Cheque">Cheque</option>
+            </select>
+          </label>
+
+          <label className="payment-filter date">
+            <span>PAYMENT DATE</span>
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+            />
+          </label>
+
 
           <button
             type="button"
-            className="back-btn"
-            onClick={() => navigate(-1)}
+            className="payment-export-btn"
+            onClick={exportExcel}
           >
-            <ArrowLeft size={18} />
-            <span>Back</span>
+            <Download size={17} />
+            Export Excel
           </button>
 
-          <div>
-            <h1>Payments</h1>
+          <button
+            type="button"
+            className="payment-clear-btn"
+            onClick={clearFilters}
+          >
+            Clear
+          </button>
+        </div>
+      </section>
 
-            <p className="page-subtitle">
-              Manage customer payment history
+      <section className="payment-record-panel">
+        <div className="payment-record-head">
+          <div>
+            <div className="payment-record-kicker">
+              CUSTOMER PAYMENT REGISTER
+            </div>
+            <h2>Payment Transactions</h2>
+            <p>
+              Showing <strong>{filteredPayments.length}</strong> of{" "}
+              <strong>{payments.length}</strong> transactions
             </p>
           </div>
 
+          <div className="payment-live-badge">
+            <span />
+            DATABASE CONNECTED
+          </div>
         </div>
 
-        {/* EXPORT */}
-
-        <button
-          type="button"
-          className="export-btn"
-          onClick={exportExcel}
-        >
-          <Download size={18} />
-          Export Excel
-        </button>
-
-      </div>
-
-
-      {/* ===========================================
-          DASHBOARD CARDS
-      =========================================== */}
-
-      <div className="stats-grid">
-
-        {/* Total Collection */}
-
-        <div className="stat-card green">
-
-          <div className="stat-icon">
-            <IndianRupee size={24} />
+        {loading ? (
+          <div className="payment-empty">
+            <div className="payment-spinner" />
+            <h3>Loading payments</h3>
+            <p>Fetching the latest transactions from Supabase.</p>
           </div>
-
-          <div className="stat-content">
-
-            <span>
-              Total Collection
-            </span>
-
-            <h2>
-              ₹
-              {stats.totalCollection.toLocaleString(
-                "en-IN"
-              )}
-            </h2>
-
+        ) : filteredPayments.length === 0 ? (
+          <div className="payment-empty">
+            <div className="payment-empty-icon">
+              <CreditCard size={30} />
+            </div>
+            <h3>No payments found</h3>
+            <p>Try another customer, plot, payment mode or date.</p>
+            <button
+              type="button"
+              className="payment-empty-btn"
+              onClick={clearFilters}
+            >
+              Clear Filters
+            </button>
           </div>
-
-        </div>
-
-
-        {/* Today's Collection */}
-
-        <div className="stat-card blue">
-
-          <div className="stat-icon">
-            <Clock3 size={24} />
-          </div>
-
-          <div className="stat-content">
-
-            <span>
-              Today's Collection
-            </span>
-
-            <h2>
-              ₹
-              {stats.todayCollection.toLocaleString(
-                "en-IN"
-              )}
-            </h2>
-
-          </div>
-
-        </div>
-
-
-        {/* Total Payments */}
-
-        <div className="stat-card purple">
-
-          <div className="stat-icon">
-            <CreditCard size={24} />
-          </div>
-
-          <div className="stat-content">
-
-            <span>
-              Total Payments
-            </span>
-
-            <h2>
-              {stats.totalPayments}
-            </h2>
-
-          </div>
-
-        </div>
-
-
-        {/* Cash Payments */}
-
-        <div className="stat-card orange">
-
-          <div className="stat-icon">
-            <BadgeCheck size={24} />
-          </div>
-
-          <div className="stat-content">
-
-            <span>
-              Cash Payments
-            </span>
-
-            <h2>
-              {stats.cashPayments}
-            </h2>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      {/* ===========================================
-          FILTER TOOLBAR
-      =========================================== */}
-
-      <div className="toolbar">
-
-        {/* SEARCH */}
-
-        <div className="search-box">
-
-          <Search size={18} />
-
-          <input
-            type="text"
-            placeholder="Search customer, plot or mobile..."
-            value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
-            }
-          />
-
-        </div>
-
-
-        {/* PAYMENT MODE */}
-
-        <select
-          value={paymentModeFilter}
-          onChange={(e) =>
-            setPaymentModeFilter(
-              e.target.value
-            )
-          }
-        >
-
-          <option value="All">
-            All Payment Modes
-          </option>
-
-          <option value="Cash">
-            Cash
-          </option>
-
-          <option value="UPI">
-            UPI
-          </option>
-
-          <option value="Bank Transfer">
-            Bank Transfer
-          </option>
-
-          <option value="Cheque">
-            Cheque
-          </option>
-
-        </select>
-
-
-        {/* DATE */}
-
-        <input
-          type="date"
-          value={dateFilter}
-          onChange={(e) =>
-            setDateFilter(e.target.value)
-          }
-        />
-
-      </div>
-
-
-      {/* ===========================================
-          PAYMENTS TABLE
-      =========================================== */}
-
-      {loading ? (
-
-        <div className="empty">
-          Loading Payments...
-        </div>
-
-      ) : filteredPayments.length === 0 ? (
-
-        <div className="empty">
-          No Payments Found
-        </div>
-
-      ) : (
-
-        <div className="table-card">
-
-          <div className="table-wrapper">
-
+        ) : (
+          <div className="payment-table-scroll">
             <table className="payments-table">
-
               <thead>
-
                 <tr>
                   <th>Customer</th>
                   <th>Plot</th>
+                  <th>Mobile</th>
                   <th>Amount</th>
-                  <th>Mode</th>
-                  <th>Date</th>
+                  <th>Payment Mode</th>
+                  <th>Payment Date</th>
                   <th>Remarks</th>
                   <th>Action</th>
                 </tr>
-
               </thead>
 
               <tbody>
-
-                {filteredPayments.map(
-                  (payment) => (
-
-                    <tr
-                      key={payment.id}
-                    >
-
-                      {/* Customer */}
-
-                      <td>
-
-                        <div className="customer-info">
-
-                          <div className="customer-avatar">
-
-                            {payment
-                              .customers
-                              ?.name
-                              ?.charAt(0)
-                              .toUpperCase()}
-
-                          </div>
-
-                          <div className="customer-details">
-
-                            <h4>
-                              {
-                                payment
-                                  .customers
-                                  ?.name
-                              }
-                            </h4>
-
-                            <span>
-                              Customer
-                            </span>
-
-                          </div>
-
+                {filteredPayments.map((payment, index) => (
+                  <tr key={payment.id}>
+                    <td>
+                      <div className="payment-customer">
+                        <div className={`payment-avatar avatar-${(index % 6) + 1}`}>
+                          {payment.customers?.name
+                            ?.charAt(0)
+                            .toUpperCase() || "C"}
                         </div>
 
-                      </td>
+                        <div>
+                          <strong>
+                            {payment.customers?.name || "Unknown Customer"}
+                          </strong>
+                          <small>
+                            Customer · {String(payment.customer_id || "").slice(0, 8)}
+                          </small>
+                        </div>
+                      </div>
+                    </td>
 
+                    <td>
+                      <span className="payment-plot">
+                        #{payment.customers?.plot_no ?? "—"}
+                      </span>
+                    </td>
 
-                      {/* Plot */}
+                    <td>
+                      <span className="payment-mobile">
+                        {payment.customers?.mobile || "—"}
+                      </span>
+                    </td>
 
-                      <td>
+                    <td>
+                      <span className="payment-amount">
+                        ₹{Number(payment.amount || 0).toLocaleString("en-IN")}
+                      </span>
+                    </td>
 
-                        <span className="plot-badge">
-                          Plot #
-                          {
-                            payment
-                              .customers
-                              ?.plot_no
-                          }
-                        </span>
+                    <td>
+                      <span className="payment-mode-badge">
+                        <CreditCard size={14} />
+                        {payment.payment_mode || "—"}
+                      </span>
+                    </td>
 
-                      </td>
-
-
-                      {/* Amount */}
-
-                      <td className="amount-text">
-
-                        ₹
-                        {Number(
-                          payment.amount || 0
-                        ).toLocaleString(
-                          "en-IN"
-                        )}
-
-                      </td>
-
-
-                      {/* Payment Mode */}
-
-                      <td>
-
-                        <span className="payment-badge">
-
-                          <CreditCard
-                            size={14}
-                          />
-
-                          {
-                            payment.payment_mode
-                          }
-
-                        </span>
-
-                      </td>
-
-
-                      {/* Date */}
-
-                      <td>
-
+                    <td>
+                      <span className="payment-date">
                         {payment.payment_date
-                          ? new Date(
-                              payment.payment_date
-                            ).toLocaleDateString(
-                              "en-IN"
+                          ? new Date(payment.payment_date).toLocaleDateString(
+                              "en-IN",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              }
                             )
-                          : "-"}
+                          : "—"}
+                      </span>
+                    </td>
 
-                      </td>
+                    <td>
+                      <span className="payment-remarks">
+                        {payment.remarks || "No remarks"}
+                      </span>
+                    </td>
 
-
-                      {/* Remarks */}
-
-                      <td>
-                        {payment.remarks || "-"}
-                      </td>
-
-
-                      {/* Action */}
-
-                      <td>
-
-                        <div className="table-actions">
-
-                          <button
-                            type="button"
-                            className="view-btn"
-                            onClick={() =>
-                              navigate(
-                                `/customer/${payment.customer_id}`
-                              )
-                            }
-                          >
-
-                            <Eye size={16} />
-
-                            View
-
-                          </button>
-
-                        </div>
-
-                      </td>
-
-                    </tr>
-
-                  )
-                )}
-
+                    <td>
+                      <button
+                        type="button"
+                        className="payment-view-btn"
+                        onClick={() =>
+                          navigate(`/customer/${payment.customer_id}`)
+                        }
+                      >
+                        <Eye size={16} />
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
-
             </table>
-
           </div>
-
-        </div>
-
-      )}
-
+        )}
+      </section>
     </div>
   );
 }

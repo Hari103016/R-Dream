@@ -11,6 +11,7 @@ import {
   TrendingUp,
   RefreshCw,
   AlertCircle,
+  ChevronDown,
 } from "lucide-react";
 
 import { supabase } from "../services/supabase";
@@ -91,6 +92,8 @@ function buildPaidMap(payments) {
   return paidByCustomer;
 }
 
+const SELECTED_VENTURE_STORAGE_KEY = "r-dream-selected-venture-id";
+
 function DashboardCards() {
   const [stats, setStats] =
     useState({
@@ -107,6 +110,29 @@ function DashboardCards() {
   const [loading, setLoading] =
     useState(true);
 
+  // Added venture selector; existing dashboard cards remain unchanged.
+  const [ventures, setVentures] = useState([]);
+
+  // Persist the selected venture so navigation does not reset it.
+  // The venture ID is stored, never the display name.
+  const [selectedVentureId, setSelectedVentureId] = useState(() => {
+    try {
+      return (
+        localStorage.getItem(
+          SELECTED_VENTURE_STORAGE_KEY
+        ) || "all"
+      );
+    } catch (error) {
+      console.warn(
+        "Unable to read selected venture from localStorage:",
+        error
+      );
+      return "all";
+    }
+  });
+
+  const [venturesLoading, setVenturesLoading] = useState(true);
+
   const [errorMessage, setErrorMessage] =
     useState("");
 
@@ -120,6 +146,7 @@ function DashboardCards() {
     useCallback(
       async ({
         isInitialLoad = false,
+        ventureId = "all",
       } = {}) => {
         try {
           if (isInitialLoad) {
@@ -130,238 +157,243 @@ function DashboardCards() {
 
           setErrorMessage("");
 
-          const [
-            plotResult,
-            customerResult,
-            paymentResult,
-          ] = await Promise.all([
-            supabase
-              .from("plots")
-              .select(
-                "plot_no, customer_id, status"
-              ),
+          /*
+           * IMPORTANT:
+           * A venture is identified by venture_id, never by its name.
+           * For a selected venture we first load its plots, then use the
+           * customer_id values attached to those plots. This prevents a
+           * customer/payment row with an old or missing venture_id from
+           * making a booked plot disappear from the selected venture's
+           * financial totals.
+           */
+          let plotQuery = supabase
+            .from("plots")
+            .select(
+              "plot_no, customer_id, status, venture_id"
+            );
 
-            supabase
-              .from("customers")
-              .select(
-                "id, total_amount, amount_paid, balance, status, registration_status"
-              ),
+          if (ventureId && ventureId !== "all") {
+            plotQuery = plotQuery.eq(
+              "venture_id",
+              ventureId
+            );
+          }
 
-            supabase
-              .from("payments")
-              .select(
-                "customer_id, amount"
-              ),
-          ]);
+          const { data: plotDataRaw, error: plotError } =
+            await plotQuery;
 
-          if (plotResult.error) {
+          if (plotError) {
             console.error(
               "Dashboard plots error:",
-              plotResult.error
+              plotError
             );
-
             throw new Error(
-              `Plots: ${plotResult.error.message}`
+              `Plots: ${plotError.message}`
             );
           }
 
-          if (customerResult.error) {
-            console.error(
-              "Dashboard customers error:",
-              customerResult.error
-            );
+          const plotData = plotDataRaw || [];
 
-            throw new Error(
-              `Customers: ${customerResult.error.message}`
-            );
+          const linkedCustomerIds = [
+            ...new Set(
+              plotData
+                .map((plot) => plot.customer_id)
+                .filter((id) => id != null)
+                .map((id) => String(id))
+            ),
+          ];
+
+          /*
+           * Load customers by the IDs actually linked to the selected
+           * venture's plots. This is deliberately NOT filtered by the
+           * customer venture_id when a specific venture is selected.
+           */
+          let customerData = [];
+
+          if (linkedCustomerIds.length > 0) {
+            const { data, error } = await supabase
+              .from("customers")
+              .select(
+                "id, total_amount, amount_paid, balance, status, registration_status, venture_id"
+              )
+              .in("id", linkedCustomerIds);
+
+            if (error) {
+              console.error(
+                "Dashboard customers error:",
+                error
+              );
+              throw new Error(
+                `Customers: ${error.message}`
+              );
+            }
+
+            customerData = data || [];
+          } else if (ventureId === "all") {
+            const { data, error } = await supabase
+              .from("customers")
+              .select(
+                "id, total_amount, amount_paid, balance, status, registration_status, venture_id"
+              );
+
+            if (error) {
+              console.error(
+                "Dashboard customers error:",
+                error
+              );
+              throw new Error(
+                `Customers: ${error.message}`
+              );
+            }
+
+            customerData = data || [];
           }
 
-          if (paymentResult.error) {
-            console.error(
-              "Dashboard payments error:",
-              paymentResult.error
-            );
+          /*
+           * Payments are also tied back to the selected venture through
+           * customer_id. We do not require payments.venture_id to be filled
+           * because older payment records may not contain it.
+           */
+          let paymentData = [];
 
-            throw new Error(
-              `Payments: ${paymentResult.error.message}`
-            );
+          if (linkedCustomerIds.length > 0) {
+            const { data, error } = await supabase
+              .from("payments")
+              .select(
+                "customer_id, amount, venture_id"
+              )
+              .in("customer_id", linkedCustomerIds);
+
+            if (error) {
+              console.error(
+                "Dashboard payments error:",
+                error
+              );
+              throw new Error(
+                `Payments: ${error.message}`
+              );
+            }
+
+            paymentData = data || [];
+          } else if (ventureId === "all") {
+            const { data, error } = await supabase
+              .from("payments")
+              .select(
+                "customer_id, amount, venture_id"
+              );
+
+            if (error) {
+              console.error(
+                "Dashboard payments error:",
+                error
+              );
+              throw new Error(
+                `Payments: ${error.message}`
+              );
+            }
+
+            paymentData = data || [];
           }
-
-          const plotData =
-            plotResult.data || [];
-
-          const customerData =
-            customerResult.data || [];
-
-          const paymentData =
-            paymentResult.data || [];
 
           const paidByCustomer =
-            buildPaidMap(
-              paymentData
-            );
+            buildPaidMap(paymentData);
 
-          const customers =
-            customerData.map(
-              (customer) =>
-                getCanonicalCustomerFinancials(
-                  customer,
-                  paidByCustomer.get(
-                    customer.id
-                  )
-                )
-            );
-
-          const customerStatusMap =
-            new Map(
-              customers.map(
-                (customer) => [
-                  String(
-                    customer.id
-                  ),
-                  customer.status,
-                ]
+          const customers = customerData.map(
+            (customer) =>
+              getCanonicalCustomerFinancials(
+                customer,
+                paidByCustomer.get(customer.id)
               )
-            );
+          );
+
+          const customerStatusMap = new Map(
+            customers.map((customer) => [
+              String(customer.id),
+              customer.status,
+            ])
+          );
 
           let available = 0;
           let booked = 0;
           let sold = 0;
 
-          plotData.forEach(
-            (plot) => {
-              const linkedCustomerStatus =
-                plot.customer_id ==
-                null
-                  ? null
-                  : customerStatusMap.get(
-                      String(
-                        plot.customer_id
-                      )
-                    );
+          plotData.forEach((plot) => {
+            const linkedCustomerStatus =
+              plot.customer_id == null
+                ? null
+                : customerStatusMap.get(
+                    String(plot.customer_id)
+                  );
 
-              let status =
-                plot.status ||
-                "Available";
+            let status =
+              plot.status || "Available";
 
-              /*
-               * Payment-derived customer
-               * status has priority.
-               */
-              if (
-                linkedCustomerStatus ===
-                "Sold"
-              ) {
-                status = "Sold";
-              } else if (
-                linkedCustomerStatus ===
-                "Booked"
-              ) {
-                status = "Booked";
-              }
-
-              const normalizedStatus =
-                String(status)
-                  .trim()
-                  .toLowerCase();
-
-              if (
-                normalizedStatus ===
-                "sold"
-              ) {
-                sold += 1;
-              } else if (
-                normalizedStatus ===
-                "booked"
-              ) {
-                booked += 1;
-              } else {
-                available += 1;
-              }
+            if (linkedCustomerStatus === "Sold") {
+              status = "Sold";
+            } else if (linkedCustomerStatus === "Booked") {
+              status = "Booked";
             }
+
+            const normalizedStatus = String(status)
+              .trim()
+              .toLowerCase();
+
+            if (normalizedStatus === "sold") {
+              sold += 1;
+            } else if (normalizedStatus === "booked") {
+              booked += 1;
+            } else {
+              available += 1;
+            }
+          });
+
+          const revenue = customers.reduce(
+            (sum, customer) =>
+              sum + Number(customer.total_amount || 0),
+            0
           );
 
-          const revenue =
-            customers.reduce(
-              (sum, customer) =>
-                sum +
-                Number(
-                  customer.total_amount ||
-                    0
-                ),
-              0
-            );
+          const collected = customers.reduce(
+            (sum, customer) =>
+              sum + Number(customer.amount_paid || 0),
+            0
+          );
 
-          const collected =
-            customers.reduce(
-              (sum, customer) =>
-                sum +
-                Number(
-                  customer.amount_paid ||
-                    0
-                ),
-              0
-            );
-
-          const pending =
-            customers.reduce(
-              (sum, customer) =>
-                sum +
-                Number(
-                  customer.balance ||
-                    0
-                ),
-              0
-            );
+          const pending = customers.reduce(
+            (sum, customer) =>
+              sum + Number(customer.balance || 0),
+            0
+          );
 
           setStats({
-            totalPlots:
-              plotData.length,
+            totalPlots: plotData.length,
             available,
             booked,
             sold,
-            totalCustomers:
-              customers.length,
+            totalCustomers: customers.length,
             revenue,
             collected,
             pending,
           });
 
-          setLastUpdated(
-            new Date()
-          );
-
+          setLastUpdated(new Date());
           setErrorMessage("");
 
-          console.log(
-            "Dashboard loaded:",
-            {
-              plots:
-                plotData.length,
-              customers:
-                customers.length,
-              payments:
-                paymentData.length,
-              available,
-              booked,
-              sold,
-              revenue,
-              collected,
-              pending,
-            }
-          );
+          console.log("Dashboard loaded:", {
+            ventureId,
+            plots: plotData.length,
+            customers: customers.length,
+            payments: paymentData.length,
+            available,
+            booked,
+            sold,
+            revenue,
+            collected,
+            pending,
+          });
         } catch (error) {
-          console.error(
-            "Dashboard Error:",
-            error
-          );
+          console.error("Dashboard Error:", error);
 
-          /*
-           * IMPORTANT:
-           * Keep the previous dashboard
-           * values visible when a refresh
-           * temporarily fails.
-           */
           setErrorMessage(
             error?.message ||
               "Unable to load dashboard data."
@@ -376,7 +408,45 @@ function DashboardCards() {
 
   /*
    * ---------------------------------------------------------
-   * INITIAL LOAD + REALTIME
+   * LOAD VENTURES
+   * ---------------------------------------------------------
+   */
+  useEffect(() => {
+    let mounted = true;
+
+    const loadVentures = async () => {
+      setVenturesLoading(true);
+
+      const { data, error } = await supabase
+        .from("ventures")
+        .select("*")
+        .order("id", { ascending: true });
+
+      if (!mounted) return;
+
+      if (error) {
+        console.error("Ventures load error:", error);
+        setVentures([]);
+        setErrorMessage(
+          `Ventures: ${error.message}`
+        );
+      } else {
+        setVentures(data || []);
+      }
+
+      setVenturesLoading(false);
+    };
+
+    loadVentures();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  /*
+   * ---------------------------------------------------------
+   * INITIAL LOAD + REALTIME FOR SELECTED VENTURE
    * ---------------------------------------------------------
    */
   useEffect(() => {
@@ -384,12 +454,13 @@ function DashboardCards() {
 
     fetchDashboardStats({
       isInitialLoad: true,
+      ventureId: selectedVentureId,
     });
 
     const channel =
       supabase
         .channel(
-          "dashboard-cards-live"
+          `dashboard-cards-live-${selectedVentureId}`
         )
         .on(
           "postgres_changes",
@@ -400,7 +471,9 @@ function DashboardCards() {
           },
           () => {
             if (mounted) {
-              fetchDashboardStats();
+              fetchDashboardStats({
+                ventureId: selectedVentureId,
+              });
             }
           }
         )
@@ -413,7 +486,9 @@ function DashboardCards() {
           },
           () => {
             if (mounted) {
-              fetchDashboardStats();
+              fetchDashboardStats({
+                ventureId: selectedVentureId,
+              });
             }
           }
         )
@@ -426,7 +501,9 @@ function DashboardCards() {
           },
           () => {
             if (mounted) {
-              fetchDashboardStats();
+              fetchDashboardStats({
+                ventureId: selectedVentureId,
+              });
             }
           }
         )
@@ -447,7 +524,10 @@ function DashboardCards() {
         channel
       );
     };
-  }, [fetchDashboardStats]);
+  }, [
+    fetchDashboardStats,
+    selectedVentureId,
+  ]);
 
   /*
    * ---------------------------------------------------------
@@ -584,8 +664,94 @@ function DashboardCards() {
     );
   }
 
+  const getVentureLabel = (venture) => {
+    if (!venture) return "Unknown Venture";
+
+    // The venture ID is the permanent identity.
+    // The text below is only the display label.
+    const village = String(venture?.village || "").trim();
+    const phase = String(
+      venture?.phase_name || venture?.phase || ""
+    ).trim();
+
+    if (village && phase) {
+      return `${village} — ${phase}`;
+    }
+
+    if (village) return village;
+    if (phase) return phase;
+
+    return `Venture ${venture.id}`;
+  };
+
   return (
-    <div className="dashboard-cards">
+    <>
+      {/* =====================================================
+          VENTURE SELECTOR — ONLY NEW CONTROL
+      ====================================================== */}
+      <div className="dashboard-venture-selector">
+        <div className="dashboard-venture-selector-label">
+          <span>VENTURE</span>
+          <strong>
+            {selectedVentureId === "all"
+              ? "All Ventures"
+              : getVentureLabel(
+                  ventures.find(
+                    (venture) =>
+                      String(venture.id) ===
+                      String(selectedVentureId)
+                  )
+                )}
+          </strong>
+        </div>
+
+        <div className="dashboard-venture-select-wrap">
+          <select
+            className="dashboard-venture-select"
+            value={selectedVentureId}
+            onChange={(event) => {
+              const ventureId = event.target.value;
+
+              // Store only the permanent venture ID.
+              // This survives Dashboard -> Customers -> Dashboard.
+              setSelectedVentureId(ventureId);
+
+              try {
+                localStorage.setItem(
+                  SELECTED_VENTURE_STORAGE_KEY,
+                  ventureId
+                );
+              } catch (error) {
+                console.warn(
+                  "Unable to save selected venture:",
+                  error
+                );
+              }
+            }}
+            disabled={venturesLoading}
+          >
+            <option value="all">
+              All Ventures
+            </option>
+
+            {ventures.map((venture) => (
+              <option
+                key={venture.id}
+                value={venture.id}
+              >
+                {getVentureLabel(venture)}
+              </option>
+            ))}
+          </select>
+
+          <ChevronDown
+            size={16}
+            className="dashboard-venture-select-icon"
+          />
+        </div>
+      </div>
+
+      <div className="dashboard-cards">
 
       {/* =====================================================
           REFRESH ERROR
@@ -613,7 +779,9 @@ function DashboardCards() {
             type="button"
             className="dashboard-cards-retry"
             onClick={() =>
-              fetchDashboardStats()
+              fetchDashboardStats({
+                ventureId: selectedVentureId,
+              })
             }
             disabled={retrying}
           >
@@ -702,6 +870,7 @@ function DashboardCards() {
         </div>
       )}
     </div>
+    </>
   );
 }
 

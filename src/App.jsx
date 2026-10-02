@@ -14,20 +14,25 @@ import Plots from "./pages/Plots";
 import BookPlot from "./pages/BookPlot";
 import Bookings from "./pages/Bookings";
 import Payments from "./pages/Payments";
-import Reports from "./pages/Reports";
+import SiteVisits from "./pages/SiteVisits";
+import FollowUps from "./pages/FollowUps";
+import Documents from "./pages/Documents";
 import Settings from "./pages/Settings";
 import AdminProfile from "./pages/AdminProfile";
 
 // ==========================================
-// NEW: LAYOUT MAP
+// REGISTRATION COMPLETED
+// ==========================================
+import RegistrationCompleted from "./pages/RegistrationCompleted";
+
+// ==========================================
+// LAYOUT MAP
 // ==========================================
 import LayoutMap from "./pages/LayoutMap";
-
 
 function App() {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
-
 
   // ==========================================
   // CHECK LOGIN SESSION
@@ -45,7 +50,6 @@ function App() {
 
     checkSession();
 
-
     // ==========================================
     // AUTH STATE LISTENER
     // ==========================================
@@ -58,12 +62,10 @@ function App() {
       }
     );
 
-
     return () => {
       subscription.unsubscribe();
     };
   }, []);
-
 
   // ==========================================
   // LOADING
@@ -84,10 +86,8 @@ function App() {
     );
   }
 
-
   return (
     <Routes>
-
       {/* ==========================================
           LOGIN
       ========================================== */}
@@ -105,7 +105,6 @@ function App() {
           )
         }
       />
-
 
       {/* ==========================================
           DASHBOARD
@@ -125,7 +124,6 @@ function App() {
         }
       />
 
-
       {/* ==========================================
           CUSTOMERS
       ========================================== */}
@@ -143,7 +141,6 @@ function App() {
           )
         }
       />
-
 
       {/* ==========================================
           CUSTOMER DETAILS
@@ -163,7 +160,6 @@ function App() {
         }
       />
 
-
       {/* ==========================================
           EDIT CUSTOMER
       ========================================== */}
@@ -181,7 +177,6 @@ function App() {
           )
         }
       />
-
 
       {/* ==========================================
           ADD PAYMENT
@@ -201,7 +196,6 @@ function App() {
         }
       />
 
-
       {/* ==========================================
           RECEIPT
       ========================================== */}
@@ -219,7 +213,6 @@ function App() {
           )
         }
       />
-
 
       {/* ==========================================
           PLOTS
@@ -239,7 +232,6 @@ function App() {
         }
       />
 
-
       {/* ==========================================
           LAYOUT MAP
       ========================================== */}
@@ -257,7 +249,6 @@ function App() {
           )
         }
       />
-
 
       {/* ==========================================
           BOOK PLOT
@@ -277,7 +268,6 @@ function App() {
         }
       />
 
-
       {/* ==========================================
           BOOKINGS
       ========================================== */}
@@ -295,7 +285,6 @@ function App() {
           )
         }
       />
-
 
       {/* ==========================================
           PAYMENTS
@@ -315,16 +304,15 @@ function App() {
         }
       />
 
-
       {/* ==========================================
-          REPORTS
+          REGISTRATION COMPLETED
       ========================================== */}
 
       <Route
-        path="/reports"
+        path="/registration-completed"
         element={
           session ? (
-            <Reports />
+            <RegistrationCompleted />
           ) : (
             <Navigate
               to="/"
@@ -334,6 +322,59 @@ function App() {
         }
       />
 
+      {/* ==========================================
+          SITE VISITS
+      ========================================== */}
+
+      <Route
+        path="/site-visits"
+        element={
+          session ? (
+            <SiteVisits />
+          ) : (
+            <Navigate
+              to="/"
+              replace
+            />
+          )
+        }
+      />
+
+      {/* ==========================================
+          FOLLOW-UPS
+      ========================================== */}
+
+      <Route
+        path="/follow-ups"
+        element={
+          session ? (
+            <FollowUps />
+          ) : (
+            <Navigate
+              to="/"
+              replace
+            />
+          )
+        }
+      />
+
+      {/* ==========================================
+          DOCUMENTS
+      ========================================== */}
+
+      <Route
+        path="/documents"
+        element={
+          session ? (
+            <Documents />
+          ) : (
+            <Navigate
+              to="/"
+              replace
+            />
+          )
+        }
+      />
 
       {/* ==========================================
           SETTINGS
@@ -353,7 +394,6 @@ function App() {
         }
       />
 
-
       {/* ==========================================
           ADMIN PROFILE
       ========================================== */}
@@ -372,7 +412,6 @@ function App() {
         }
       />
 
-
       {/* ==========================================
           UNKNOWN ROUTE
       ========================================== */}
@@ -390,10 +429,8 @@ function App() {
           />
         }
       />
-
     </Routes>
   );
 }
-
 
 export default App;

@@ -12,6 +12,427 @@
 /* ========================================
    HEADER
 ======================================== */
+/* ========================================
+   PLOTS PAGE
+======================================== */
+
+.plots-page {
+    padding: 30px;
+    min-height: 100vh;
+    background: #0f172a;
+    color: #fff;
+}
+
+/* ========================================
+   HEADER
+======================================== */
+
+.plots-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 25px;
+    margin-bottom: 35px;
+}
+
+.plots-header h2 {
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: #fff;
+}
+
+.plots-header p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 15px;
+}
+
+/* ========================================
+   HEADER ACTIONS
+======================================== */
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ========================================
+   VENTURE FILTER
+======================================== */
+
+.venture-filter,
+.status-filter {
+    min-width: 180px;
+    height: 48px;
+    padding: 0 16px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #fff;
+    border-radius: 12px;
+    outline: none;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.venture-filter:hover,
+.status-filter:hover,
+.venture-filter:focus,
+.status-filter:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.venture-filter:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.venture-filter option,
+.status-filter option {
+    background: #1e293b;
+    color: #fff;
+}
+
+/* ========================================
+   SEARCH
+======================================== */
+
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 300px;
+    height: 48px;
+    padding: 0 16px;
+    border-radius: 12px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    transition: 0.3s;
+}
+
+.search-box:focus-within {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.search-box svg {
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+.search-box input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #fff;
+    font-size: 15px;
+}
+
+.search-box input::placeholder {
+    color: #94a3b8;
+}
+
+/* ========================================
+   BUTTONS
+======================================== */
+
+.export-btn,
+.add-btn,
+.select-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 48px;
+    border: none;
+    border-radius: 12px;
+    padding: 0 20px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    white-space: nowrap;
+}
+
+.export-btn {
+    background: #2563eb;
+    color: #fff;
+}
+
+.export-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.35);
+}
+
+.add-btn {
+    background: #16a34a;
+    color: #fff;
+}
+
+.add-btn:hover {
+    background: #15803d;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(22, 163, 74, 0.35);
+}
+
+.select-btn {
+    background: #2563eb;
+    color: #fff;
+}
+
+.select-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+/* ========================================
+   SELECTED PLOTS BAR
+======================================== */
+
+.selected-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 24px;
+    margin-bottom: 30px;
+    background: #182235;
+    border: 1px solid #293548;
+    border-radius: 18px;
+}
+
+.selected-left {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.selected-left h3 {
+    margin: 0;
+    font-size: 22px;
+    color: #fff;
+}
+
+.selected-left h3 span {
+    color: #3b82f6;
+}
+
+.selected-left p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 15px;
+}
+
+.selected-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.select-all-btn,
+.clear-btn,
+.book-selected-btn {
+    border: none;
+    height: 46px;
+    padding: 0 22px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.select-all-btn {
+    background: #2563eb;
+}
+
+.select-all-btn:hover {
+    background: #1d4ed8;
+}
+
+.clear-btn {
+    background: #ef4444;
+}
+
+.clear-btn:hover {
+    background: #dc2626;
+}
+
+.book-selected-btn {
+    background: #16a34a;
+}
+
+.book-selected-btn:hover {
+    background: #15803d;
+}
+
+.book-selected-btn:disabled {
+    background: #475569;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* ========================================
+   GRID
+======================================== */
+
+.plots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 25px;
+}
+
+/* ========================================
+   EMPTY / LOADING
+======================================== */
+
+.empty {
+    width: 100%;
+    min-height: 220px;
+    padding: 70px 20px;
+    box-sizing: border-box;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 22px;
+    background: #182235;
+    border-radius: 18px;
+    border: 1px dashed #334155;
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.empty small {
+    color: #64748b;
+    font-size: 14px;
+}
+
+/* ========================================
+   SCROLLBAR
+======================================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 1250px) {
+    .header-actions {
+        width: 100%;
+    }
+
+    .venture-filter {
+        flex: 1;
+        min-width: 220px;
+    }
+
+    .search-box {
+        flex: 1;
+        min-width: 250px;
+    }
+}
+
+@media (max-width: 1100px) {
+    .plots-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .plots-page {
+        padding: 18px;
+    }
+
+    .header-actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .venture-filter,
+    .search-box,
+    .status-filter,
+    .export-btn,
+    .add-btn,
+    .select-btn {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .selected-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .selected-right {
+        width: 100%;
+    }
+
+    .select-all-btn,
+    .clear-btn,
+    .book-selected-btn {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .plots-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .plots-header h2 {
+        font-size: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .plots-page {
+        padding: 15px;
+    }
+
+    .plots-header h2 {
+        font-size: 26px;
+    }
+
+    .empty {
+        padding: 60px 15px;
+        font-size: 18px;
+    }
+}
 
 .plots-header{
     display:flex;

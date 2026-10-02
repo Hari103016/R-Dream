@@ -1,833 +1,758 @@
-import { useEffect, useState } from "react";
-
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
+  ArrowLeft,
+  BadgeCheck,
   Camera,
-  Save,
-  Lock,
-  User,
+  Check,
+  ChevronRight,
+  Edit3,
+  KeyRound,
+  LockKeyhole,
+  LogOut,
   Mail,
-  Phone,
-  Trash2,
+  Save,
+  ShieldCheck,
+  UserRound,
+  X,
+  Sparkles,
 } from "lucide-react";
-
-import { toast } from "react-toastify";
 import { supabase } from "../services/supabase";
-
-import Sidebar from "../components/Sidebar";
-import Topbar from "../components/Topbar";
-
 import "./AdminProfile.css";
 
 function AdminProfile() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [removing, setRemoving] = useState(false);
-
-  const [userId, setUserId] = useState("");
-  const [authEmail, setAuthEmail] = useState("");
-
-  const [profile, setProfile] = useState({
+  const [user, setUser] = useState(null);
+  const [admin, setAdmin] = useState({
     full_name: "",
-    email: "",
-    phone: "",
     role: "Administrator",
     avatar_url: "",
   });
 
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+
+  const [form, setForm] = useState({
+    full_name: "",
+    role: "Administrator",
+    avatar_url: "",
+  });
+
+  const [passwordForm, setPasswordForm] = useState({
+    password: "",
+    confirmPassword: "",
+  });
 
   useEffect(() => {
     loadProfile();
   }, []);
 
-  /* =========================================
-     LOAD PROFILE
-  ========================================= */
-
   async function loadProfile() {
-    try {
-      setLoading(true);
+    setLoading(true);
+    setError("");
 
+    try {
       const {
-        data: { user },
-        error: userError,
+        data: { user: currentUser },
+        error: authError,
       } = await supabase.auth.getUser();
 
-      if (userError) {
-        throw userError;
-      }
+      if (authError) throw authError;
 
-      if (!user) {
-        toast.error("No user logged in.");
+      if (!currentUser) {
+        navigate("/", { replace: true });
         return;
       }
 
-      setUserId(user.id);
-      setAuthEmail(user.email || "");
+      setUser(currentUser);
 
-      const { data, error } = await supabase
+      const { data, error: profileError } = await supabase
         .from("admin_profiles")
         .select("*")
-        .eq("id", user.id)
+        .eq("id", currentUser.id)
         .maybeSingle();
 
-      if (error) {
-        throw error;
-      }
+      if (profileError) throw profileError;
 
-      /* Create profile if it doesn't exist */
+      const profile = {
+        full_name: data?.full_name || "",
+        role: data?.role || "Administrator",
+        avatar_url: data?.avatar_url || "",
+      };
 
-      if (!data) {
-        const newProfile = {
-          id: user.id,
-          full_name:
-            user.user_metadata?.full_name ||
-            user.user_metadata?.name ||
-            "Administrator",
-          email: user.email || "",
-          phone: "",
-          role: "Administrator",
-          avatar_url: "",
-        };
-
-        const {
-          data: insertedProfile,
-          error: insertError,
-        } = await supabase
-          .from("admin_profiles")
-          .insert(newProfile)
-          .select()
-          .single();
-
-        if (insertError) {
-          throw insertError;
-        }
-
-        setProfile({
-          full_name: insertedProfile.full_name || "",
-          email:
-            insertedProfile.email ||
-            user.email ||
-            "",
-          phone: insertedProfile.phone || "",
-          role:
-            insertedProfile.role ||
-            "Administrator",
-          avatar_url:
-            insertedProfile.avatar_url || "",
-        });
-
-        return;
-      }
-
-      setProfile({
-        full_name: data.full_name || "",
-        email: data.email || user.email || "",
-        phone: data.phone || "",
-        role: data.role || "Administrator",
-        avatar_url: data.avatar_url || "",
-      });
-    } catch (error) {
-      console.error(
-        "Profile loading error:",
-        error
-      );
-
-      toast.error(
-        error.message ||
-          "Unable to load profile."
-      );
+      setAdmin(profile);
+      setForm(profile);
+    } catch (err) {
+      console.error("Admin profile load error:", err);
+      setError(err?.message || "Unable to load admin profile.");
     } finally {
       setLoading(false);
     }
   }
 
-  /* =========================================
-     UPLOAD PHOTO
-  ========================================= */
+  const displayName =
+    admin.full_name?.trim() ||
+    user?.user_metadata?.full_name ||
+    "Administrator";
 
-  async function uploadPhoto(event) {
-    const file = event.target.files?.[0];
+  const displayRole = admin.role?.trim() || "Administrator";
 
-    if (!file) {
-      return;
-    }
+  const email = user?.email || "No email available";
 
-    if (!userId) {
-      toast.error(
-        "User information is not available."
-      );
+  const initials = useMemo(() => {
+    const words = displayName.trim().split(/\s+/).filter(Boolean);
 
-      return;
-    }
+    if (!words.length) return "AD";
+    if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
 
-    const allowedTypes = [
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-      "image/webp",
-    ];
+    return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase();
+  }, [displayName]);
 
-    if (!allowedTypes.includes(file.type)) {
-      toast.error(
-        "Please upload a JPG, JPEG, PNG, or WEBP image."
-      );
+  const avatarUrl = admin.avatar_url?.trim();
 
-      event.target.value = "";
+  function showMessage(text) {
+    setMessage(text);
+    setError("");
 
-      return;
-    }
-
-    const maxSize = 5 * 1024 * 1024;
-
-    if (file.size > maxSize) {
-      toast.error(
-        "Profile photo must be smaller than 5 MB."
-      );
-
-      event.target.value = "";
-
-      return;
-    }
-
-    try {
-      setUploading(true);
-
-      const extension =
-        file.name
-          .split(".")
-          .pop()
-          ?.toLowerCase() || "jpg";
-
-      const filePath =
-        `${userId}/avatar-${Date.now()}.${extension}`;
-
-      const {
-        error: uploadError,
-      } = await supabase.storage
-        .from("avatars")
-        .upload(
-          filePath,
-          file,
-          {
-            cacheControl: "3600",
-            upsert: true,
-          }
-        );
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const {
-        data: publicUrlData,
-      } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath);
-
-      const publicUrl =
-        publicUrlData?.publicUrl;
-
-      if (!publicUrl) {
-        throw new Error(
-          "Unable to generate profile photo URL."
-        );
-      }
-
-      const {
-        error: updateError,
-      } = await supabase
-        .from("admin_profiles")
-        .update({
-          avatar_url: publicUrl,
-        })
-        .eq("id", userId);
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      setProfile(
-        (previousProfile) => ({
-          ...previousProfile,
-          avatar_url: publicUrl,
-        })
-      );
-
-      toast.success(
-        "Profile photo updated successfully."
-      );
-    } catch (error) {
-      console.error(
-        "Photo upload error:",
-        error
-      );
-
-      toast.error(
-        error.message ||
-          "Unable to upload profile photo."
-      );
-    } finally {
-      setUploading(false);
-
-      event.target.value = "";
-    }
+    window.setTimeout(() => {
+      setMessage("");
+    }, 3000);
   }
 
-  /* =========================================
-     REMOVE PHOTO
-  ========================================= */
-
-  async function removePhoto() {
-    if (!profile.avatar_url) {
-      toast.info(
-        "No profile photo to remove."
-      );
-
-      return;
-    }
-
-    try {
-      setRemoving(true);
-
-      const { error } = await supabase
-        .from("admin_profiles")
-        .update({
-          avatar_url: "",
-        })
-        .eq("id", userId);
-
-      if (error) {
-        throw error;
-      }
-
-      setProfile(
-        (previousProfile) => ({
-          ...previousProfile,
-          avatar_url: "",
-        })
-      );
-
-      toast.success(
-        "Profile photo removed."
-      );
-    } catch (error) {
-      console.error(
-        "Remove photo error:",
-        error
-      );
-
-      toast.error(
-        error.message ||
-          "Unable to remove profile photo."
-      );
-    } finally {
-      setRemoving(false);
-    }
+  function openEdit() {
+    setForm({
+      full_name: admin.full_name || "",
+      role: admin.role || "Administrator",
+      avatar_url: admin.avatar_url || "",
+    });
+    setError("");
+    setEditOpen(true);
   }
 
-  /* =========================================
-     SAVE PROFILE
-  ========================================= */
+  async function saveProfile(event) {
+    event.preventDefault();
 
-  async function saveProfile() {
-    const fullName =
-      profile.full_name.trim();
-
-    const email =
-      profile.email.trim();
-
-    const phone =
-      profile.phone.trim();
+    const fullName = form.full_name.trim();
 
     if (!fullName) {
-      toast.error(
-        "Please enter the administrator name."
-      );
-
+      setError("Please enter the admin name.");
       return;
     }
 
-    if (!email) {
-      toast.error(
-        "Please enter an email address."
-      );
-
-      return;
-    }
-
-    if (
-      newPassword.trim() !== "" &&
-      newPassword.length < 6
-    ) {
-      toast.error(
-        "Password must contain at least 6 characters."
-      );
-
-      return;
-    }
-
-    if (
-      newPassword.trim() !== "" &&
-      newPassword !== confirmPassword
-    ) {
-      toast.error(
-        "Passwords do not match."
-      );
-
-      return;
-    }
+    setSaving(true);
+    setError("");
 
     try {
-      setSaving(true);
+      const payload = {
+        full_name: fullName,
+        role: form.role.trim() || "Administrator",
+        avatar_url: form.avatar_url.trim(),
+      };
 
-      /* Update profile table */
-
-      const {
-        error: profileError,
-      } = await supabase
+      const { data, error: updateError } = await supabase
         .from("admin_profiles")
-        .update({
-          full_name: fullName,
-          email,
-          phone,
-        })
-        .eq("id", userId);
+        .update(payload)
+        .eq("id", user.id)
+        .select("*")
+        .maybeSingle();
 
-      if (profileError) {
-        throw profileError;
-      }
+      if (updateError) throw updateError;
 
-      /* Update Supabase Auth email */
+      const updatedProfile = {
+        full_name: data?.full_name ?? payload.full_name,
+        role: data?.role ?? payload.role,
+        avatar_url: data?.avatar_url ?? payload.avatar_url,
+      };
 
-      if (
-        email.toLowerCase() !==
-        authEmail.toLowerCase()
-      ) {
-        const {
-          error: emailError,
-        } = await supabase.auth.updateUser({
-          email,
-        });
-
-        if (emailError) {
-          throw emailError;
-        }
-
-        setAuthEmail(email);
-
-        toast.info(
-          "Email update requested. Check your email if confirmation is required."
-        );
-      }
-
-      /* Update password */
-
-      if (newPassword.trim() !== "") {
-        const {
-          error: passwordError,
-        } = await supabase.auth.updateUser({
-          password: newPassword,
-        });
-
-        if (passwordError) {
-          throw passwordError;
-        }
-      }
-
-      /* Keep Auth metadata updated */
-
-      const {
-        error: metadataError,
-      } = await supabase.auth.updateUser({
-        data: {
-          full_name: fullName,
-          phone,
-          avatar_url:
-            profile.avatar_url,
-        },
-      });
-
-      if (metadataError) {
-        console.error(
-          "Metadata update error:",
-          metadataError
-        );
-      }
-
-      setProfile(
-        (previousProfile) => ({
-          ...previousProfile,
-          full_name: fullName,
-          email,
-          phone,
-        })
-      );
-
-      setNewPassword("");
-      setConfirmPassword("");
-
-      toast.success(
-        "Profile updated successfully."
-      );
-    } catch (error) {
-      console.error(
-        "Save profile error:",
-        error
-      );
-
-      toast.error(
-        error.message ||
-          "Unable to update profile."
-      );
+      setAdmin(updatedProfile);
+      setForm(updatedProfile);
+      setEditOpen(false);
+      showMessage("Profile updated successfully.");
+    } catch (err) {
+      console.error("Admin profile update error:", err);
+      setError(err?.message || "Unable to update profile.");
     } finally {
       setSaving(false);
     }
   }
 
-  /* =========================================
-     LOADING
-  ========================================= */
+  async function changePassword(event) {
+    event.preventDefault();
+
+    if (passwordForm.password.length < 6) {
+      setError("Password must contain at least 6 characters.");
+      return;
+    }
+
+    if (passwordForm.password !== passwordForm.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+
+    try {
+      const { error: passwordError } = await supabase.auth.updateUser({
+        password: passwordForm.password,
+      });
+
+      if (passwordError) throw passwordError;
+
+      setPasswordForm({
+        password: "",
+        confirmPassword: "",
+      });
+
+      setPasswordOpen(false);
+      showMessage("Password changed successfully.");
+    } catch (err) {
+      console.error("Password update error:", err);
+      setError(err?.message || "Unable to change password.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function logout() {
+    await supabase.auth.signOut();
+    navigate("/", { replace: true });
+  }
 
   if (loading) {
     return (
-      <div className="admin-profile-loading">
-        Loading Profile...
+      <div className="admin-profile-page admin-profile-loading">
+        <div className="admin-loading-card">
+          <div className="admin-loading-orbit" />
+          <span>R DREAM INFRA DEVELOPERS</span>
+          <h2>Loading Admin Profile</h2>
+          <p>Preparing your secure account workspace...</p>
+        </div>
       </div>
     );
   }
 
-  /* =========================================
-     UI
-  ========================================= */
-
   return (
-    <div className="dashboard">
+    <div className="admin-profile-page">
+      <div className="admin-profile-bg-orb orb-one" />
+      <div className="admin-profile-bg-orb orb-two" />
 
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-      />
+      <div className="admin-profile-container">
+        <header className="admin-profile-top">
+          <button
+            type="button"
+            className="admin-back-button"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft size={18} />
+            <span>Back</span>
+          </button>
 
-      <div className="main-content">
+          <div className="admin-breadcrumb">
+            <span>Administration</span>
+            <ChevronRight size={15} />
+            <strong>Admin Profile</strong>
+          </div>
+        </header>
 
-        <Topbar
-          setSidebarOpen={setSidebarOpen}
-        />
+        {message && (
+          <div className="admin-toast success">
+            <span className="toast-icon">
+              <Check size={17} />
+            </span>
+            <div>
+              <strong>Profile updated</strong>
+              <span>{message}</span>
+            </div>
+          </div>
+        )}
 
-        <div className="dashboard-body">
+        {error && !editOpen && !passwordOpen && (
+          <div className="admin-inline-error">
+            <strong>Action could not be completed.</strong>
+            <span>{error}</span>
+            <button type="button" onClick={() => setError("")}>
+              <X size={16} />
+            </button>
+          </div>
+        )}
 
-          <div className="admin-profile-page">
+        <section className="admin-hero-card">
+          <div className="hero-grid-glow" />
 
-            <div className="profile-card">
-
-              {/* =================================
-                  LEFT SIDE
-              ================================= */}
-
-              <div className="avatar-section">
-
-                <div className="avatar-box">
-
-                  {profile.avatar_url ? (
-
-                    <img
-                      src={profile.avatar_url}
-                      alt="Admin Profile"
-                      className="avatar-image"
-                    />
-
-                  ) : (
-
-                    <User
-                      size={90}
-                      color="#ffffff"
-                    />
-
-                  )}
-
+          <div className="admin-identity">
+            <div className="admin-avatar-wrap">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="admin-profile-avatar"
+                />
+              ) : (
+                <div className="admin-profile-avatar admin-avatar-initials">
+                  {initials}
                 </div>
-
-                {/* PHOTO BUTTONS */}
-
-                <div className="photo-actions">
-
-                  {/* Upload */}
-
-                  <label
-                    className="upload-photo"
-                    style={{
-                      opacity:
-                        uploading ||
-                        removing
-                          ? 0.6
-                          : 1,
-
-                      cursor:
-                        uploading ||
-                        removing
-                          ? "not-allowed"
-                          : "pointer",
-                    }}
-                  >
-
-                    <Camera size={18} />
-
-                    {uploading
-                      ? "Uploading..."
-                      : "Upload Photo"}
-
-                    <input
-                      type="file"
-                      hidden
-                      accept="image/jpeg,image/jpg,image/png,image/webp"
-                      onChange={
-                        uploadPhoto
-                      }
-                      disabled={
-                        uploading ||
-                        removing
-                      }
-                    />
-
-                  </label>
-
-                  {/* Delete Photo */}
-
-                  {profile.avatar_url && (
-
-                    <button
-                      type="button"
-                      className="delete-photo-btn"
-                      onClick={
-                        removePhoto
-                      }
-                      disabled={
-                        removing ||
-                        uploading
-                      }
-                    >
-
-                      <Trash2
-                        size={18}
-                      />
-
-                      {removing
-                        ? "Removing..."
-                        : "Delete Photo"}
-
-                    </button>
-
-                  )}
-
-                </div>
-
-              </div>
-
-
-              {/* =================================
-                  RIGHT SIDE
-              ================================= */}
-
-              <div className="profile-form">
-
-                {/* Full Name */}
-
-                <div className="form-group">
-
-                  <label>
-
-                    <User size={18} />
-
-                    Full Name
-
-                  </label>
-
-                  <input
-                    type="text"
-                    value={
-                      profile.full_name
-                    }
-                    onChange={(e) =>
-                      setProfile({
-                        ...profile,
-                        full_name:
-                          e.target.value,
-                      })
-                    }
-                  />
-
-                </div>
-
-
-                {/* Email */}
-
-                <div className="form-group">
-
-                  <label>
-
-                    <Mail size={18} />
-
-                    Email
-
-                  </label>
-
-                  <input
-                    type="email"
-                    value={
-                      profile.email
-                    }
-                    onChange={(e) =>
-                      setProfile({
-                        ...profile,
-                        email:
-                          e.target.value,
-                      })
-                    }
-                  />
-
-                </div>
-
-
-                {/* Phone */}
-
-                <div className="form-group">
-
-                  <label>
-
-                    <Phone size={18} />
-
-                    Phone Number
-
-                  </label>
-
-                  <input
-                    type="text"
-                    value={
-                      profile.phone
-                    }
-                    onChange={(e) =>
-                      setProfile({
-                        ...profile,
-                        phone:
-                          e.target.value,
-                      })
-                    }
-                  />
-
-                </div>
-
-
-                {/* Role */}
-
-                <div className="form-group">
-
-                  <label>
-
-                    <User size={18} />
-
-                    Role
-
-                  </label>
-
-                  <input
-                    value={
-                      profile.role
-                    }
-                    disabled
-                  />
-
-                </div>
-
-
-                {/* New Password */}
-
-                <div className="form-group">
-
-                  <label>
-
-                    <Lock size={18} />
-
-                    New Password
-
-                  </label>
-
-                  <input
-                    type="password"
-                    placeholder="Enter New Password"
-                    value={
-                      newPassword
-                    }
-                    onChange={(e) =>
-                      setNewPassword(
-                        e.target.value
-                      )
-                    }
-                  />
-
-                </div>
-
-
-                {/* Confirm Password */}
-
-                <div className="form-group">
-
-                  <label>
-
-                    <Lock size={18} />
-
-                    Confirm Password
-
-                  </label>
-
-                  <input
-                    type="password"
-                    placeholder="Confirm Password"
-                    value={
-                      confirmPassword
-                    }
-                    onChange={(e) =>
-                      setConfirmPassword(
-                        e.target.value
-                      )
-                    }
-                  />
-
-                </div>
-
-
-                {/* Save */}
-
-                <button
-                  className="save-profile-btn"
-                  onClick={
-                    saveProfile
-                  }
-                  disabled={saving}
-                >
-
-                  <Save size={20} />
-
-                  {saving
-                    ? "Saving..."
-                    : "Save Changes"}
-
-                </button>
-
-              </div>
-
+              )}
+
+              <span className="admin-online-dot" />
+              <span className="admin-avatar-badge">
+                <ShieldCheck size={15} />
+              </span>
             </div>
 
+            <div className="admin-identity-copy">
+              <div className="admin-kicker">
+                <Sparkles size={13} />
+                R DREAM INFRA DEVELOPERS
+              </div>
+
+              <h1>{displayName}</h1>
+
+              <div className="admin-role-line">
+                <BadgeCheck size={17} />
+                <span>{displayRole}</span>
+                <span className="admin-status-pill">ACTIVE</span>
+              </div>
+
+              <div className="admin-email">
+                <Mail size={15} />
+                {email}
+              </div>
+            </div>
           </div>
 
-        </div>
+          <div className="admin-hero-actions">
+            <button
+              type="button"
+              className="admin-primary-button"
+              onClick={openEdit}
+            >
+              <Edit3 size={17} />
+              Edit Profile
+            </button>
 
+            <button
+              type="button"
+              className="admin-secondary-button"
+              onClick={() => {
+                setError("");
+                setPasswordOpen(true);
+              }}
+            >
+              <KeyRound size={17} />
+              Change Password
+            </button>
+          </div>
+        </section>
+
+        <section className="admin-dashboard-grid">
+          <div className="admin-main-column">
+            <div className="admin-section-heading">
+              <div>
+                <span className="section-eyebrow">ACCOUNT OVERVIEW</span>
+                <h2>Administrator workspace</h2>
+              </div>
+
+              <span className="secure-label">
+                <LockKeyhole size={14} />
+                Secure account
+              </span>
+            </div>
+
+            <div className="admin-info-grid">
+              <article className="admin-info-card featured">
+                <div className="info-icon">
+                  <UserRound size={20} />
+                </div>
+                <div>
+                  <span>Full Name</span>
+                  <strong>{displayName}</strong>
+                  <small>Primary administrator identity</small>
+                </div>
+              </article>
+
+              <article className="admin-info-card">
+                <div className="info-icon blue">
+                  <Mail size={20} />
+                </div>
+                <div>
+                  <span>Email Address</span>
+                  <strong>{email}</strong>
+                  <small>Authentication email</small>
+                </div>
+              </article>
+
+              <article className="admin-info-card">
+                <div className="info-icon green">
+                  <BadgeCheck size={20} />
+                </div>
+                <div>
+                  <span>Account Role</span>
+                  <strong>{displayRole}</strong>
+                  <small>Administrative access</small>
+                </div>
+              </article>
+
+              <article className="admin-info-card">
+                <div className="info-icon gold">
+                  <ShieldCheck size={20} />
+                </div>
+                <div>
+                  <span>Security</span>
+                  <strong>Protected</strong>
+                  <small>Supabase authentication</small>
+                </div>
+              </article>
+            </div>
+
+            <div className="admin-security-card">
+              <div className="security-visual">
+                <div className="security-ring ring-one" />
+                <div className="security-ring ring-two" />
+                <div className="security-lock">
+                  <LockKeyhole size={25} />
+                </div>
+              </div>
+
+              <div className="security-copy">
+                <span className="section-eyebrow">SECURITY CENTER</span>
+                <h3>Keep your administrator account protected</h3>
+                <p>
+                  Use a strong password and keep your account information
+                  current. Password changes are handled through Supabase
+                  Authentication.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="security-action"
+                onClick={() => {
+                  setError("");
+                  setPasswordOpen(true);
+                }}
+              >
+                Update Password
+                <ChevronRight size={17} />
+              </button>
+            </div>
+          </div>
+
+          <aside className="admin-side-column">
+            <div className="admin-quick-card">
+              <div className="quick-card-top">
+                <div>
+                  <span className="section-eyebrow">QUICK ACTIONS</span>
+                  <h3>Manage account</h3>
+                </div>
+                <div className="quick-mark">
+                  <ShieldCheck size={20} />
+                </div>
+              </div>
+
+              <button type="button" onClick={openEdit}>
+                <span className="quick-icon">
+                  <Edit3 size={17} />
+                </span>
+                <span>
+                  <strong>Edit profile</strong>
+                  <small>Update your admin details</small>
+                </span>
+                <ChevronRight size={17} />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setError("");
+                  setPasswordOpen(true);
+                }}
+              >
+                <span className="quick-icon">
+                  <KeyRound size={17} />
+                </span>
+                <span>
+                  <strong>Change password</strong>
+                  <small>Secure your login credentials</small>
+                </span>
+                <ChevronRight size={17} />
+              </button>
+
+              <button type="button" onClick={logout} className="quick-logout">
+                <span className="quick-icon danger">
+                  <LogOut size={17} />
+                </span>
+                <span>
+                  <strong>Sign out</strong>
+                  <small>End this administrator session</small>
+                </span>
+                <ChevronRight size={17} />
+              </button>
+            </div>
+
+            <div className="admin-brand-card">
+              <div className="brand-mark">RD</div>
+              <span>R DREAM INFRA DEVELOPERS</span>
+              <p>Real Estate Operations Console</p>
+              <div className="brand-line">
+                <span />
+                <span />
+                <span />
+              </div>
+            </div>
+          </aside>
+        </section>
       </div>
 
+      {editOpen && (
+        <div
+          className="admin-modal-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setEditOpen(false);
+          }}
+        >
+          <form className="admin-modal" onSubmit={saveProfile}>
+            <div className="modal-top-accent" />
+
+            <div className="modal-header">
+              <div>
+                <span className="section-eyebrow">PROFILE SETTINGS</span>
+                <h2>Edit Admin Profile</h2>
+                <p>Update the information shown across your CRM.</p>
+              </div>
+
+              <button
+                type="button"
+                className="modal-close"
+                onClick={() => setEditOpen(false)}
+              >
+                <X size={19} />
+              </button>
+            </div>
+
+            <div className="modal-avatar-preview">
+              {form.avatar_url.trim() ? (
+                <img src={form.avatar_url} alt="Preview" />
+              ) : (
+                <span>{initials}</span>
+              )}
+
+              <div>
+                <strong>Profile identity</strong>
+                <p>Use an image URL if you want a custom profile photo.</p>
+              </div>
+            </div>
+
+            <label className="admin-field">
+              <span>Full Name *</span>
+              <div className="field-shell">
+                <UserRound size={17} />
+                <input
+                  value={form.full_name}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      full_name: event.target.value,
+                    }))
+                  }
+                  placeholder="Enter admin name"
+                  autoComplete="name"
+                />
+              </div>
+            </label>
+
+            <label className="admin-field">
+              <span>Role</span>
+              <div className="field-shell">
+                <BadgeCheck size={17} />
+                <input
+                  value={form.role}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      role: event.target.value,
+                    }))
+                  }
+                  placeholder="Administrator"
+                />
+              </div>
+            </label>
+
+            <label className="admin-field">
+              <span>Profile Image URL</span>
+              <div className="field-shell">
+                <Camera size={17} />
+                <input
+                  value={form.avatar_url}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      avatar_url: event.target.value,
+                    }))
+                  }
+                  placeholder="https://..."
+                  type="url"
+                />
+              </div>
+            </label>
+
+            {error && (
+              <div className="modal-error">
+                <X size={16} />
+                {error}
+              </div>
+            )}
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-cancel"
+                onClick={() => setEditOpen(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className="modal-save"
+                disabled={saving}
+              >
+                {saving ? (
+                  "Saving..."
+                ) : (
+                  <>
+                    <Save size={17} />
+                    Save Changes
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {passwordOpen && (
+        <div
+          className="admin-modal-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setPasswordOpen(false);
+              setPasswordForm({ password: "", confirmPassword: "" });
+            }
+          }}
+        >
+          <form className="admin-modal password-modal" onSubmit={changePassword}>
+            <div className="modal-top-accent password-accent" />
+
+            <div className="modal-header">
+              <div>
+                <span className="section-eyebrow">SECURITY</span>
+                <h2>Change Password</h2>
+                <p>Create a new password for your administrator account.</p>
+              </div>
+
+              <button
+                type="button"
+                className="modal-close"
+                onClick={() => {
+                  setPasswordOpen(false);
+                  setPasswordForm({ password: "", confirmPassword: "" });
+                }}
+              >
+                <X size={19} />
+              </button>
+            </div>
+
+            <div className="password-visual">
+              <div>
+                <LockKeyhole size={25} />
+              </div>
+              <span>
+                Passwords are securely managed by Supabase Authentication.
+              </span>
+            </div>
+
+            <label className="admin-field">
+              <span>New Password *</span>
+              <div className="field-shell">
+                <KeyRound size={17} />
+                <input
+                  type="password"
+                  value={passwordForm.password}
+                  onChange={(event) =>
+                    setPasswordForm((current) => ({
+                      ...current,
+                      password: event.target.value,
+                    }))
+                  }
+                  placeholder="Minimum 6 characters"
+                  autoComplete="new-password"
+                />
+              </div>
+            </label>
+
+            <label className="admin-field">
+              <span>Confirm Password *</span>
+              <div className="field-shell">
+                <LockKeyhole size={17} />
+                <input
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(event) =>
+                    setPasswordForm((current) => ({
+                      ...current,
+                      confirmPassword: event.target.value,
+                    }))
+                  }
+                  placeholder="Re-enter new password"
+                  autoComplete="new-password"
+                />
+              </div>
+            </label>
+
+            {error && (
+              <div className="modal-error">
+                <X size={16} />
+                {error}
+              </div>
+            )}
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-cancel"
+                onClick={() => {
+                  setPasswordOpen(false);
+                  setPasswordForm({ password: "", confirmPassword: "" });
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className="modal-save password-save"
+                disabled={saving}
+              >
+                {saving ? (
+                  "Updating..."
+                ) : (
+                  <>
+                    <KeyRound size={17} />
+                    Update Password
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

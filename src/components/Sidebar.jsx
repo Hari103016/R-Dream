@@ -1,7 +1,12 @@
 import "./Sidebar.css";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+
+import {
+  Link,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+
 import { supabase } from "../services/supabase";
-import logo from "../assets/logo.png";
 
 import {
   LayoutDashboard,
@@ -9,154 +14,218 @@ import {
   MapPinned,
   CalendarDays,
   CreditCard,
-  BarChart3,
+  MapPin,
+  BellRing,
+  FolderOpen,
+  UserCircle,
   Settings,
   LogOut,
   X,
+  CheckCircle2,
 } from "lucide-react";
 
-function Sidebar({ sidebarOpen, setSidebarOpen }) {
+// ==========================================
+// SIDEBAR MENU
+// ==========================================
+
+const menuItems = [
+  {
+    name: "Dashboard",
+    icon: LayoutDashboard,
+    path: "/dashboard",
+  },
+
+  {
+    name: "Customers",
+    icon: Users,
+    path: "/customers",
+  },
+
+  {
+    name: "Plots",
+    icon: MapPinned,
+    path: "/plots",
+  },
+
+  {
+    name: "Layout Map",
+    icon: MapPin,
+    path: "/layout-map",
+  },
+
+  {
+    name: "Bookings",
+    icon: CalendarDays,
+    path: "/bookings",
+  },
+
+  {
+    name: "Payments",
+    icon: CreditCard,
+    path: "/payments",
+  },
+
+  // ==========================================
+  // NEW - REGISTRATION COMPLETED
+  // ==========================================
+
+  {
+    name: "Registration Completed",
+    icon: CheckCircle2,
+    path: "/registration-completed",
+  },
+
+  {
+    name: "Site Visits",
+    icon: MapPin,
+    path: "/site-visits",
+  },
+
+  {
+    name: "Follow-ups",
+    icon: BellRing,
+    path: "/follow-ups",
+  },
+
+  {
+    name: "Documents",
+    icon: FolderOpen,
+    path: "/documents",
+  },
+
+  {
+    name: "Admin Profile",
+    icon: UserCircle,
+    path: "/admin-profile",
+  },
+
+  {
+    name: "Settings",
+    icon: Settings,
+    path: "/settings",
+  },
+];
+
+export default function Sidebar({
+  isOpen,
+  setIsOpen,
+}) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const closeSidebar = () => {
-    setSidebarOpen(false);
+  // ==========================================
+  // LOGOUT
+  // ==========================================
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+
+    navigate("/");
   };
 
-  async function logout() {
-    const { error } = await supabase.auth.signOut();
+  // ==========================================
+  // CLOSE MOBILE MENU
+  // ==========================================
 
-    if (error) {
-      alert(error.message);
-      return;
+  const closeMobileMenu = () => {
+    if (
+      window.innerWidth <= 768 &&
+      setIsOpen
+    ) {
+      setIsOpen(false);
     }
-
-    navigate("/", {
-      replace: true,
-    });
-  }
-
-  const menuItems = [
-    {
-      name: "Dashboard",
-      icon: LayoutDashboard,
-      path: "/dashboard",
-    },
-
-    {
-      name: "Customers",
-      icon: Users,
-      path: "/customers",
-    },
-
-    {
-      name: "Plots",
-      icon: MapPinned,
-      path: "/plots",
-    },
-
-    // NEW LAYOUT MAP
-    {
-      name: "Layout Map",
-      icon: MapPinned,
-      path: "/layout-map",
-    },
-
-    {
-      name: "Bookings",
-      icon: CalendarDays,
-      path: "/bookings",
-    },
-
-    {
-      name: "Payments",
-      icon: CreditCard,
-      path: "/payments",
-    },
-
-    {
-      name: "Reports",
-      icon: BarChart3,
-      path: "/reports",
-    },
-
-    {
-      name: "Admin Profile",
-      icon: Users,
-      path: "/admin-profile",
-    },
-
-    {
-      name: "Settings",
-      icon: Settings,
-      path: "/settings",
-    },
-  ];
+  };
 
   return (
     <>
-      {/* ==========================================
+      {/* ======================================
           MOBILE OVERLAY
-      ========================================== */}
+      ====================================== */}
 
-      {sidebarOpen && (
+      {isOpen && (
         <div
-          className="sidebar-overlay"
-          onClick={closeSidebar}
+          className="sidebar-mobile-overlay"
+          onClick={() =>
+            setIsOpen?.(false)
+          }
+          aria-hidden="true"
         />
       )}
 
-      {/* ==========================================
+      {/* ======================================
           SIDEBAR
-      ========================================== */}
+      ====================================== */}
 
       <aside
         className={`sidebar ${
-          sidebarOpen ? "open" : ""
+          isOpen
+            ? "sidebar-open"
+            : ""
         }`}
       >
-        {/* CLOSE BUTTON */}
+        {/* ======================================
+            BRAND
+        ====================================== */}
 
-        <button
-          className="close-btn"
-          onClick={closeSidebar}
-        >
-          <X size={24} />
-        </button>
+        <div className="sidebar-brand">
+          <div className="sidebar-brand-name">
+            R Dream
+          </div>
 
-        {/* ==========================================
-            LOGO
-        ========================================== */}
-
-        <div className="logo">
-          <img
-            src={logo}
-            alt="Company Logo"
-            className="company-logo"
-          />
+          <div className="sidebar-brand-subtitle">
+            Infra Developers
+          </div>
         </div>
 
-        {/* ==========================================
-            MENU
-        ========================================== */}
+        {/* ======================================
+            MOBILE CLOSE BUTTON
+        ====================================== */}
 
-        <nav>
+        <button
+          type="button"
+          className="sidebar-close"
+          onClick={() =>
+            setIsOpen?.(false)
+          }
+          aria-label="Close menu"
+        >
+          <X size={20} />
+        </button>
+
+        {/* ======================================
+            NAVIGATION
+        ====================================== */}
+
+        <nav className="sidebar-nav">
           {menuItems.map((item) => {
             const Icon = item.icon;
 
             const isActive =
-              location.pathname === item.path;
+              location.pathname ===
+                item.path ||
+              (item.path !==
+                "/dashboard" &&
+                location.pathname.startsWith(
+                  `${item.path}/`
+                ));
 
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={
-                  isActive ? "active" : ""
+                onClick={
+                  closeMobileMenu
                 }
-                onClick={closeSidebar}
+                className={`sidebar-link ${
+                  isActive
+                    ? "active"
+                    : ""
+                }`}
               >
-                <Icon size={20} />
+                <Icon
+                  size={19}
+                  strokeWidth={2}
+                />
 
                 <span>
                   {item.name}
@@ -166,23 +235,25 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
           })}
         </nav>
 
-        {/* ==========================================
+        {/* ======================================
             LOGOUT
-        ========================================== */}
+        ====================================== */}
 
-        <div className="sidebar-bottom">
-          <button
-            className="logout"
-            onClick={logout}
-          >
-            <LogOut size={18} />
+        <button
+          type="button"
+          className="sidebar-logout"
+          onClick={handleLogout}
+        >
+          <LogOut
+            size={19}
+            strokeWidth={2}
+          />
 
+          <span>
             Logout
-          </button>
-        </div>
+          </span>
+        </button>
       </aside>
     </>
   );
 }
-
-export default Sidebar;
